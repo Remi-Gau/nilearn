@@ -29,6 +29,7 @@ References
     (http://avesbiodiv.mncn.csic.es/estadistica/permut2.pdf)
 
 """
+
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, Feb. 2014
 
 ##############################################################################
@@ -37,8 +38,8 @@ from nilearn import datasets, image
 haxby_dataset = datasets.fetch_haxby(subjects=[2])
 
 # print basic information on the dataset
-print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
+print(f'Mask nifti image (3D) is located at: {haxby_dataset.mask}')
+print(f'Functional nifti image (4D) is located at: {haxby_dataset.func[0]}')
 
 ##############################################################################
 # Restrict to faces and houses

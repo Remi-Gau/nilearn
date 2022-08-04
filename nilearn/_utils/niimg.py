@@ -94,13 +94,8 @@ def _get_target_dtype(dtype, target_dtype):
     if target_dtype is None:
         return None
     if target_dtype == 'auto':
-        if dtype.kind == 'i':
-            target_dtype = np.int32
-        else:
-            target_dtype = np.float32
-    if target_dtype == dtype:
-        return None
-    return target_dtype
+        target_dtype = np.int32 if dtype.kind == 'i' else np.float32
+    return None if target_dtype == dtype else target_dtype
 
 
 def load_niimg(niimg, dtype=None):
@@ -211,14 +206,14 @@ def _repr_niimgs(niimgs, shorten=True):
     repr: str
         String representation of the image.
     """
-    # Maximum number of elements to be displayed
-    # Note: should be >= 3 to make sense...
-    list_max_display = 3
     # Simple string case
     if isinstance(niimgs, (str, Path)):
         return _short_repr(niimgs, shorten=shorten)
     # Collection case
     if isinstance(niimgs, collections.abc.Iterable):
+        # Maximum number of elements to be displayed
+        # Note: should be >= 3 to make sense...
+        list_max_display = 3
         if shorten and len(niimgs) > list_max_display:
             return '[%s]' % ',\n         ...\n '.join(_repr_niimgs(niimg, shorten=shorten) for niimg in [niimgs[0], niimgs[-1]])
         elif len(niimgs) > list_max_display:
@@ -251,21 +246,17 @@ def _short_repr(niimg_rep, shorten=True, truncate=20):
     path_to_niimg = Path(niimg_rep)
     if not shorten:
         return str(path_to_niimg)
-    # If the name of the file itself is larger than
-    # truncate, then shorten the name only
     if len(path_to_niimg.name) > truncate:
-        return path_to_niimg.name[: (truncate - 2)] + '...'
-    # Else add some folder structure if available
-    else:
-        rep = path_to_niimg.name
-        if len(path_to_niimg.parts) > 1:
-            for p in path_to_niimg.parts[::-1][1:]:
-                if len(rep) + len(p) < truncate - 3:
-                    rep = str(Path(p, rep))
-                else:
-                    rep = str(Path("...", rep))
-                    break
-        return rep
+        return f'{path_to_niimg.name[: (truncate - 2)]}...'
+    rep = path_to_niimg.name
+    if len(path_to_niimg.parts) > 1:
+        for p in path_to_niimg.parts[::-1][1:]:
+            if len(rep) + len(p) < truncate - 3:
+                rep = str(Path(p, rep))
+            else:
+                rep = str(Path("...", rep))
+                break
+    return rep
 
 
 def img_data_dtype(niimg):
@@ -282,7 +273,4 @@ def img_data_dtype(niimg):
         return np.float_
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    if hasattr(dataobj, 'dtype'):
-        return dataobj.dtype
-
-    return niimg.get_data_dtype()
+    return dataobj.dtype if hasattr(dataobj, 'dtype') else niimg.get_data_dtype()

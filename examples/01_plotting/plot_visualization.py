@@ -5,6 +5,7 @@ NeuroImaging volumes visualization
 Simple example to show Nifti data visualization.
 """
 
+
 ##############################################################################
 # Fetch data
 # ----------
@@ -14,10 +15,14 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
-print('First anatomical nifti image (3D) located is at: %s' %
-      haxby_dataset.anat[0])
-print('First functional nifti image (4D) is located at: %s' %
-      haxby_dataset.func[0])
+print(
+    f'First anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}'
+)
+
+print(
+    f'First functional nifti image (4D) is located at: {haxby_dataset.func[0]}'
+)
+
 
 ##############################################################################
 # Visualization

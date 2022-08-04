@@ -33,14 +33,18 @@ def _load_localizer_index():
     localizer_index = {}
     for idx in range(1, 95):
         sid = 'S{:02}'.format(idx)
-        localizer_index.update(dict(
-            (key.format(sid), uuid.uuid4().hex)
-            for key in localizer_template))
+        localizer_index |= {
+            key.format(sid): uuid.uuid4().hex for key in localizer_template
+        }
+
     localizer_index['/localizer/phenotype/behavioural.tsv'] = uuid.uuid4().hex
     localizer_index['/localizer/participants.tsv'] = uuid.uuid4().hex
-    tsv_files = {}
-    tsv_files['/localizer/phenotype/behavioural.tsv'] = pd.read_csv(
-        str(data_dir / 'localizer_behavioural.tsv'), sep='\t')
+    tsv_files = {
+        '/localizer/phenotype/behavioural.tsv': pd.read_csv(
+            str(data_dir / 'localizer_behavioural.tsv'), sep='\t'
+        )
+    }
+
     tsv_files['/localizer/participants.tsv'] = pd.read_csv(
         str(data_dir / 'localizer_participants.tsv'), sep='\t')
     return localizer_index, tsv_files
@@ -54,8 +58,9 @@ def localizer_mocker(request_mocker):
     request_mocker.url_mapping["https://osf.io/hwbm2/download"] = json.dumps(
         index)
     for k, v in tsv_files.items():
-        request_mocker.url_mapping[
-            "*{}?".format(index[k][1:])] = v.to_csv(index=False, sep="\t")
+        request_mocker.url_mapping[f"*{index[k][1:]}?"] = v.to_csv(
+            index=False, sep="\t"
+        )
 
 
 def _make_haxby_subject_data(match, response):
@@ -287,9 +292,9 @@ def test_fetch_abide_pcp(tmp_path, request_mocker, quality_checked):
     n_subjects = 800
     ids = list(range(n_subjects))
     filenames = ['no_filename'] * n_subjects
-    filenames[::2] = ['filename'] * int(n_subjects / 2)
+    filenames[::2] = ['filename'] * (n_subjects // 2)
     qc_rater_1 = ['OK'] * n_subjects
-    qc_rater_1[::4] = ['fail'] * int(n_subjects / 4)
+    qc_rater_1[::4] = ['fail'] * (n_subjects // 4)
     pheno = pd.DataFrame(
         {"subject_id": ids,
          "FILE_ID": filenames,
@@ -323,10 +328,11 @@ def test__load_mixed_gambles(request_mocker):
     n_trials = 48
     affine = np.eye(4)
     for n_subjects in [1, 5, 16]:
-        zmaps = []
-        for _ in range(n_subjects):
-            zmaps.append(nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials),
-                                             affine))
+        zmaps = [
+            nibabel.Nifti1Image(rng.randn(3, 4, 5, n_trials), affine)
+            for _ in range(n_subjects)
+        ]
+
         zmaps, gain, _ = func._load_mixed_gambles(zmaps)
         assert len(zmaps) == n_subjects * n_trials
         assert len(zmaps) == len(gain)
@@ -432,22 +438,32 @@ def _cobre_metadata():
 
     for i in np.hstack(ids_n):
         # Func file
-        f = 'fmri_00' + str(i) + '.nii.gz'
-        m = 'fmri_00' + str(i) + '.tsv.gz'
-        dummy_data.append(
-            {'download_url': 'https://cobre/{}'.format(f), 'name': f})
-        dummy_data.append(
-            {'download_url': 'https://cobre/{}'.format(m), 'name': m})
+        f = f'fmri_00{str(i)}.nii.gz'
+        m = f'fmri_00{str(i)}.tsv.gz'
+        dummy_data.extend(
+            (
+                {'download_url': f'https://cobre/{f}', 'name': f},
+                {'download_url': f'https://cobre/{m}', 'name': m},
+            )
+        )
 
-    # Add the TSV file
-    dummy_data.append({'download_url': 'https://cobre/phenotypic_data.tsv.gz',
-                       'name': 'phenotypic_data.tsv.gz'})
-    # Add JSON files
-    dummy_data.append({'download_url': 'https://cobre/keys_confounds.json',
-                       'name': 'keys_confounds.json'})
-    dummy_data.append({
-        'download_url': 'https://cobre/keys_phenotypic_data.json',
-        'name': 'keys_phenotypic_data.json'})
+    dummy_data.extend(
+        (
+            {
+                'download_url': 'https://cobre/phenotypic_data.tsv.gz',
+                'name': 'phenotypic_data.tsv.gz',
+            },
+            {
+                'download_url': 'https://cobre/keys_confounds.json',
+                'name': 'keys_confounds.json',
+            },
+            {
+                'download_url': 'https://cobre/keys_phenotypic_data.json',
+                'name': 'keys_phenotypic_data.json',
+            },
+        )
+    )
+
     dummy_data = {'files': dummy_data}
     return json.dumps(dummy_data), np.asarray(ids_n, dtype='|U17')
 
@@ -514,12 +530,18 @@ def _mock_participants_data(n_ids=5):
     child_adult = [["child", "adult"][i % 2] for i in range(n_ids)]
     gender = len(ids) * ['m']
     handedness = len(ids) * ['r']
-    participants = pd.DataFrame(OrderedDict([
-        ("participant_id", ids), ("Age", age), ("AgeGroup", age_group),
-        ("Child_Adult", child_adult), ("Gender", gender),
-        ("Handedness", handedness)
-    ]))
-    return participants
+    return pd.DataFrame(
+        OrderedDict(
+            [
+                ("participant_id", ids),
+                ("Age", age),
+                ("AgeGroup", age_group),
+                ("Child_Adult", child_adult),
+                ("Gender", gender),
+                ("Handedness", handedness),
+            ]
+        )
+    )
 
 
 def _mock_development_confounds():
@@ -601,7 +623,7 @@ def test_fetch_development_fmri(tmp_path, request_mocker):
     # check age_group
     data = func.fetch_development_fmri(n_subjects=2, reduce_confounds=False,
                                        verbose=1, age_group='child')
-    assert(all([x == 'child' for x in data.phenotypic['Child_Adult']]))
+    assert all(x == 'child' for x in data.phenotypic['Child_Adult'])
 
 
 def test_fetch_development_fmri_invalid_n_subjects(request_mocker):
@@ -642,8 +664,7 @@ def test_fetch_bids_langloc_dataset(request_mocker, tmp_path):
 
 def test_select_from_index(request_mocker):
     dataset_version = 'ds000030_R1.0.4'
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
+    data_prefix = f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     # Prepare url files for subject and filter tests
     urls = [data_prefix + '/stuff.html',
             data_prefix + '/sub-xxx.html',
@@ -743,10 +764,7 @@ def test_fetch_ds000030_urls(request_mocker):
 
 def test_fetch_openneuro_dataset(request_mocker, tmp_path):
     dataset_version = 'ds000030_R1.0.4'
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0],
-        dataset_version,
-    )
+    data_prefix = f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     data_dir = _get_dataset_dir(
         data_prefix,
         data_dir=tmp_path,
@@ -805,17 +823,17 @@ def test_fetch_localizer(request_mocker, tmp_path):
 
 def _mock_original_spm_auditory_events_file():
     expected_events_data = {
-        'onset': [factor * 42.0 for factor in range(0, 16)],
+        'onset': [factor * 42.0 for factor in range(16)],
         'duration': [42.0] * 16,
         'trial_type': ['rest', 'active'] * 8,
     }
+
     expected_events_data = pd.DataFrame(expected_events_data)
-    expected_events_data_string = expected_events_data.to_csv(
+    return expected_events_data.to_csv(
         sep='\t',
         index=0,
         columns=['onset', 'duration', 'trial_type'],
     )
-    return expected_events_data_string
 
 
 def _mock_bids_compliant_spm_auditory_events_file():

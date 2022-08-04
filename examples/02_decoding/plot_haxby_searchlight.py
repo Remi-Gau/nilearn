@@ -11,6 +11,7 @@ the :term:`fMRI` (see the generated figures).
 
 """
 
+
 #########################################################################
 # Load Haxby dataset
 # -------------------
@@ -22,8 +23,8 @@ from nilearn.image import new_img_like, load_img, get_data
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
-print('Anatomical nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) is located at: %s' % haxby_dataset.func[0])
+print(f'Anatomical nifti image (3D) is located at: {haxby_dataset.mask}')
+print(f'Functional nifti image (4D) is located at: {haxby_dataset.func[0]}')
 
 fmri_filename = haxby_dataset.func[0]
 labels = pd.read_csv(haxby_dataset.session_target[0], sep=" ")

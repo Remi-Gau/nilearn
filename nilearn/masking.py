@@ -66,7 +66,7 @@ def _load_mask_img(mask_img, allow_empty=False):
                 'Background of the mask must be represented with 0. '
                 f'Given mask contains: {values}.'
             )
-    elif len(values) != 2:
+    else:
         # If there are more than 2 values, the mask is invalid
         raise ValueError(
             f'Given mask is not made of 2 values: {values}. '
@@ -92,7 +92,7 @@ def _extrapolate_out_mask(data, mask, iterations=1):
     outer_shell = larger_mask.copy()
     outer_shell[1:-1, 1:-1, 1:-1] = np.logical_xor(new_mask, mask)
     outer_shell_x, outer_shell_y, outer_shell_z = np.where(outer_shell)
-    extrapolation = list()
+    extrapolation = []
     for i, j, k in [(1, 0, 0), (-1, 0, 0),
                     (0, 1, 0), (0, -1, 0),
                     (0, 0, 1), (0, 0, -1)]:
@@ -189,8 +189,10 @@ def _post_process_mask(mask, affine, opening=2, connected=True,
         mask = binary_erosion(mask, iterations=opening)
     mask_any = mask.any()
     if not mask_any:
-        warnings.warn("Computed an empty mask. %s" % warning_msg,
-                      MaskWarning, stacklevel=2)
+        warnings.warn(
+            f"Computed an empty mask. {warning_msg}", MaskWarning, stacklevel=2
+        )
+
     if connected and mask_any:
         mask = largest_connected_component(mask)
     if opening:
@@ -375,8 +377,7 @@ def compute_multi_epi_mask(epi_imgs, lower_cutoff=0.2, upper_cutoff=0.85,
                                   memory=memory)
         for epi_img in epi_imgs)
 
-    mask = intersect_masks(masks, connected=connected, threshold=threshold)
-    return mask
+    return intersect_masks(masks, connected=connected, threshold=threshold)
 
 
 @_utils.fill_doc
@@ -512,8 +513,7 @@ def compute_multi_background_mask(data_imgs, border_size=2, upper_cutoff=0.85,
                                          memory=memory)
         for img in data_imgs)
 
-    mask = intersect_masks(masks, connected=connected, threshold=threshold)
-    return mask
+    return intersect_masks(masks, connected=connected, threshold=threshold)
 
 
 @_utils.fill_doc
@@ -694,14 +694,15 @@ def compute_multi_brain_mask(target_imgs, threshold=.5, connected=True,
 
     # Check images in the list have the same FOV without loading them in memory
     imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
-    for _ in imgs_generator:
-        pass
-
-    mask = compute_brain_mask(target_imgs[0], threshold=threshold,
-                              connected=connected, opening=opening,
-                              memory=memory, verbose=verbose,
-                              mask_type=mask_type)
-    return mask
+    return compute_brain_mask(
+        target_imgs[0],
+        threshold=threshold,
+        connected=connected,
+        opening=opening,
+        memory=memory,
+        verbose=verbose,
+        mask_type=mask_type,
+    )
 
 
 #
@@ -783,9 +784,11 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
                          '\n%s' % (str(mask_affine),
                                    str(imgs_img.affine)))
 
-    if not mask_data.shape == imgs_img.shape[:3]:
-        raise ValueError('Mask shape: %s is different from img shape:%s'
-                         % (str(mask_data.shape), str(imgs_img.shape[:3])))
+    if mask_data.shape != imgs_img.shape[:3]:
+        raise ValueError(
+            f'Mask shape: {str(mask_data.shape)} is different from img shape:{str(imgs_img.shape[:3])}'
+        )
+
 
     # All the following has been optimized for C order.
     # Time that may be lost in conversion here is regained multiple times
@@ -793,10 +796,7 @@ def _apply_mask_fmri(imgs, mask_img, dtype='f',
     series = _safe_get_data(imgs_img)
 
     if dtype == 'f':
-        if series.dtype.kind == 'f':
-            dtype = series.dtype
-        else:
-            dtype = np.float32
+        dtype = series.dtype if series.dtype.kind == 'f' else np.float32
     series = _utils.as_ndarray(series, dtype=dtype, order="C",
                                copy=True)
     del imgs_img  # frees a lot of memory
@@ -894,10 +894,7 @@ def unmask(X, mask_img, order="F"):
     # Handle lists. This can be a list of other lists / arrays, or a list or
     # numbers. In the latter case skip.
     if isinstance(X, list) and not isinstance(X[0], numbers.Number):
-        ret = []
-        for x in X:
-            ret.append(unmask(x, mask_img, order=order))  # 1-level recursion
-        return ret
+        return [unmask(x, mask_img, order=order) for x in X]
 
     # The code after this block assumes that X is an ndarray; ensure this
     X = np.asanyarray(X)

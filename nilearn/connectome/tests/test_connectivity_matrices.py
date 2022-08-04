@@ -32,14 +32,11 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
     mats = np.array(mats)
 
     # Initialization
-    if init is None:
-        gmean = np.mean(mats, axis=0)
-    else:
-        gmean = init
+    gmean = np.mean(mats, axis=0) if init is None else init
     norm_old = np.inf
     step = 1.
     grad_norm = []
-    for n in range(max_iter):
+    for _ in range(max_iter):
         # Computation of the gradient
         vals_gmean, vecs_gmean = linalg.eigh(gmean)
         gmean_inv_sqrt = _form_symmetric(np.sqrt, 1. / vals_gmean, vecs_gmean)
@@ -47,10 +44,7 @@ def grad_geometric_mean(mats, init=None, max_iter=10, tol=1e-7):
                          for mat in mats]
         logs = [_map_eigenvalues(np.log, w_mat) for w_mat in whitened_mats]
         logs_mean = np.mean(logs, axis=0)  # Covariant derivative is
-                                           # - gmean.dot(logms_mean)
         norm = np.linalg.norm(logs_mean)  # Norm of the covariant derivative on
-                                          # the tangent space at point gmean
-
         # Update of the minimizer
         vals_log, vecs_log = linalg.eigh(logs_mean)
         gmean_sqrt = _form_symmetric(np.sqrt, vals_gmean, vecs_gmean)
@@ -137,10 +131,13 @@ def test_geometric_mean_geodesic():
     times = np.arange(n_matrices)
     non_singular = np.eye(n_features)
     non_singular[1:3, 1:3] = np.array([[-1, -.5], [-.5, -1]])
-    spds = []
-    for time in times:
-        spds.append(non_singular.dot(_map_eigenvalues(np.exp, time * sym)).dot(
-            non_singular.T))
+    spds = [
+        non_singular.dot(_map_eigenvalues(np.exp, time * sym)).dot(
+            non_singular.T
+        )
+        for time in times
+    ]
+
     gmean = non_singular.dot(_map_eigenvalues(np.exp, times.mean() * sym)).dot(
         non_singular.T)
     assert_array_almost_equal(_geometric_mean(spds), gmean)
@@ -244,10 +241,11 @@ def random_non_singular(p, sing_min=1., sing_max=2., random_state=0):
 def test_geometric_mean_properties():
     n_matrices = 40
     n_features = 15
-    spds = []
-    for k in range(n_matrices):
-        spds.append(random_spd(n_features, eig_min=1., cond=10.,
-                               random_state=0))
+    spds = [
+        random_spd(n_features, eig_min=1.0, cond=10.0, random_state=0)
+        for _ in range(n_matrices)
+    ]
+
     input_spds = copy.copy(spds)
     gmean = _geometric_mean(spds)
 
@@ -294,17 +292,17 @@ def test_geometric_mean_properties():
 
     # Evaluate convergence. A warning is printed if tolerance is not reached
     for p in [.5, 1.]:  # proportion of badly conditioned matrices
-        spds = []
-        for k in range(int(p * n_matrices)):
-            spds.append(random_spd(n_features, eig_min=1e-2, cond=1e6,
-                                   random_state=0))
-        for k in range(int(p * n_matrices), n_matrices):
-            spds.append(random_spd(n_features, eig_min=1., cond=10.,
-                                   random_state=0))
-        if p < 1:
-            max_iter = 30
-        else:
-            max_iter = 60
+        spds = [
+            random_spd(n_features, eig_min=1e-2, cond=1e6, random_state=0)
+            for _ in range(int(p * n_matrices))
+        ]
+
+        spds.extend(
+            random_spd(n_features, eig_min=1.0, cond=10.0, random_state=0)
+            for _ in range(int(p * n_matrices), n_matrices)
+        )
+
+        max_iter = 30 if p < 1 else 60
         gmean = _geometric_mean(spds, max_iter=max_iter, tol=1e-5)
 
 
@@ -609,15 +607,19 @@ def test_confounds_connectome_measure():
                                               vectorize=True)
     # Clean confounds on 10 subjects with confounds filtered to 10 subjects in
     # length
-    cleaned_vectors = correlation_measure.fit_transform(signals,
-                                                        confounds=confounds[0:10])
+    cleaned_vectors = correlation_measure.fit_transform(
+        signals, confounds=confounds[:10]
+    )
+
     zero_matrix = np.zeros((confounds.shape[1], cleaned_vectors.shape[1]))
     assert_array_almost_equal(
-        np.dot(confounds[0:10].T, cleaned_vectors), zero_matrix)
+        np.dot(confounds[:10].T, cleaned_vectors), zero_matrix
+    )
+
     assert(isinstance(cleaned_vectors, np.ndarray))
 
     # Confounds as pandas DataFrame
-    confounds_df = DataFrame(confounds[0:10])
+    confounds_df = DataFrame(confounds[:10])
     cleaned_vectors_df = correlation_measure.fit_transform(
         signals, confounds=confounds_df)
 
@@ -630,5 +632,6 @@ def test_confounds_connectome_measure():
     pytest.raises(ValueError, conn_measure.fit_transform, signals, None, 1.)
     # Raising error for input confounds are given but not vectorize=True
     conn_measure = ConnectivityMeasure(vectorize=False)
-    pytest.raises(ValueError, conn_measure.fit_transform,
-                  signals, None, confounds[0:10])
+    pytest.raises(
+        ValueError, conn_measure.fit_transform, signals, None, confounds[:10]
+    )

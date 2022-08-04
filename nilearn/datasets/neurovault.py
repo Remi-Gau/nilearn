@@ -539,12 +539,11 @@ class Contains(_SpecialValue):
         self.must_be_contained_ = must_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_be_contained_:
-            if item not in other:
-                return False
-        return True
+        return (
+            all(item in other for item in self.must_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return '{0}{1!r}'.format(
@@ -593,12 +592,11 @@ class NotContains(_SpecialValue):
         self.must_not_be_contained_ = must_not_be_contained
 
     def __eq__(self, other):
-        if not isinstance(other, Container):
-            return False
-        for item in self.must_not_be_contained_:
-            if item in other:
-                return False
-        return True
+        return (
+            all(item not in other for item in self.must_not_be_contained_)
+            if isinstance(other, Container)
+            else False
+        )
 
     def __repr__(self):
         return '{0}{1!r}'.format(
@@ -657,10 +655,10 @@ class Pattern(_SpecialValue):
         self.flags_ = flags
 
     def __eq__(self, other):
-        if not isinstance(other, str) or re.match(
-                self.pattern_, other, self.flags_) is None:
-            return False
-        return True
+        return (
+            isinstance(other, str)
+            and re.match(self.pattern_, other, self.flags_) is not None
+        )
 
     def __repr__(self):
         return '{0}(pattern={1!r}, flags={2})'.format(
@@ -777,36 +775,28 @@ class ResultFilter(object):
 
         """
         for key, value in self.query_terms_.items():
-            if not (value == candidate.get(key)):
+            if value != candidate.get(key):
                 return False
-        for callable_filter in self.callable_filters_:
-            if not callable_filter(candidate):
-                return False
-        return True
+        return all(
+            callable_filter(candidate)
+            for callable_filter in self.callable_filters_
+        )
 
     def OR(self, other_filter):
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) or filt2(r))
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) or filt2(r))
 
     def AND(self, other_filter):
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) and filt2(r))
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) and filt2(r))
 
     def XOR(self, other_filter):
         filt1, filt2 = deepcopy(self), deepcopy(other_filter)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: filt1(r) != filt2(r))
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: filt1(r) != filt2(r))
 
     def NOT(self):
         filt = deepcopy(self)
-        new_filter = ResultFilter(
-            callable_filter=lambda r: not filt(r))
-        return new_filter
+        return ResultFilter(callable_filter=lambda r: not filt(r))
 
     def __getitem__(self, item):
         """Get item from query_terms_"""
@@ -922,9 +912,7 @@ def _append_filters_to_query(query, filters):
         return query
     if 'id' in filters:
         return urljoin(query, str(filters['id']))
-    new_query = urljoin(
-        query, '?{0}'.format(urlencode(filters)))
-    return new_query
+    return urljoin(query, '?{0}'.format(urlencode(filters)))
 
 
 def _get_batch(query, prefix_msg='', timeout=10., verbose=3):
@@ -1405,17 +1393,16 @@ def _fetch_collection_for_image(image_info, download_params):
     collection_relative_path = 'collection_{0}'.format(collection_id)
     collection_absolute_path = os.path.join(
         download_params['nv_data_dir'], collection_relative_path)
-    if not os.path.isdir(collection_absolute_path):
-        col_batch = _get_batch(urljoin(
-            _NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
-            verbose=download_params['verbose'])
-        collection = _download_collection(
-            col_batch['results'][0], download_params)
-    else:
-        collection = _json_add_collection_dir(os.path.join(
-            collection_absolute_path, 'collection_metadata.json'))
+    if os.path.isdir(collection_absolute_path):
+        return _json_add_collection_dir(
+            os.path.join(collection_absolute_path, 'collection_metadata.json')
+        )
 
-    return collection
+
+    col_batch = _get_batch(urljoin(
+        _NEUROVAULT_COLLECTIONS_URL, str(collection_id)),
+        verbose=download_params['verbose'])
+    return _download_collection(col_batch['results'][0], download_params)
 
 
 def _download_image_nii_file(image_info, collection, download_params):
@@ -1639,9 +1626,9 @@ def _update_image(image_info, download_params):
         _write_metadata(image_info, metadata_file_path)
     except OSError:
         warnings.warn(
-            "could not update metadata for image {}, "
-            "most likely because you do not have write "
-            "permissions to its metadata file".format(image_info["id"]))
+            f'could not update metadata for image {image_info["id"]}, most likely because you do not have write permissions to its metadata file'
+        )
+
     return image_info
 
 
@@ -1689,29 +1676,22 @@ def _scroll_local(download_params):
                        if download_params['local_image_filter'](img))
         for image in good_images:
             image, collection = _update(image, collection, download_params)
-            if not download_params['resample']:
-                if os.path.isfile(image['absolute_path']):
-
-                    download_params['visited_images'].add(image['id'])
-                    download_params['visited_collections'].add(collection['id'])
-                    yield image, collection
-                else:
-                    pass
-            else:
-                if os.path.isfile(image['resampled_absolute_path']):
-                    download_params['visited_images'].add(image['id'])
-                    download_params['visited_collections'].add(collection['id'])
-                    yield image, collection
-                else:
+            if download_params['resample']:
+                if not os.path.isfile(image['resampled_absolute_path']):
                     im_resampled = resample_img(
                         img=image['absolute_path'],
                         target_affine=STD_AFFINE,
                         interpolation=download_params['interpolation'],
                     )
                     im_resampled.to_filename(image['resampled_absolute_path'])
-                    download_params['visited_images'].add(image['id'])
-                    download_params['visited_collections'].add(collection['id'])
-                    yield image, collection
+                download_params['visited_images'].add(image['id'])
+                download_params['visited_collections'].add(collection['id'])
+                yield image, collection
+            elif os.path.isfile(image['absolute_path']):
+
+                download_params['visited_images'].add(image['id'])
+                download_params['visited_collections'].add(collection['id'])
+                yield image, collection
 
 
 def _scroll_collection(collection, download_params):
@@ -1774,11 +1754,17 @@ def _scroll_collection(collection, download_params):
                       _ERROR, download_params['verbose'])
             return
     _print_if(
-        'On neurovault.org: '
-        '{0} image{1} matched query in collection {2}'.format(
-            (n_im_in_collection if n_im_in_collection else 'no'),
-            ('s' if n_im_in_collection > 1 else ''), collection['id']),
-        _INFO, download_params['verbose'])
+        (
+            'On neurovault.org: '
+            '{0} image{1} matched query in collection {2}'.format(
+                n_im_in_collection or 'no',
+                's' if n_im_in_collection > 1 else '',
+                collection['id'],
+            )
+        ),
+        _INFO,
+        download_params['verbose'],
+    )
 
 
 def _scroll_filtered(download_params):
@@ -1956,8 +1942,7 @@ def _scroll_explicit(download_params):
         download_params['wanted_image_ids']).difference(
             download_params['visited_images'])
 
-    for image, collection in _scroll_image_ids(download_params):
-        yield image, collection
+    yield from _scroll_image_ids(download_params)
 
 
 def _print_progress(found, download_params, level=_INFO):
@@ -2009,9 +1994,14 @@ def _scroll(download_params):
             yield image, collection
             if found == download_params['max_images']:
                 break
-        _print_if('{0} image{1} found on local disk.'.format(
-            ('No' if not found else found), ('s' if found > 1 else '')),
-            _INFO, download_params['verbose'])
+        _print_if(
+            '{0} image{1} found on local disk.'.format(
+                found or 'No', 's' if found > 1 else ''
+            ),
+            _INFO,
+            download_params['verbose'],
+        )
+
 
     if download_params['download_mode'] == 'offline':
         return
@@ -2042,10 +2032,14 @@ def _scroll(download_params):
 def _split_terms(terms, available_on_server):
     """Isolate term filters that can be applied by server."""
     terms_ = dict(terms)
-    server_terms = dict([(k, terms_.pop(k)) for k in
-                         available_on_server if k in terms_ and
-                         (isinstance(terms_[k], str) or
-                          isinstance(terms_[k], int))])
+    server_terms = dict(
+        [
+            (k, terms_.pop(k))
+            for k in available_on_server
+            if k in terms_ and isinstance(terms_[k], (str, int))
+        ]
+    )
+
     return terms_, server_terms
 
 
@@ -2099,9 +2093,7 @@ def _move_col_id(im_terms, col_terms):
         return im_terms, col_terms
     im_terms = copy(im_terms)
     col_terms = copy(col_terms)
-    if 'id' not in col_terms:
-        col_terms['id'] = im_terms.pop('collection_id')
-    elif col_terms['id'] == im_terms['collection_id']:
+    if 'id' not in col_terms or col_terms['id'] == im_terms['collection_id']:
         col_terms['id'] = im_terms.pop('collection_id')
     else:
         warnings.warn('You specified contradictory collection ids, '
@@ -2124,8 +2116,7 @@ def _read_download_params(
     """Create a dictionary containing download information.
 
     """
-    download_params = {}
-    download_params['verbose'] = verbose
+    download_params = {'verbose': verbose}
     download_mode = download_mode.lower()
     if download_mode not in ['overwrite', 'download_new', 'offline']:
         raise ValueError(
@@ -2647,9 +2638,9 @@ def fetch_neurovault_motor_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_auditory_computation_task
 
     """
-    data = fetch_neurovault_ids(image_ids=[10426], data_dir=data_dir,
-                                verbose=verbose)
-    return data
+    return fetch_neurovault_ids(
+        image_ids=[10426], data_dir=data_dir, verbose=verbose
+    )
 
 
 def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
@@ -2688,6 +2679,6 @@ def fetch_neurovault_auditory_computation_task(data_dir=None, verbose=1):
     nilearn.datasets.fetch_neurovault_motor_task
 
     """
-    data = fetch_neurovault_ids(image_ids=[32980], data_dir=data_dir,
-                                verbose=verbose)
-    return data
+    return fetch_neurovault_ids(
+        image_ids=[32980], data_dir=data_dir, verbose=verbose
+    )

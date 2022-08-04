@@ -1,6 +1,7 @@
 """
 Test the datasets module
 """
+
 # Author: Alexandre Abraham
 # License: simplified BSD
 
@@ -38,17 +39,40 @@ from nilearn.datasets import utils
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
-DATASET_NAMES = set([
-    "aal_SPM12", "ABIDE_pcp", "adhd", "allen_rsn_2011",
-    "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
-    "destrieux_surface", "development_fmri", "difumo_atlases",
-    "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
-    "fsaverage6", "fsaverage", "haxby2001",
-    "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
-    "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
-    "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",
-    "talairach_atlas", "yeo_2011"
-])
+DATASET_NAMES = {
+    "aal_SPM12",
+    "ABIDE_pcp",
+    "adhd",
+    "allen_rsn_2011",
+    "basc_multiscale_2015",
+    "brainomics_localizer",
+    "cobre",
+    "craddock_2012",
+    "destrieux_surface",
+    "development_fmri",
+    "difumo_atlases",
+    "dosenbach_2010",
+    "fsaverage3",
+    "fsaverage4",
+    "fsaverage5",
+    "fsaverage6",
+    "fsaverage",
+    "haxby2001",
+    "icbm152_2009",
+    "Megatrawls",
+    "miyawaki2008",
+    "msdl_atlas",
+    "neurovault",
+    "nki_enhanced_surface",
+    "nyu_rest",
+    "oasis1",
+    "pauli_2017",
+    "power_2011",
+    "schaefer_2018",
+    "smith_2009",
+    "talairach_atlas",
+    "yeo_2011",
+}
 
 
 def test_get_dataset_descr_warning():
@@ -151,7 +175,7 @@ def test_read_md5_sum_file():
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
     assert '/tmp/test' in h
-    assert not '/etc/test' in h
+    assert '/etc/test' not in h
     assert h['test/some_image.nii'] == '70886dcabe7bf5c5a1c24ca24e4cbd94'
     assert h['/tmp/test'] == '20861c8c3fe177da19a7e9539a5dbac'
     os.remove(f)
@@ -412,23 +436,25 @@ def test_fetch_files_overwrite(should_cast_path_to_string,
                     reason='Boto3  missing; necessary for this test')
 def test_make_fresh_openneuro_dataset_urls_index(tmp_path, request_mocker):
     dataset_version = 'ds000030_R1.0.4'
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
+    data_prefix = f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
     data_dir = _get_dataset_dir(data_prefix, data_dir=str(tmp_path),
                                 verbose=1)
     url_file = os.path.join(data_dir,
                             'nistats_fetcher_openneuro_dataset_urls.json',
                             )
     # Prepare url files for subject and filter tests
-    file_list = [data_prefix + '/stuff.html',
-                 data_prefix + '/sub-xxx.html',
-                 data_prefix + '/sub-yyy.html',
-                 data_prefix + '/sub-xxx/ses-01_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-01_task-other.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-rest.txt',
-                 data_prefix + '/sub-xxx/ses-02_task-other.txt',
-                 data_prefix + '/sub-yyy/ses-01.txt',
-                 data_prefix + '/sub-yyy/ses-02.txt']
+    file_list = [
+        f'{data_prefix}/stuff.html',
+        f'{data_prefix}/sub-xxx.html',
+        f'{data_prefix}/sub-yyy.html',
+        f'{data_prefix}/sub-xxx/ses-01_task-rest.txt',
+        f'{data_prefix}/sub-xxx/ses-01_task-other.txt',
+        f'{data_prefix}/sub-xxx/ses-02_task-rest.txt',
+        f'{data_prefix}/sub-xxx/ses-02_task-other.txt',
+        f'{data_prefix}/sub-yyy/ses-01.txt',
+        f'{data_prefix}/sub-yyy/ses-02.txt',
+    ]
+
     with open(url_file, 'w') as f:
         json.dump(file_list, f)
 

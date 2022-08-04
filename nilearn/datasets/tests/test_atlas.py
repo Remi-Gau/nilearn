@@ -334,10 +334,11 @@ def _destrieux_data():
     labels = "index,name\n" + labels
     for lat in ["_lateralized", ""]:
         lat_data = {
-            "destrieux2009_rois_labels{}.csv".format(lat): labels,
-            "destrieux2009_rois{}.nii.gz".format(lat): atlas_img,
+            f"destrieux2009_rois_labels{lat}.csv": labels,
+            f"destrieux2009_rois{lat}.nii.gz": atlas_img,
         }
-        data.update(lat_data)
+
+        data |= lat_data
     return dict_to_archive(data)
 
 
@@ -356,7 +357,7 @@ def test_fetch_atlas_destrieux_2009(tmp_path, request_mocker, lateralized):
         tmp_path / 'destrieux_2009' / f'destrieux2009_rois{name}.nii.gz'
     )
     labels_img = set(np.unique(get_data(bunch.maps)))
-    labels = set([label.index for label in bunch.labels])
+    labels = {label.index for label in bunch.labels}
     assert labels_img.issubset(labels)
 
 
@@ -396,21 +397,21 @@ def test_fetch_atlas_difumo(tmp_path, request_mocker):
     resolutions = [2, 3]  # Valid resolution values
     dimensions = [64, 128, 256, 512, 1024]  # Valid dimension values
     dimension_urls = ['pqu9r', 'wjvd5', '3vrct', '9b76y', '34792']
-    url_mapping = {k: v for k, v in zip(dimensions, dimension_urls)}
-    url_count = 1
-
-    for dim in dimensions:
-        url_count += 1
+    url_mapping = dict(zip(dimensions, dimension_urls))
+    for url_count, dim in enumerate(dimensions, start=2):
         url = "*osf.io/{0}/*".format(url_mapping[dim])
         labels = pd.DataFrame(
-            {"Component": [_ for _ in range(1, dim + 1)],
-             "Difumo_names": ["" for _ in range(dim)],
-             "Yeo_networks7": ["" for _ in range(dim)],
-             "Yeo_networks17": ["" for _ in range(dim)],
-             "GM": ["" for _ in range(dim)],
-             "WM": ["" for _ in range(dim)],
-             "CSF": ["" for _ in range(dim)]}
+            {
+                "Component": list(range(1, dim + 1)),
+                "Difumo_names": ["" for _ in range(dim)],
+                "Yeo_networks7": ["" for _ in range(dim)],
+                "Yeo_networks17": ["" for _ in range(dim)],
+                "GM": ["" for _ in range(dim)],
+                "WM": ["" for _ in range(dim)],
+                "CSF": ["" for _ in range(dim)],
+            }
         )
+
         root = Path("{0}".format(dim))
         archive = {root / "labels_{0}_dictionary.csv".format(dim): labels.to_csv(index=False),
                    root / "2mm" / "maps.nii.gz": "",
@@ -556,9 +557,12 @@ def test_fetch_atlas_surf_destrieux(tmp_path, request_mocker, verbose=0):
     # Create mock annots
     for hemi in ('left', 'right'):
         nibabel.freesurfer.write_annot(
-                os.path.join(data_dir,
-                             '%s.aparc.a2009s.annot' % hemi),
-                np.arange(4), np.zeros((4, 5)), 5 * ['a'],)
+            os.path.join(data_dir, f'{hemi}.aparc.a2009s.annot'),
+            np.arange(4),
+            np.zeros((4, 5)),
+            5 * ['a'],
+        )
+
 
     bunch = atlas.fetch_atlas_surf_destrieux(data_dir=tmp_path, verbose=0)
     # Our mock annots have 4 labels
@@ -622,7 +626,7 @@ def test_fetch_atlas_pauli_2017(tmp_path, request_mocker):
 
 def _schaefer_labels(match, request):
     info = match.groupdict()
-    label_names = ["{}Networks".format(info["network"])] * int(info["n_rois"])
+    label_names = [f'{info["network"]}Networks'] * int(info["n_rois"])
     labels = pd.DataFrame({"label": label_names})
     return labels.to_csv(sep="\t", header=False).encode("utf-8")
 
@@ -653,8 +657,7 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
     pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, yeo_networks=10)
     pytest.raises(ValueError, atlas.fetch_atlas_schaefer_2018, resolution_mm=3)
 
-    for n_rois, yeo_networks, resolution_mm in \
-            itertools.product(valid_n_rois, valid_yeo_networks,
+    for n_rois, yeo_networks, resolution_mm in itertools.product(valid_n_rois, valid_yeo_networks,
                               valid_resolution_mm):
         data = atlas.fetch_atlas_schaefer_2018(n_rois=n_rois,
                                                yeo_networks=yeo_networks,
@@ -665,8 +668,7 @@ def test_fetch_atlas_schaefer_2018(tmp_path, request_mocker):
         assert isinstance(data.maps, str)
         assert isinstance(data.labels, np.ndarray)
         assert len(data.labels) == n_rois
-        assert data.labels[0].astype(str).startswith("{}Networks".
-                                                     format(yeo_networks))
+        assert data.labels[0].astype(str).startswith(f"{yeo_networks}Networks")
         img = nibabel.load(data.maps)
         assert img.header.get_zooms()[0] == resolution_mm
         assert np.array_equal(np.unique(img.dataobj),

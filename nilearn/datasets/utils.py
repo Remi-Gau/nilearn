@@ -31,10 +31,7 @@ def md5_hash(string):
 
 
 def _format_time(t):
-    if t > 60:
-        return "%4.1fmin" % (t / 60.)
-    else:
-        return " %5.1fs" % (t)
+    return "%4.1fmin" % (t / 60.) if t > 60 else " %5.1fs" % (t)
 
 
 def _md5_sum_file(path):
@@ -43,10 +40,10 @@ def _md5_sum_file(path):
     with open(path, 'rb') as f:
         m = hashlib.md5()
         while True:
-            data = f.read(8192)
-            if not data:
+            if data := f.read(8192):
+                m.update(data)
+            else:
                 break
-            m.update(data)
     return m.hexdigest()
 
 
@@ -158,7 +155,7 @@ def _chunk_read_(response, local_file, chunk_size=8192, report_hook=None,
         if verbose > 2:
             print("Warning: total size could not be determined.")
             if verbose > 3:
-                print("Full stack trace: %s" % e)
+                print(f"Full stack trace: {e}")
         total_size = None
     bytes_so_far = initial_size
 
@@ -276,7 +273,7 @@ def _get_dataset_dir(dataset_name, data_dir=None, default_paths=None,
     paths.extend([(d, False) for d in get_data_dirs(data_dir=data_dir)])
 
     if verbose > 2:
-        print('Dataset search paths: %s' % paths)
+        print(f'Dataset search paths: {paths}')
 
     # Check if the dataset exists somewhere
     for path, is_pre_dir in paths:
@@ -330,7 +327,7 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
 
     """
     if verbose > 0:
-        sys.stderr.write('Extracting data from %s...' % file_)
+        sys.stderr.write(f'Extracting data from {file_}...')
     data_dir = os.path.dirname(file_)
     # We first try to see if it is a zip file
     try:
@@ -349,11 +346,11 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
         elif ext == '.gz' or header.startswith(b'\x1f\x8b'):
             import gzip
             if ext == '.tgz':
-                filename = filename + '.tar'
+                filename = f'{filename}.tar'
             elif ext == '':
                 # We rely on the assumption that gzip files have an extension
-                shutil.move(file_, file_ + '.gz')
-                file_ = file_ + '.gz'
+                shutil.move(file_, f'{file_}.gz')
+                file_ = f'{file_}.gz'
             with gzip.open(file_) as gz:
                 with open(filename, 'wb') as out:
                     shutil.copyfileobj(gz, out, 8192)
@@ -369,14 +366,13 @@ def _uncompress_file(file_, delete_archive=True, verbose=1):
                 os.remove(file_)
             processed = True
         if not processed:
-            raise IOError(
-                    "[Uncompress] unknown archive file format: %s" % file_)
+            raise IOError(f"[Uncompress] unknown archive file format: {file_}")
 
         if verbose > 0:
             sys.stderr.write('.. done.\n')
     except Exception as e:
         if verbose > 0:
-            print('Error uncompressing file: %s' % e)
+            print(f'Error uncompressing file: {e}')
         raise
 
 
@@ -402,7 +398,7 @@ def _filter_column(array, col, criteria):
     try:
         array[col]
     except:
-        raise KeyError('Filtering criterion %s does not exist' % col)
+        raise KeyError(f'Filtering criterion {col} does not exist')
 
     if (not isinstance(criteria, str) and
         not isinstance(criteria, bytes) and
@@ -454,7 +450,7 @@ def _filter_columns(array, filters, combination='and'):
         fcomb = np.logical_or
         mask = np.zeros(array.shape[0], dtype=bool)
     else:
-        raise ValueError('Combination mode not known: %s' % combination)
+        raise ValueError(f'Combination mode not known: {combination}')
 
     for column in filters:
         mask = fcomb(mask, _filter_column(array, column, filters[column]))
@@ -463,10 +459,8 @@ def _filter_columns(array, filters, combination='and'):
 
 class _NaiveFTPAdapter(requests.adapters.BaseAdapter):
     def send(self, request, timeout=None, **kwargs):
-        try:
+        with contextlib.suppress(Exception):
             timeout, _ = timeout
-        except Exception:
-            pass
         try:
             data = urllib.request.urlopen(request.url, timeout=timeout)
         except Exception as e:
@@ -537,7 +531,7 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
     if file_name == '':
         file_name = md5_hash(parse.path)
 
-    temp_file_name = file_name + ".part"
+    temp_file_name = f"{file_name}.part"
     full_name = os.path.join(data_dir, file_name)
     temp_full_name = os.path.join(data_dir, temp_file_name)
     if os.path.exists(full_name):
@@ -545,9 +539,8 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             os.remove(full_name)
         else:
             return full_name
-    if os.path.exists(temp_full_name):
-        if overwrite:
-            os.remove(temp_full_name)
+    if os.path.exists(temp_full_name) and overwrite:
+        os.remove(temp_full_name)
     t0 = time.time()
     local_file = None
     initial_size = 0
@@ -564,22 +557,23 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
             auth = (username, password)
         if verbose > 0:
             displayed_url = url.split('?')[0] if verbose == 1 else url
-            print('Downloading data from %s ...' % displayed_url)
+            print(f'Downloading data from {displayed_url} ...')
         if resume and os.path.exists(temp_full_name):
             # Download has been interrupted, we try to resume it.
             local_file_size = os.path.getsize(temp_full_name)
             # If the file exists, then only download the remainder
-            headers["Range"] = "bytes={}-".format(local_file_size)
+            headers["Range"] = f"bytes={local_file_size}-"
             try:
                 req = requests.Request(
                     method="GET", url=url, headers=headers, auth=auth)
                 prepped = session.prepare_request(req)
                 with session.send(prepped, stream=True,
-                                  timeout=_REQUESTS_TIMEOUT) as resp:
+                                                  timeout=_REQUESTS_TIMEOUT) as resp:
                     resp.raise_for_status()
                     content_range = resp.headers.get('Content-Range')
-                    if (content_range is None or not content_range.startswith(
-                            'bytes {}-'.format(local_file_size))):
+                    if content_range is None or not content_range.startswith(
+                        f'bytes {local_file_size}-'
+                    ):
                         raise IOError('Server does not support resuming')
                     initial_size = local_file_size
                     with open(local_file, "ab") as fh:
@@ -613,10 +607,9 @@ def _fetch_file(url, data_dir, resume=True, overwrite=False,
         sys.stderr.write("Error while fetching file %s; dataset "
                          "fetching aborted." % (file_name))
         raise
-    if md5sum is not None:
-        if (_md5_sum_file(full_name) != md5sum):
-            raise ValueError("File %s checksum verification has failed."
-                             " Dataset fetching aborted." % local_file)
+    if md5sum is not None and (_md5_sum_file(full_name) != md5sum):
+        raise ValueError("File %s checksum verification has failed."
+                         " Dataset fetching aborted." % local_file)
     return full_name
 
 
@@ -626,13 +619,12 @@ def _get_dataset_descr(ds_name):
     fname = ds_name
 
     try:
-        with open(os.path.join(module_path, 'description', fname + '.rst'),
-                  'rb') as rst_file:
+        with open(os.path.join(module_path, 'description', f'{fname}.rst'), 'rb') as rst_file:
             descr = rst_file.read()
     except IOError:
         descr = ''
 
-    if descr == '':
+    if not descr:
         warnings.warn("Could not find dataset description.")
 
     if isinstance(descr, bytes):
@@ -778,7 +770,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
 
         if (abort is None and not os.path.exists(target_file) and not
                 os.path.exists(temp_target_file)):
-            warnings.warn('An error occurred while fetching %s' % file_)
+            warnings.warn(f'An error occurred while fetching {file_}')
             abort = ("Dataset has been downloaded but requested file was "
                      "not provided:\nURL: %s\n"
                      "Target file: %s\nDownloaded: %s" %
@@ -786,7 +778,7 @@ def _fetch_files(data_dir, files, resume=True, verbose=1, session=None):
         if abort is not None:
             if os.path.exists(temp_dir):
                 shutil.rmtree(temp_dir)
-            raise IOError('Fetching aborted: ' + abort)
+            raise IOError(f'Fetching aborted: {abort}')
         files_.append(target_file)
     # If needed, move files from temps directory to final directory.
     if os.path.exists(temp_dir):
@@ -814,17 +806,16 @@ def _tree(path, pattern=None, dictionary=False):
 
     """
     files = []
-    dirs = [] if not dictionary else {}
+    dirs = {} if dictionary else []
     for file_ in os.listdir(path):
         file_path = os.path.join(path, file_)
         if os.path.isdir(file_path):
-            if not dictionary:
-                dirs.append((file_, _tree(file_path, pattern)))
-            else:
+            if dictionary:
                 dirs[file_] = _tree(file_path, pattern)
-        else:
-            if pattern is None or fnmatch.fnmatch(file_, pattern):
-                files.append(file_path)
+            else:
+                dirs.append((file_, _tree(file_path, pattern)))
+        elif pattern is None or fnmatch.fnmatch(file_, pattern):
+            files.append(file_path)
     files = sorted(files)
     if not dictionary:
         return sorted(dirs) + files
@@ -889,8 +880,7 @@ def make_fresh_openneuro_dataset_urls_index(
     from botocore.handlers import disable_signing
     if not data_dir:
         data_dir = os.path.expanduser('~/Desktop')
-    data_prefix = '{}/{}/uncompressed'.format(
-        dataset_version.split('_')[0], dataset_version)
+    data_prefix = f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
 
     data_dir = _get_dataset_dir(data_prefix, data_dir=data_dir,
                                 verbose=verbose)
@@ -903,10 +893,8 @@ def make_fresh_openneuro_dataset_urls_index(
     if os.path.exists(urls_path):
         with open(urls_path, 'r') as json_file:
             urls = json.load(json_file)
-        existing_index_msg = ("There is an existing url index at `{}`. "
-                              "Aborting download of fresh index."
-                              .format(urls_path)
-                              )
+        existing_index_msg = f"There is an existing url index at `{urls_path}`. Aborting download of fresh index."
+
         print(existing_index_msg)
     else:
         resource = boto3.resource('s3')
@@ -917,17 +905,14 @@ def make_fresh_openneuro_dataset_urls_index(
         for obj in bucket.objects.filter(Prefix=data_prefix):
             # get url of files (keys of directories end with '/')
             if obj.key[-1] != '/':
-                url = '{}/{}/{}'.format(bucket.meta.client.meta.endpoint_url,
-                                        bucket.name,
-                                        obj.key,
-                                        )
+                url = f'{bucket.meta.client.meta.endpoint_url}/{bucket.name}/{obj.key}'
                 urls.append(url)
         urls = sorted(urls)
 
         with open(urls_path, 'w') as json_file:
             json.dump(urls, json_file)
-        print("Saved updated url index to {}.\nUpload it with the same name "
-              "to the quick-files section of osf.io using the Nilearn account "
-              "to update the file without breaking the fetcher download link."
-              .format(urls_path))
+        print(
+            f"Saved updated url index to {urls_path}.\nUpload it with the same name to the quick-files section of osf.io using the Nilearn account to update the file without breaking the fetcher download link."
+        )
+
     return urls_path, urls

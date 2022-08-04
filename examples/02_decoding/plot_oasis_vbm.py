@@ -43,6 +43,7 @@ ____
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
 #          Virgile Fritsch, <virgile.fritsch@inria.fr>, Apr 2014
 #          Gael Varoquaux, Apr 2014
@@ -70,10 +71,14 @@ gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
     gray_matter_map_filenames, age, train_size=.6, random_state=0)
 
 # print basic information on the dataset
-print('First gray-matter anatomy image (3D) is located at: %s' %
-      oasis_dataset.gray_matter_maps[0])  # 3D data
-print('First white-matter anatomy image (3D) is located at: %s' %
-      oasis_dataset.white_matter_maps[0])  # 3D data
+print(
+    f'First gray-matter anatomy image (3D) is located at: {oasis_dataset.gray_matter_maps[0]}'
+)
+
+print(
+    f'First white-matter anatomy image (3D) is located at: {oasis_dataset.white_matter_maps[0]}'
+)
+
 
 #############################################################################
 # Preprocess data

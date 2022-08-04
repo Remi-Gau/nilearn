@@ -52,31 +52,32 @@ def log(msg, verbose=1, object_classes=(BaseEstimator, ),
     is the one which is most likely to have been written in the user's script.
 
     """
-    if verbose >= msg_level:
-        stack = inspect.stack()
-        object_frame = None
-        object_self = None
-        for f in reversed(stack):
-            frame = f[0]
-            current_self = frame.f_locals.get("self", None)
-            if isinstance(current_self, object_classes):
-                object_frame = frame
-                func_name = f[3]
-                object_self = current_self
-                break
+    if verbose < msg_level:
+        return
+    stack = inspect.stack()
+    object_frame = None
+    object_self = None
+    for f in reversed(stack):
+        frame = f[0]
+        current_self = frame.f_locals.get("self", None)
+        if isinstance(current_self, object_classes):
+            object_frame = frame
+            func_name = f[3]
+            object_self = current_self
+            break
 
-        if object_frame is None:  # no object found: use stack_level
-            if stack_level >= len(stack):
-                func_name = '<top_level>'
-            else:
-                object_frame, _, _, func_name = stack[stack_level][:4]
-                object_self = object_frame.f_locals.get("self", None)
+    if object_frame is None:  # no object found: use stack_level
+        if stack_level >= len(stack):
+            func_name = '<top_level>'
+        else:
+            object_frame, _, _, func_name = stack[stack_level][:4]
+            object_self = object_frame.f_locals.get("self", None)
 
-        if object_self is not None:
-            func_name = "%s.%s" % (object_self.__class__.__name__, func_name)
+    if object_self is not None:
+        func_name = f"{object_self.__class__.__name__}.{func_name}"
 
 
-        print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
+    print("[{func_name}] {msg}".format(func_name=func_name, msg=msg))
 
 
 def _compose_err_msg(msg, **kwargs):

@@ -254,7 +254,7 @@ def generate_labeled_regions(shape,
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = range(0, n_regions + 1)
+        labels = range(n_regions + 1)
         n_regions += 1
     else:
         n_regions = len(labels)
@@ -418,9 +418,7 @@ def generate_fake_fmri(shape=(10, 11, 12),
         raise ValueError('%s is too small '
                          'to put %s blocks of size %s' %
                          (length, n_blocks, block_size))
-    t_start = 0
-    if rest_max_size > 0:
-        t_start = rand_gen.randint(0, rest_max_size, 1)[0]
+    t_start = rand_gen.randint(0, rest_max_size, 1)[0] if rest_max_size > 0 else 0
     for block in range(n_blocks):
         if block_type == 'classification':
             # Select a random voxel and add some signal to the background
@@ -485,7 +483,7 @@ def generate_fake_fmri_data_and_design(shapes,
     fmri_data = []
     design_matrices = []
     rand_gen = check_random_state(random_state)
-    for i, shape in enumerate(shapes):
+    for shape in shapes:
         data = rand_gen.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
@@ -624,16 +622,15 @@ def generate_signals_from_precisions(precisions,
     """
     rand_gen = check_random_state(random_state)
 
-    signals = []
     n_samples = rand_gen.randint(min_n_samples,
                                  high=max_n_samples,
                                  size=len(precisions))
 
     mean = np.zeros(precisions[0].shape[0])
-    for n, prec in zip(n_samples, precisions):
-        signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n, )))
-    return signals
+    return [
+        rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        for n, prec in zip(n_samples, precisions)
+    ]
 
 
 def generate_group_sparse_gaussian_graphs(n_subjects=5,
@@ -759,10 +756,9 @@ def basic_paradigm(condition_names_have_spaces=False):
         conditions = [c.replace(' ', '') for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
+    return pd.DataFrame(
+        {'trial_type': conditions, 'onset': onsets, 'duration': durations}
+    )
 
 
 def basic_confounds(length, random_state=0):
@@ -790,8 +786,7 @@ def basic_confounds(length, random_state=0):
     rand_gen = check_random_state(random_state)
     columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
     data = rand_gen.rand(length, 6)
-    confounds = pd.DataFrame(data, columns=columns)
-    return confounds
+    return pd.DataFrame(data, columns=columns)
 
 
 def create_fake_bids_dataset(base_dir='',
@@ -884,7 +879,7 @@ def create_fake_bids_dataset(base_dir='',
     for subject in ['sub-%02d' % label for label in range(1, n_sub + 1)]:
         for session in created_sessions:
             subses_dir = os.path.join(bids_path, subject, session)
-            if session == 'ses-01' or session == '':
+            if session in ['ses-01', '']:
                 anat_path = os.path.join(subses_dir, 'anat')
                 os.makedirs(anat_path)
                 anat_file = os.path.join(anat_path, subject + '_T1w.nii.gz')
@@ -902,15 +897,12 @@ def create_fake_bids_dataset(base_dir='',
                     file_id = '_'.join(fields)
                     if n_run > 1:
                         file_id += '_' + run
-                    bold_path = os.path.join(func_path,
-                                             file_id + '_bold.nii.gz')
+                    bold_path = os.path.join(func_path, f'{file_id}_bold.nii.gz')
                     write_fake_bold_img(bold_path, [vox, vox, vox, 100],
                                         random_state=rand_gen)
-                    events_path = os.path.join(func_path,
-                                               file_id + '_events.tsv')
+                    events_path = os.path.join(func_path, f'{file_id}_events.tsv')
                     basic_paradigm().to_csv(events_path, sep='\t', index=None)
-                    param_path = os.path.join(func_path,
-                                              file_id + '_bold.json')
+                    param_path = os.path.join(func_path, f'{file_id}_bold.json')
                     with open(param_path, 'w') as param_file:
                         json.dump({'RepetitionTime': 1.5}, param_file)
 
@@ -934,26 +926,24 @@ def create_fake_bids_dataset(base_dir='',
                         file_id = '_'.join(fields)
                         if n_run > 1:
                             file_id += '_' + run
-                        preproc = (
-                            file_id + '_space-MNI_desc-preproc_bold.nii.gz')
+                        preproc = f'{file_id}_space-MNI_desc-preproc_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
-                        preproc = (
-                            file_id + '_space-T1w_desc-preproc_bold.nii.gz')
+                        preproc = f'{file_id}_space-T1w_desc-preproc_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
-                        preproc = (
-                            file_id + '_space-T1w_desc-fmriprep_bold.nii.gz')
+                        preproc = f'{file_id}_space-T1w_desc-fmriprep_bold.nii.gz'
                         preproc_path = os.path.join(func_path, preproc)
                         write_fake_bold_img(preproc_path, [vox, vox, vox, 100],
                                             random_state=rand_gen)
                         if with_confounds:
                             confounds_path = os.path.join(
                                 func_path,
-                                file_id + '_' + confounds_tag + '.tsv',
+                                f'{file_id}_' + confounds_tag + '.tsv',
                             )
+
                             basic_confounds(100, random_state=rand_gen).to_csv(
                                 confounds_path, sep='\t', index=None)
     return 'bids_dataset'

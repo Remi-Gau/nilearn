@@ -296,6 +296,8 @@ if _compare_version(sphinx.__version__, '<', '1.5'):
     \let\oldfootnote\footnote
     \def\footnote#1{\oldfootnote{\small #1}}
     """
+    latex_use_modindex = False
+
 else:
     latex_elements['preamble'] = r"""
     \usepackage{amsmath}\usepackage{amsfonts}\usepackage{bm}\usepackage{morefloats}
@@ -303,10 +305,6 @@ else:
     \def\footnote#1{\oldfootnote{\small #1}}
     """
 
-
-# If false, no module index is generated.
-if _compare_version(sphinx.__version__, '<', '1.5'):
-    latex_use_modindex = False
 
 latex_domain_indices = False
 
@@ -334,9 +332,10 @@ intersphinx_mapping = {
 }
 
 extlinks = {
-    'simple': (_python_doc_base + '/reference/simple_stmts.html#%s', ''),
-    'compound': (_python_doc_base + '/reference/compound_stmts.html#%s', ''),
+    'simple': (f'{_python_doc_base}/reference/simple_stmts.html#%s', ''),
+    'compound': (f'{_python_doc_base}/reference/compound_stmts.html#%s', ''),
 }
+
 
 sphinx_gallery_conf = {
     'doc_module': 'nilearn',
@@ -366,8 +365,10 @@ sphinx_gallery_conf = {
 def touch_example_backreferences(app, what, name, obj, options, lines):
     # generate empty examples files, so that we don't get
     # inclusion errors if there are no examples for a class / module
-    examples_path = os.path.join(app.srcdir, "modules", "generated",
-                                 "%s.examples" % name)
+    examples_path = os.path.join(
+        app.srcdir, "modules", "generated", f"{name}.examples"
+    )
+
     if not os.path.exists(examples_path):
         # touch file
         open(examples_path, 'w').close()

@@ -127,9 +127,7 @@ class Response:
 
     def raise_for_status(self):
         if 400 <= self.status_code < 600:
-            raise HTTPError(
-                "{} Error for url: {}".format(self.status_code, self.url)
-            )
+            raise HTTPError(f"{self.status_code} Error for url: {self.url}")
 
 
 class Request:
@@ -314,9 +312,7 @@ class Sender:
         elif isinstance(response, bytes):
             return Response(response, request.url)
         else:
-            raise TypeError(
-                "Don't know how to make a Response from: {}".format(response)
-            )
+            raise TypeError(f"Don't know how to make a Response from: {response}")
 
 
 def _get_format_and_pattern(file_path):
@@ -326,7 +322,7 @@ def _get_format_and_pattern(file_path):
         match = re.match(r"format *: *(.+)", first_line)
         if match is None:
             return "gztar", first_line, 1
-        return match.group(1), f.readline().strip(), 2
+        return match[1], f.readline().strip(), 2
 
 
 def _index_archive_contents():
@@ -360,9 +356,9 @@ def _add_to_archive(path, content):
             shutil.copytree(str(content), str(path))
         else:
             raise FileNotFoundError(
-                "Not found or not a regular file "
-                "or a directory {}".format(content)
+                f"Not found or not a regular file or a directory {content}"
             )
+
     elif isinstance(content, str):
         with path.open("w") as f:
             f.write(content)

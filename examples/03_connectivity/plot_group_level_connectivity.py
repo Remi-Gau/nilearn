@@ -16,6 +16,7 @@ for a careful study.
 
 """
 
+
 ###############################################################################
 # Load brain development fMRI dataset and MSDL atlas
 # -------------------------------------------------------------------
@@ -92,8 +93,14 @@ from matplotlib import pyplot as plt
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(correlation_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='correlation, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri='lower',
+        colorbar=False,
+        axes=ax,
+        title=f'correlation, child {i}',
+    )
+
 ###############################################################################
 # The blocks structure that reflect functional networks are visible.
 
@@ -116,8 +123,14 @@ partial_correlation_matrices = partial_correlation_measure.fit_transform(
 
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(partial_correlation_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='partial correlation, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri='lower',
+        colorbar=False,
+        axes=ax,
+        title=f'partial correlation, child {i}',
+    )
+
 ###############################################################################
 plotting.plot_connectome(
     partial_correlation_measure.mean_, msdl_coords,
@@ -145,8 +158,14 @@ tangent_matrices = tangent_measure.fit_transform(children)
 # coefficients can not be interpreted as anticorrelated regions.
 _, axes = plt.subplots(1, 3, figsize=(15, 5))
 for i, (matrix, ax) in enumerate(zip(tangent_matrices, axes)):
-    plotting.plot_matrix(matrix, tri='lower', colorbar=False, axes=ax,
-                         title='tangent offset, child {}'.format(i))
+    plotting.plot_matrix(
+        matrix,
+        tri='lower',
+        colorbar=False,
+        axes=ax,
+        title=f'tangent offset, child {i}',
+    )
+
 
 
 ###############################################################################

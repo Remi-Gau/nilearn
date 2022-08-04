@@ -6,6 +6,7 @@ Here we compare different classifiers on a visual object recognition
 decoding task.
 """
 
+
 #############################################################################
 # Loading the data
 # -----------------
@@ -17,10 +18,14 @@ from nilearn.image import get_data
 haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
-print('First subject anatomical nifti image (3D) located is at: %s' %
-      haxby_dataset.anat[0])
-print('First subject functional nifti image (4D) is located at: %s' %
-      haxby_dataset.func[0])
+print(
+    f'First subject anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}'
+)
+
+print(
+    f'First subject functional nifti image (4D) is located at: {haxby_dataset.func[0]}'
+)
+
 
 # load labels
 import numpy as np
@@ -79,9 +84,7 @@ for classifier_name in sorted(classifiers):
     t0 = time.time()
     decoder.fit(fmri_niimgs, classification_target, groups=session_labels)
 
-    classifiers_data[classifier_name] = {}
-    classifiers_data[classifier_name]['score'] = decoder.cv_scores_
-
+    classifiers_data[classifier_name] = {'score': decoder.cv_scores_}
     print("%10s: %.2fs" % (classifier_name, time.time() - t0))
     for category in categories:
         print("    %14s vs all -- AUC: %1.2f +- %1.2f" % (
@@ -108,8 +111,8 @@ tick_position = np.arange(len(all_categories))
 plt.yticks(tick_position + 0.25, all_categories)
 height = 0.1
 
-for i, (color, classifier_name) in enumerate(zip(['b', 'm', 'k', 'r', 'g'],
-                                                 classifiers)):
+for color, classifier_name in zip(['b', 'm', 'k', 'r', 'g'],
+                                                 classifiers):
     score_means = [
         np.mean(classifiers_data[classifier_name]['score'][category])
         for category in all_categories
@@ -168,8 +171,13 @@ for classifier_name in sorted(classifiers):
     coef_img = classifiers_data[classifier_name]['map']
     threshold = np.max(np.abs(get_data(coef_img))) * 1e-3
     plot_stat_map(
-        coef_img, bg_img=mean_epi_img, display_mode='z', cut_coords=[-15],
+        coef_img,
+        bg_img=mean_epi_img,
+        display_mode='z',
+        cut_coords=[-15],
         threshold=threshold,
-        title='%s: face vs house' % classifier_name.replace('_', ' '))
+        title=f"{classifier_name.replace('_', ' ')}: face vs house",
+    )
+
 
 show()

@@ -1,6 +1,7 @@
 """
 Mixin for cache with joblib
 """
+
 # Author: Gael Varoquaux, Alexandre Abraham, Philippe Gervais
 # License: simplified BSD
 
@@ -20,7 +21,7 @@ import nilearn
 from .helpers import stringify_path
 
 
-__CACHE_CHECKED = dict()
+__CACHE_CHECKED = {}
 
 
 def _check_memory(memory, verbose=0):
@@ -103,22 +104,20 @@ def _safe_cache(memory, func, **kwargs):
 
     version_file = os.path.join(location, 'module_versions.json')
 
-    versions = dict()
+    versions = {}
     if os.path.exists(version_file):
         with open(version_file, 'r') as _version_file:
             versions = json.load(_version_file)
 
     modules = (nibabel, )
     # Keep only the major + minor version numbers
-    my_versions = dict((m.__name__, m.__version__) for m in modules)
+    my_versions = {m.__name__: m.__version__ for m in modules}
     commons = set(versions.keys()).intersection(set(my_versions.keys()))
-    collisions = [
-        m for m in commons if not _compare_version(
-            versions[m], '==', my_versions[m]
-        )
-    ]
-    # Flush cache if version collision
-    if len(collisions) > 0:
+    if collisions := [
+        m
+        for m in commons
+        if not _compare_version(versions[m], '==', my_versions[m])
+    ]:
         if nilearn.CHECK_CACHE_VERSION:
             warnings.warn("Incompatible cache in %s: "
                           "different version of nibabel. Deleting "
@@ -160,7 +159,7 @@ class _ShelvedFunc(object):
     """Work around for Python 2, for which pickle fails on instance method"""
     def __init__(self, func):
         self.func = func
-        self.func_name = func.__name__ + '_shelved'
+        self.func_name = f'{func.__name__}_shelved'
 
     def __call__(self, *args, **kwargs):
             return self.func.call_and_shelve(*args, **kwargs)

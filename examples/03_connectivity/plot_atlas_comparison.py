@@ -26,6 +26,7 @@ Mean correlation matrix is displayed on glass brain on extracted coordinates.
 
 """
 
+
 ####################################################################
 # Load atlases
 # -------------
@@ -63,9 +64,10 @@ masker = NiftiLabelsMasker(labels_img=yeo['thick_17'], standardize=True,
                            memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
-time_series = []
-for func, confounds in zip(data.func, data.confounds):
-    time_series.append(masker.fit_transform(func, confounds=confounds))
+time_series = [
+    masker.fit_transform(func, confounds=confounds)
+    for func, confounds in zip(data.func, data.confounds)
+]
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)
@@ -110,10 +112,13 @@ def lag_correlation(time_series, lag):
 # Compute lag-0 and lag-1 correlations and plot associated connectomes
 for lag in [0, 1]:
     lag_correlation_matrix = lag_correlation(time_series, lag)
-    plotting.plot_connectome(lag_correlation_matrix, coordinates,
-                             edge_threshold="90%",
-                             title='Lag-{} correlation'.format(
-                                 lag))
+    plotting.plot_connectome(
+        lag_correlation_matrix,
+        coordinates,
+        edge_threshold="90%",
+        title=f'Lag-{lag} correlation',
+    )
+
 
 ##########################################################################
 # Load probabilistic atlases - extracting coordinates on brain maps
@@ -134,9 +139,10 @@ masker = NiftiMapsMasker(maps_img=difumo.maps, standardize=True,
                          memory='nilearn_cache')
 
 # extract time series from all subjects and concatenate them
-time_series = []
-for func, confounds in zip(data.func, data.confounds):
-    time_series.append(masker.fit_transform(func, confounds=confounds))
+time_series = [
+    masker.fit_transform(func, confounds=confounds)
+    for func, confounds in zip(data.func, data.confounds)
+]
 
 # calculate correlation matrices across subjects and display
 correlation_matrices = connectome_measure.fit_transform(time_series)

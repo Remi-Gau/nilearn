@@ -23,6 +23,7 @@ an explicit model of the signal. The reference paper is:
       `preprint <https://hal.inria.fr/hal-00489507/>`_
 
 """
+
 ###############################################################################
 # Load brain development fmri dataset
 # -----------------------------------
@@ -32,8 +33,7 @@ rest_dataset = datasets.fetch_development_fmri(n_subjects=30)
 func_filenames = rest_dataset.func  # list of 4D nifti files for each subject
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is at: %s' %
-      rest_dataset.func[0])  # 4D data
+print(f'First functional nifti image (4D) is at: {rest_dataset.func[0]}')
 
 
 ####################################################################

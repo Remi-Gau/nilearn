@@ -19,7 +19,7 @@ def print_package_version(package_name, indent='  '):
 
 if __name__ == '__main__':
     print('=' * 120)
-    print('Python %s' % str(sys.version))
+    print(f'Python {str(sys.version)}')
     print('from: %s\n' % sys.executable)
 
     print('Dependencies versions')

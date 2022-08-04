@@ -32,13 +32,13 @@ def get_params(cls, instance, ignore=None):
         The dict of parameters.
 
     """
-    _ignore = set(('memory', 'memory_level', 'verbose', 'copy', 'n_jobs'))
+    _ignore = {'memory', 'memory_level', 'verbose', 'copy', 'n_jobs'}
     if ignore is not None:
         _ignore.update(ignore)
 
     param_names = cls._get_param_names()
 
-    params = dict()
+    params = {}
     for param_name in param_names:
         if param_name in _ignore:
             continue
@@ -74,15 +74,14 @@ def enclosing_scope_name(ensure_estimator=True, stack_level=2):
         else:
             while True:
                 frame = frame.f_back
-                if not 'self' in frame.f_locals:
+                if 'self' not in frame.f_locals:
                     continue
                 if not isinstance(frame.f_locals['self'], BaseEstimator):
                     continue
                 break
         if 'self' in frame.f_locals:
             caller_name = frame.f_locals['self'].__class__.__name__
-            caller_name = '%s.%s' % (caller_name,
-                                    frame.f_code.co_name)
+            caller_name = f'{caller_name}.{frame.f_code.co_name}'
         else:
             caller_name = frame.f_code.co_name
 

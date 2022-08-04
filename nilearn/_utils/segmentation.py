@@ -50,17 +50,17 @@ def _make_graph_edges_3d(n_x, n_y, n_z):
     edges_right = np.vstack((vertices[:, :-1].ravel(),
                              vertices[:, 1:].ravel()))
     edges_down = np.vstack((vertices[:-1].ravel(), vertices[1:].ravel()))
-    edges = np.hstack((edges_deep, edges_right, edges_down))
-    return edges
+    return np.hstack((edges_deep, edges_right, edges_down))
 
 
 def _compute_weights_3d(data, spacing, beta=130, eps=1.e-6):
     # Weight calculation is main difference in multispectral version
     # Original gradient**2 replaced with sum of gradients ** 2
-    gradients = 0
-    for channel in range(0, data.shape[-1]):
-        gradients += _compute_gradients_3d(data[..., channel],
-                                           spacing) ** 2
+    gradients = sum(
+        _compute_gradients_3d(data[..., channel], spacing) ** 2
+        for channel in range(data.shape[-1])
+    )
+
     # All channels considered together in this standard deviation
     beta /= 10 * data.std()
     gradients *= beta
@@ -268,10 +268,7 @@ def _random_walker(data, labels, beta=130, tol=1.e-3, copy=True, spacing=None):
     if spacing is None:
         spacing = np.asarray((1.,) * 3)
     elif len(spacing) == len(dims):
-        if len(spacing) == 2:  # Need a dummy spacing for singleton 3rd dim
-            spacing = np.r_[spacing, 1.]
-        else:                  # Convert to array
-            spacing = np.asarray(spacing)
+        spacing = np.r_[spacing, 1.] if len(spacing) == 2 else np.asarray(spacing)
     else:
         raise ValueError('Input argument `spacing` incorrect, should be an '
                          'iterable with one number per spatial dimension.')

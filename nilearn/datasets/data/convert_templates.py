@@ -15,6 +15,7 @@ This script outputs the templates that are loaded by the following Nilearn
 
 Compatibility: Nilearn 0.7.1, Python 3.7.3
 """
+
 # Authors: Ana Luisa Pinho, Nicolas Gensollen, Jerome Dockes
 # License: simplified BSD
 
@@ -63,7 +64,7 @@ for template_path in templates_paths:
     # Store and gzip with maximum compression rate
     fname_nii = template_path.split('.', 1)[0] + '_converted.nii'
     new_img.to_filename(fname_nii)
-    fname_nii_gz = fname_nii + '.gz'
+    fname_nii_gz = f'{fname_nii}.gz'
     with open(fname_nii, 'rb') as f_in:
         content = f_in.read()
         with gzip.GzipFile(filename=fname_nii_gz, mode='w',

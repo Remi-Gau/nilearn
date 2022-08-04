@@ -9,6 +9,7 @@ The mask is computed and visualized.
 
 """
 
+
 ###########################################################################
 # Retrieve the brain development functional dataset
 
@@ -17,7 +18,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is at: %s' % func_filename)
+print(f'First functional nifti image (4D) is at: {func_filename}')
 
 ###########################################################################
 # Compute the mask

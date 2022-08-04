@@ -21,6 +21,7 @@ sampled in different positions (encoded by different affine functions).
 
 """
 
+
 print(__doc__)
 
 
@@ -69,7 +70,7 @@ design_matrices = []
 for idx, img in enumerate(fmri_img, start=1):
     # Build experimental paradigm
     n_scans = img.shape[-1]
-    events = pd.read_table(subject_data['events{}'.format(idx)])
+    events = pd.read_table(subject_data[f'events{idx}'])
     # Define the sampling times for the design matrix
     frame_times = np.arange(n_scans) * tr
     # Build design matrix with the reviously defined parameters

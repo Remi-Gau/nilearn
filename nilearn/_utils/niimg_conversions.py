@@ -58,15 +58,15 @@ def _check_same_fov(*args, **kwargs):
     errors = []
     for (a_name, a_img), (b_name, b_img) in itertools.combinations(
             kwargs.items(), 2):
-        if not a_img.shape[:3] == b_img.shape[:3]:
+        if a_img.shape[:3] != b_img.shape[:3]:
             errors.append((a_name, b_name, 'shape'))
         if not np.allclose(a_img.affine, b_img.affine):
             errors.append((a_name, b_name, 'affine'))
-    if len(errors) > 0 and raise_error:
+    if errors and raise_error:
         raise ValueError('Following field of view errors were detected:\n' +
                          '\n'.join(['- %s and %s do not have the same %s' % e
                                     for e in errors]))
-    return (len(errors) == 0)
+    return not errors
 
 
 def _index_img(img, index):
@@ -127,11 +127,9 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = _resolve_globbing(niimgs)
 
-    ref_fov = None
     resample_to_first_img = False
     ndim_minus_one = ensure_ndim - 1 if ensure_ndim is not None else None
-    if target_fov is not None and target_fov != "first":
-        ref_fov = target_fov
+    ref_fov = None if target_fov is None or target_fov == "first" else target_fov
     i = -1
     for i, niimg in enumerate(niimgs):
         try:
@@ -145,18 +143,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                     resample_to_first_img = True
 
             if not _check_fov(niimg, ref_fov[0], ref_fov[1]):
-                if target_fov is not None:
-                    from nilearn import image  # we avoid a circular import
-                    if resample_to_first_img:
-                        warnings.warn('Affine is different across subjects.'
-                                      ' Realignement on first subject '
-                                      'affine forced')
-                    niimg = cache(image.resample_img, memory,
-                                  func_memory_level=2,
-                                  memory_level=memory_level)(
-                            niimg, target_affine=ref_fov[0],
-                            target_shape=ref_fov[1])
-                else:
+                if target_fov is None:
                     raise ValueError(
                         "Field of view of image #%d is different from "
                         "reference FOV.\n"
@@ -164,6 +151,16 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
                         "Reference shape:\n%r\nImage shape:\n%r\n"
                         % (i, ref_fov[0], niimg.affine, ref_fov[1],
                            niimg.shape))
+                from nilearn import image  # we avoid a circular import
+                if resample_to_first_img:
+                    warnings.warn('Affine is different across subjects.'
+                                  ' Realignement on first subject '
+                                  'affine forced')
+                niimg = cache(image.resample_img, memory,
+                              func_memory_level=2,
+                              memory_level=memory_level)(
+                        niimg, target_affine=ref_fov[0],
+                        target_shape=ref_fov[1])
             yield niimg
         except DimensionError as exc:
             # Keep track of the additional dimension in the error
@@ -172,7 +169,7 @@ def _iter_check_niimg(niimgs, ensure_ndim=None, atleast_4d=False,
         except TypeError as exc:
             img_name = ''
             if isinstance(niimg, str):
-                img_name = " (%s) " % niimg
+                img_name = f" ({niimg}) "
 
             exc.args = (('Error encountered while loading image #%d%s'
                          % (i, img_name),) + exc.args)
@@ -437,11 +434,7 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
     target_fov = 'first' if auto_resample else None
 
-    # We remove one to the dimensionality because of the list is one dimension.
-    ndim = None
-    if ensure_ndim is not None:
-        ndim = ensure_ndim - 1
-
+    ndim = ensure_ndim - 1 if ensure_ndim is not None else None
     # If niimgs is a string, use glob to expand it to the matching filenames.
     niimgs = _resolve_globbing(niimgs)
 
@@ -490,9 +483,9 @@ def concat_niimgs(niimgs, dtype=np.float32, ensure_ndim=None,
 
         if verbose > 0:
             if isinstance(niimg, str):
-                nii_str = "image " + niimg
+                nii_str = f"image {niimg}"
             else:
-                nii_str = "image #" + str(index)
+                nii_str = f"image #{str(index)}"
             print("Concatenating {0}: {1}".format(index + 1, nii_str))
 
         data[..., cur_4d_index:cur_4d_index + size] = _get_data(niimg)

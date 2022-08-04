@@ -5,6 +5,7 @@ Basic Atlas plotting
 Plot the regions of a reference atlas (Harvard-Oxford and Juelich atlases).
 """
 
+
 ##########################################################################
 # Retrieving the atlas data
 # -------------------------
@@ -17,8 +18,8 @@ dataset_ju = datasets.fetch_atlas_juelich('maxprob-thr0-1mm')
 atlas_ho_filename = dataset_ho.filename
 atlas_ju_filename = dataset_ju.filename
 
-print('Atlas ROIs are located at: %s' % atlas_ho_filename)
-print('Atlas ROIs are located at: %s' % atlas_ju_filename)
+print(f'Atlas ROIs are located at: {atlas_ho_filename}')
+print(f'Atlas ROIs are located at: {atlas_ju_filename}')
 
 ###########################################################################
 # Visualizing the Harvard-Oxford atlas

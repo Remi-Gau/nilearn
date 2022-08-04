@@ -17,6 +17,7 @@ More specifically:
    same :term:`MNI` space.
 """
 
+
 ##############################################################################
 # Fetch example BIDS dataset
 # --------------------------
@@ -98,10 +99,16 @@ for midx, (model, imgs, events, confounds) in enumerate(model_and_args):
     model.fit(imgs, events, confounds)
     # compute the contrast of interest
     zmap = model.compute_contrast('language-string')
-    plotting.plot_glass_brain(zmap, colorbar=False, threshold=p001_unc,
-                              title=('sub-' + model.subject_label),
-                              axes=axes[int(midx / 5), int(midx % 5)],
-                              plot_abs=False, display_mode='x')
+    plotting.plot_glass_brain(
+        zmap,
+        colorbar=False,
+        threshold=p001_unc,
+        title=f'sub-{model.subject_label}',
+        axes=axes[int(midx / 5), int(midx % 5)],
+        plot_abs=False,
+        display_mode='x',
+    )
+
 fig.suptitle('subjects z_map language network (unc p<0.001)')
 plotting.show()
 

@@ -44,10 +44,10 @@ def test_loading_from_archive_contents(tmp_path):
     labels_file = zip_extract_dir / "data" / "labels.csv"
     assert labels_file.read_bytes() == b""
     for url_end in ["_default_format", "_tar_gz"]:
-        resp = requests.get("https://example.org/example{}".format(url_end))
+        resp = requests.get(f"https://example.org/example{url_end}")
         file_path = tmp_path / "archive.tar.gz"
         file_path.write_bytes(resp.content)
-        tar_extract_dir = tmp_path / "extract_tar{}".format(url_end)
+        tar_extract_dir = tmp_path / f"extract_tar{url_end}"
         tar_extract_dir.mkdir()
         with tarfile.open(str(file_path)) as tarf:
             assert (

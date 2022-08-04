@@ -38,6 +38,7 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
+
 ########################################################################
 # Download a brain development fmri dataset and turn it to a data matrix
 # -----------------------------------------------------------------------
@@ -56,8 +57,7 @@ from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      dataset.func[0])  # 4D data
+print(f'First subject functional nifti image (4D) is at: {dataset.func[0]}')
 
 
 #########################################################################
@@ -255,7 +255,7 @@ voxel_ratio = np.round(np.sum(kmeans_counts[1:]) / 50)
 
 # If all voxels not in background were balanced between clusters ...
 
-print("... each cluster should contain {} voxels".format(voxel_ratio))
+print(f"... each cluster should contain {voxel_ratio} voxels")
 
 ###########################################################################
 # Let's plot clusters sizes distributions for both algorithms

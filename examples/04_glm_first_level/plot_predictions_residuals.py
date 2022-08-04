@@ -14,6 +14,7 @@ quality of the model fit.
 """
 
 
+
 #########################################################################
 # Import modules
 # --------------
@@ -94,9 +95,9 @@ import matplotlib.pyplot as plt
 colors = ['blue', 'navy', 'purple', 'magenta', 'olive', 'teal']
 # plot the time series and corresponding locations
 fig1, axs1 = plt.subplots(2, 6)
-for i in range(0, 6):
+for i in range(6):
     # plotting time series
-    axs1[0, i].set_title('Cluster peak {}\n'.format(coords[i]))
+    axs1[0, i].set_title(f'Cluster peak {coords[i]}\n')
     axs1[0, i].plot(real_timeseries[:, i], c=colors[i], lw=2)
     axs1[0, i].plot(predicted_timeseries[:, i], c='r', ls='--', lw=2)
     axs1[0, i].set_xlabel('Time')
@@ -121,10 +122,10 @@ resid = masker.fit_transform(fmri_glm.residuals[0])
 # Note that residuals are not really distributed normally.
 fig2, axs2 = plt.subplots(2, 3)
 axs2 = axs2.flatten()
-for i in range(0, 6):
-    axs2[i].set_title('Cluster peak {}\n'.format(coords[i]))
+for i in range(6):
+    axs2[i].set_title(f'Cluster peak {coords[i]}\n')
     axs2[i].hist(resid[:, i], color=colors[i])
-    print('Mean residuals: {}'.format(resid[:, i].mean()))
+    print(f'Mean residuals: {resid[:, i].mean()}')
 
 fig2.set_size_inches(12, 7)
 fig2.tight_layout()

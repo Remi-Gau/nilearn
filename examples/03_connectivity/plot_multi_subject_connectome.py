@@ -26,13 +26,24 @@ def plot_matrices(cov, prec, title, labels):
     span = max(abs(prec.min()), abs(prec.max()))
 
     # Display covariance matrix
-    plotting.plot_matrix(cov, cmap=plotting.cm.bwr,
-                         vmin=-1, vmax=1, title="%s / covariance" % title,
-                         labels=labels)
+    plotting.plot_matrix(
+        cov,
+        cmap=plotting.cm.bwr,
+        vmin=-1,
+        vmax=1,
+        title=f"{title} / covariance",
+        labels=labels,
+    )
+
     # Display precision matrix
-    plotting.plot_matrix(prec, cmap=plotting.cm.bwr,
-                         vmin=-span, vmax=span, title="%s / precision" % title,
-                         labels=labels)
+    plotting.plot_matrix(
+        prec,
+        cmap=plotting.cm.bwr,
+        vmin=-span,
+        vmax=span,
+        title=f"{title} / precision",
+        labels=labels,
+    )
 
 
 ##############################################################################
@@ -43,8 +54,10 @@ msdl_atlas_dataset = datasets.fetch_atlas_msdl()
 rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      rest_dataset.func[0])  # 4D data
+print(
+    f'First subject functional nifti image (4D) is at: {rest_dataset.func[0]}'
+)
+
 
 
 ##############################################################################
@@ -68,7 +81,7 @@ func_filenames = rest_dataset.func
 confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(func_filenames,
                                             confound_filenames):
-    print("Processing file %s" % func_filename)
+    print(f"Processing file {func_filename}")
 
     region_ts = masker.transform(func_filename,
                                  confounds=confound_filename)

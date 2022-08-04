@@ -20,6 +20,7 @@ face and cat images.
 
 """
 
+
 ###########################################################################
 # Retrieve and load the fMRI data from the Haxby study
 # ------------------------------------------------------
@@ -163,14 +164,18 @@ print(
 # coefficients
 first_pipeline = fitted_pipeline["estimator"][0]
 svc_coef = first_pipeline.named_steps['svc'].coef_
-print("After feature selection, the SVC is trained only on {} features".format(
-    svc_coef.shape[1]))
+print(
+    f"After feature selection, the SVC is trained only on {svc_coef.shape[1]} features"
+)
+
 
 # We invert the feature selection step to put these coefs in the right 2D place
 full_coef = first_pipeline.named_steps['anova'].inverse_transform(svc_coef)
 
-print("After inverting feature selection, we have {} features back".format(
-    full_coef.shape[1]))
+print(
+    f"After inverting feature selection, we have {full_coef.shape[1]} features back"
+)
+
 
 # We apply the inverse of masking on these to make a 4D image that we can plot
 from nilearn.plotting import plot_stat_map

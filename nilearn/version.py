@@ -2,6 +2,7 @@
 """
 nilearn version, required package versions, and utilities for checking
 """
+
 # Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
@@ -23,8 +24,8 @@ nilearn version, required package versions, and utilities for checking
 #
 __version__ = '0.9.2.dev'
 
-_NILEARN_INSTALL_MSG = 'See %s for installation information.' % (
-    'http://nilearn.github.io/introduction.html#installation')
+_NILEARN_INSTALL_MSG = 'See http://nilearn.github.io/introduction.html#installation for installation information.'
+
 
 import operator
 
@@ -78,7 +79,7 @@ def _import_module_with_version_check(
         # Necessary for Python 3 because the repr/str of ImportError
         # objects was changed in Python 3
         if hasattr(exc, 'msg'):
-            exc.msg += '. ' + user_friendly_info
+            exc.msg += f'. {user_friendly_info}'
         raise
 
     # Avoid choking on modules with no __version__ attribute
@@ -173,8 +174,10 @@ def _check_module_dependencies(is_nilearn_installing=False):
     """
 
     for (module_name, module_metadata) in REQUIRED_MODULE_METADATA:
-        if not (is_nilearn_installing and
-                not module_metadata['required_at_installation']):
+        if (
+            not is_nilearn_installing
+            or module_metadata['required_at_installation']
+        ):
             # Skip check only when installing and it's a module that
             # will be auto-installed.
             _import_module_with_version_check(

@@ -46,6 +46,7 @@ sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
+
 ###############################################################################
 # Retrieving the data
 # -------------------
@@ -71,12 +72,18 @@ fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to
 # the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print(
+    f"Fsaverage5 pial surface of left hemisphere is at: {fsaverage['pial_left']}"
+)
+
+print(
+    f"Fsaverage5 inflated surface of left hemisphere is at: {fsaverage['infl_left']}"
+)
+
+print(
+    f"Fsaverage5 sulcal depth map of left hemisphere is at: {fsaverage['sulc_left']}"
+)
+
 
 ###############################################################################
 # Extracting the seed time series

@@ -11,6 +11,7 @@ is included in the model.
 
 
 """
+
 # Author: Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
 #         Jerome-Alexis Chevalier, 2019
 
@@ -25,8 +26,10 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
 
 ##############################################################################
 # Let's print basic information on the dataset.
-print('First contrast nifti image (3D) is located at: %s' %
-      localizer_dataset.cmaps[0])
+print(
+    f'First contrast nifti image (3D) is located at: {localizer_dataset.cmaps[0]}'
+)
+
 
 ##############################################################################
 # we also need to load the behavioral variable.
@@ -90,9 +93,10 @@ from nilearn.image import get_data
 p_val = model.compute_contrast('fluency', output_type='p_value')
 n_voxels = np.sum(get_data(model.masker_.mask_img_))
 # Correcting the p-values for multiple testing and taking negative logarithm
-neg_log_pval = math_img("-np.log10(np.minimum(1, img * {}))"
-                        .format(str(n_voxels)),
-                        img=p_val)
+neg_log_pval = math_img(
+    f"-np.log10(np.minimum(1, img * {str(n_voxels)}))", img=p_val
+)
+
 
 ###########################################################################
 # Let us plot the (corrected) negative log  p-values for the parametric test

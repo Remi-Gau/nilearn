@@ -32,6 +32,7 @@ manually.
 
 """
 
+
 ###########################################################################
 # Load the Haxby dataset
 # -----------------------
@@ -42,8 +43,8 @@ fmri_img = haxby_dataset.func[0]
 mask_img = haxby_dataset.mask
 
 # print basic information on the dataset
-print('Mask nifti image (3D) is located at: %s' % haxby_dataset.mask)
-print('Functional nifti image (4D) are located at: %s' % haxby_dataset.func[0])
+print(f'Mask nifti image (3D) is located at: {haxby_dataset.mask}')
+print(f'Functional nifti image (4D) are located at: {haxby_dataset.func[0]}')
 
 # Load the behavioral data
 import pandas as pd

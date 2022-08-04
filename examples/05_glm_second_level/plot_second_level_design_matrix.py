@@ -12,6 +12,7 @@ This example requires matplotlib.
 
 """
 
+
 try:
     import matplotlib.pyplot as plt
 except ImportError:
@@ -28,9 +29,14 @@ subjects_label = ['sub-%02d' % i for i in range(1, n_subjects + 1)]
 # Next, we specify extra information about the subjects to create confounders.
 # Without confounders the design matrix would correspond to a one sample test.
 import pandas as pd
-extra_info_subjects = pd.DataFrame({'subject_label': subjects_label,
-                                    'age': range(15, 15 + n_subjects),
-                                    'sex': [0, 1] * int(n_subjects / 2)})
+extra_info_subjects = pd.DataFrame(
+    {
+        'subject_label': subjects_label,
+        'age': range(15, 15 + n_subjects),
+        'sex': [0, 1] * (n_subjects // 2),
+    }
+)
+
 
 #########################################################################
 # Create a second level design matrix

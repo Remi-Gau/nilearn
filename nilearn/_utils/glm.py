@@ -42,12 +42,12 @@ def _read_events_table(table):
         # kept for historical reasons, a lot of tests use csv with index column
         loaded = pd.read_csv(table, index_col=0)
     except:  # noqa: E722
-        raise ValueError('table path %s could not be loaded' % table)
+        raise ValueError(f'table path {table} could not be loaded')
     if loaded.empty:
         try:
             loaded = pd.read_csv(table, sep='\t')
         except:  # noqa: E722
-            raise ValueError('table path %s could not be loaded' % table)
+            raise ValueError(f'table path {table} could not be loaded')
     return loaded
 
 
@@ -61,9 +61,7 @@ def _check_and_load_tables(tables_, var_name):
             tables.append(loaded)
         elif isinstance(table, pd.DataFrame):
             tables.append(table)
-        elif isinstance(table, np.ndarray):
-            pass
-        else:
+        elif not isinstance(table, np.ndarray):
             raise TypeError('%s can only be a pandas DataFrames or a'
                             'string. A %s was provided at idx %d' %
                             (var_name, type(table), table_idx))
@@ -274,9 +272,7 @@ def multiple_mahalanobis(effect, covariance):
     # compute the inverse of the covariances
     Kt = multiple_fast_inverse(Kt)
 
-    # derive the squared Mahalanobis distances
-    sqd = np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
-    return sqd
+    return np.sum(np.sum(Xt[:, :, np.newaxis] * Xt[:, np.newaxis] * Kt, 1), 1)
 
 
 def full_rank(X, cmax=1e15):

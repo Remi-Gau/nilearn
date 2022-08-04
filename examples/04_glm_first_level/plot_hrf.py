@@ -100,12 +100,10 @@ def mion_time_derivative(tr, oversampling=16.0):
         derived_response_function sampling on the provided grid
     """
     do = 0.1
-    drf = (
+    return (
         mion_response_function(tr, oversampling)
         - mion_response_function(tr, oversampling, do)
     ) / do
-
-    return drf
 
 
 #########################################################################

@@ -55,14 +55,9 @@ def _standardize(signals, detrend=False, standardize='zscore'):
         Copy of signals, standardized.
     """
     if standardize not in [True, False, 'psc', 'zscore']:
-        raise ValueError('{} is no valid standardize strategy.'
-                         .format(standardize))
+        raise ValueError(f'{standardize} is no valid standardize strategy.')
 
-    if detrend:
-        signals = _detrend(signals, inplace=False)
-    else:
-        signals = signals.copy()
-
+    signals = _detrend(signals, inplace=False) if detrend else signals.copy()
     if standardize:
         if signals.shape[0] == 1:
             warnings.warn('Standardization of 3D signal has been requested but '
@@ -315,11 +310,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
         Signals filtered according to the given parameters.
     """
     if low_pass is None and high_pass is None:
-        if copy:
-            return signals.copy()
-        else:
-            return signals
-
+        return signals.copy() if copy else signals
     if low_pass is not None and high_pass is not None \
             and high_pass >= low_pass:
         raise ValueError(
@@ -351,10 +342,7 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
                 'Signals are returned unfiltered because band-pass critical '
                 'frequencies are equal. Please check that inputs for '
                 'sampling_rate, low_pass, and high_pass are valid.')
-            if copy:
-                return signals.copy()
-            else:
-                return signals
+            return signals.copy() if copy else signals
     else:
         critical_freq = critical_freq[0]
 
@@ -366,17 +354,16 @@ def butterworth(signals, sampling_rate, low_pass=None, high_pass=None,
             signals = output
         else:
             signals[...] = output
+    elif copy:
+        # No way to save memory when a copy has been requested,
+        # because filtfilt does out-of-place processing
+        signals = sp_signal.filtfilt(b, a, signals, axis=0)
     else:
-        if copy:
-            # No way to save memory when a copy has been requested,
-            # because filtfilt does out-of-place processing
-            signals = sp_signal.filtfilt(b, a, signals, axis=0)
-        else:
-            # Lesser memory consumption, slower.
-            for timeseries in signals.T:
-                timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
+        # Lesser memory consumption, slower.
+        for timeseries in signals.T:
+            timeseries[:] = sp_signal.filtfilt(b, a, timeseries)
 
-            # results returned in-place
+        # results returned in-place
 
     return signals
 
@@ -449,7 +436,7 @@ def high_variance_confounds(series, n_confounds=5, percentile=2.,
 
 def _ensure_float(data):
     "Make sure that data is a float type"
-    if not data.dtype.kind == 'f':
+    if data.dtype.kind != 'f':
         if data.dtype.itemsize == '8':
             data = data.astype(np.float64)
         else:
@@ -644,10 +631,12 @@ def _filter_signal(signals, confounds, filter, low_pass, high_pass, t_r):
         from .glm.first_level.design_matrix import _cosine_drift
         frame_times = np.arange(signals.shape[0]) * t_r
         cosine_drift = _cosine_drift(high_pass, frame_times)
-        if confounds is None:
-            confounds = cosine_drift.copy()
-        else:
-            confounds = np.hstack((confounds, cosine_drift))
+        confounds = (
+            cosine_drift.copy()
+            if confounds is None
+            else np.hstack((confounds, cosine_drift))
+        )
+
     return signals, confounds
 
 
@@ -700,8 +689,9 @@ def _sanitize_confounds(n_time, n_runs, confounds):
 
     if not isinstance(confounds, (list, tuple, str, np.ndarray, pd.DataFrame)):
         raise TypeError(
-            "confounds keyword has an unhandled type: %s" % confounds.__class__
+            f"confounds keyword has an unhandled type: {confounds.__class__}"
         )
+
 
     if not isinstance(confounds, (list, tuple)):
         confounds = (confounds,)
@@ -742,20 +732,14 @@ def _check_sample_mask_index(i, n_runs, runs, current_mask):
     # sample_mask longer than signal
     if len_current_mask > len_run:
         raise IndexError(
-            "sample_mask {} of {} is has more timepoints than the current "
-            "run ;sample_mask contains {} index but the run has {} "
-            "timepoints.".format(
-                (i + 1), n_runs, len_current_mask, len_run
-            )
+            f"sample_mask {i + 1} of {n_runs} is has more timepoints than the current run ;sample_mask contains {len_current_mask} index but the run has {len_run} timepoints."
         )
+
     # sample_mask index exceed signal timepoints
     invalid_index = current_mask[current_mask > len_run]
     if invalid_index.size > 0:
         raise IndexError(
-            "sample_mask {} of {} contains invalid index {}; "
-            "The signal contains {} time points.".format(
-                (i + 1), n_runs, invalid_index, len_run
-            )
+            f"sample_mask {i + 1} of {n_runs} contains invalid index {invalid_index}; The signal contains {len_run} time points."
         )
 
 
@@ -805,8 +789,7 @@ def _sanitize_confound_dtype(n_signal, confound):
             )
 
     else:
-        raise TypeError("confound has an unhandled type: %s"
-                        % confound.__class__)
+        raise TypeError(f"confound has an unhandled type: {confound.__class__}")
     return confound
 
 
@@ -843,7 +826,7 @@ def _check_filter_parameters(filter, low_pass, high_pass, t_r):
                 )
         return True
     else:
-        raise ValueError("Filter method {} not implemented.".format(filter))
+        raise ValueError(f"Filter method {filter} not implemented.")
 
 
 def _sanitize_signals(signals, ensure_finite):

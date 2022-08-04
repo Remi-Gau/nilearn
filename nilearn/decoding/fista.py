@@ -59,7 +59,7 @@ def _check_lipschitz_continuous(f, ndim, lipschitz_constant, n_trials=10,
             a = linalg.norm(f(x).ravel() - f(y).ravel(), 2)
             b = lipschitz_constant * linalg.norm(x - y, 2)
             if a > b:
-                raise RuntimeError("Counter example: (%s, %s)" % (x, y))
+                raise RuntimeError(f"Counter example: ({x}, {y})")
 
 
 def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
@@ -147,7 +147,7 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
     """
     # initialization
     if init is None:
-        init = dict()
+        init = {}
     w = init.get('w', np.zeros(w_size))
     z = init.get("z", w.copy())
     t = init.get("t", 1.)
@@ -199,17 +199,20 @@ def mfista(f1_grad, f2_prox, total_energy, lipschitz_constant, w_size,
             w, prox_info = f2_prox(z - stepsize * gradient_buffer, stepsize,
                                    dgap_factor * dgap_tol, init=w)
             energy = total_energy(w)
-            if ista_step and prox_info['converged'] and old_energy <= energy:
-                # Even when doing ISTA steps we are not decreasing.
-                # Thus we need a tighter dual_gap on the prox_tv
-                # This corresponds to a line search on the dual_gap
-                # tolerance.
-                dgap_factor *= .2
-                if verbose:
-                    print("decreased dgap_tol")
-            else:
+            if (
+                not ista_step
+                or not prox_info['converged']
+                or old_energy > energy
+            ):
                 break
 
+            # Even when doing ISTA steps we are not decreasing.
+            # Thus we need a tighter dual_gap on the prox_tv
+            # This corresponds to a line search on the dual_gap
+            # tolerance.
+            dgap_factor *= .2
+            if verbose:
+                print("decreased dgap_tol")
         # energy house-keeping
         energy_delta = old_energy - energy
         old_energy = energy

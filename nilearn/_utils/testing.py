@@ -110,7 +110,7 @@ def serialize_niimg(img, gzipped=True):
     """
     with tempfile.TemporaryDirectory() as tmp_dir:
         tmp_dir = Path(tmp_dir)
-        file_path = tmp_dir / "img.nii{}".format(".gz" if gzipped else "")
+        file_path = tmp_dir / f'img.nii{".gz" if gzipped else ""}'
         img.to_filename(file_path)
         with file_path.open("rb") as f:
             return f.read()
@@ -147,20 +147,20 @@ def write_tmp_imgs(*imgs, **kwargs):
         list of string is returned.
 
     """
-    valid_keys = set(("create_files", "use_wildcards"))
+    valid_keys = {"create_files", "use_wildcards"}
     input_keys = set(kwargs.keys())
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
-        raise TypeError("%s: unexpected keyword argument(s): %s" %
-                        (sys._getframe().f_code.co_name,
-                         " ".join(invalid_keys)))
+        raise TypeError(
+            f'{sys._getframe().f_code.co_name}: unexpected keyword argument(s): {" ".join(invalid_keys)}'
+        )
+
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
-    prefix = "nilearn_"
-    suffix = ".nii"
-
     if create_files:
+        prefix = "nilearn_"
+        suffix = ".nii"
         filenames = []
         try:
             with warnings.catch_warnings():
@@ -175,12 +175,11 @@ def write_tmp_imgs(*imgs, **kwargs):
                     del img
 
                 if use_wildcards:
-                    yield prefix + "*" + suffix
+                    yield f"{prefix}*{suffix}"
+                elif len(imgs) == 1:
+                    yield filenames[0]
                 else:
-                    if len(imgs) == 1:
-                        yield filenames[0]
-                    else:
-                        yield filenames
+                    yield filenames
         finally:
             failures = []
             # Ensure all created files are removed
@@ -199,11 +198,10 @@ def write_tmp_imgs(*imgs, **kwargs):
                         "\n".join(str(e) for e in failures)
                     )
                 )
-    else:  # No-op
-        if len(imgs) == 1:
-            yield imgs[0]
-        else:
-            yield imgs
+    elif len(imgs) == 1:
+        yield imgs[0]
+    else:
+        yield imgs
 
 
 def are_tests_running():

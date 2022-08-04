@@ -23,6 +23,7 @@ represent only the 20% edges with the highest values.
 
 """
 
+
 ##############################################################################
 # Retrieve the atlas and the data
 # --------------------------------
@@ -37,8 +38,7 @@ labels = atlas['labels']
 data = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print('First subject functional nifti images (4D) are at: %s' %
-      data.func[0])  # 4D data
+print(f'First subject functional nifti images (4D) are at: {data.func[0]}')
 
 ##############################################################################
 # Extract time series

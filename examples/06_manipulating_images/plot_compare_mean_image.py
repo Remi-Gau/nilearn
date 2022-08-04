@@ -9,6 +9,7 @@ could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 """
 
 
+
 ###############################################################################
 # Fetching 2 subject movie watching brain development fmri datasets.
 from nilearn import datasets
@@ -17,8 +18,8 @@ dataset = datasets.fetch_development_fmri(n_subjects=2)
 
 ###############################################################################
 # Print basic information on the adhd subjects resting state datasets.
-print('Subject 1 resting state dataset at: %s' % dataset.func[0])
-print('Subject 2 resting state dataset at: %s' % dataset.func[1])
+print(f'Subject 1 resting state dataset at: {dataset.func[0]}')
+print(f'Subject 2 resting state dataset at: {dataset.func[1]}')
 
 
 ###############################################################################

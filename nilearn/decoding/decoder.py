@@ -118,9 +118,9 @@ def _check_param_grid(estimator, X, y, param_grid=None):
                 raise NotImplementedError(message)
         else:
             raise ValueError(
-                "Invalid estimator. The supported estimators are: {}".format(
-                    list(SUPPORTED_ESTIMATORS.keys()))
+                f"Invalid estimator. The supported estimators are: {list(SUPPORTED_ESTIMATORS.keys())}"
             )
+
         # define sensible default for different types of estimators
         if hasattr(estimator, 'penalty') and (estimator.penalty == 'l1'):
             min_c = l1_min_c(X, y, loss=loss)
@@ -144,9 +144,9 @@ def _check_estimator(estimator):
         estimator = SUPPORTED_ESTIMATORS.get(estimator)
     else:
         raise ValueError(
-            "Invalid estimator. Known estimators are: {}".format(
-                list(SUPPORTED_ESTIMATORS.keys()))
+            f"Invalid estimator. Known estimators are: {list(SUPPORTED_ESTIMATORS.keys())}"
         )
+
 
     return estimator
 

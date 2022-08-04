@@ -99,14 +99,17 @@ def fetch_atlas_difumo(dimension=64, resolution_mm=2, data_dir=None,
     valid_dimensions = [64, 128, 256, 512, 1024]
     valid_resolution_mm = [2, 3]
     if dimension not in valid_dimensions:
-        raise ValueError("Requested dimension={} is not available. Valid "
-                         "options: {}".format(dimension, valid_dimensions))
-    if resolution_mm not in valid_resolution_mm:
-        raise ValueError("Requested resolution_mm={} is not available. Valid "
-                         "options: {}".format(resolution_mm,
-                                              valid_resolution_mm))
+        raise ValueError(
+            f"Requested dimension={dimension} is not available. Valid options: {valid_dimensions}"
+        )
 
-    url = 'https://osf.io/{}/download'.format(dic[dimension])
+    if resolution_mm not in valid_resolution_mm:
+        raise ValueError(
+            f"Requested resolution_mm={resolution_mm} is not available. Valid options: {valid_resolution_mm}"
+        )
+
+
+    url = f'https://osf.io/{dic[dimension]}/download'
     opts = {'uncompress': True}
 
     csv_file = os.path.join('{0}', 'labels_{0}_dictionary.csv')
@@ -270,10 +273,11 @@ def fetch_atlas_destrieux_2009(lateralized=True, data_dir=None, url=None,
     lat = '_lateralized' if lateralized else ''
 
     files = [
-        ('destrieux2009_rois_labels' + lat + '.csv', url, opts),
-        ('destrieux2009_rois' + lat + '.nii.gz', url, opts),
-        ('destrieux2009.rst', url, opts)
+        (f'destrieux2009_rois_labels{lat}.csv', url, opts),
+        (f'destrieux2009_rois{lat}.nii.gz', url, opts),
+        ('destrieux2009.rst', url, opts),
     ]
+
 
     dataset_name = 'destrieux_2009'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
@@ -566,8 +570,7 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
     elif atlas_source == "HarvardOxford":
         url = 'http://www.nitrc.org/frs/download.php/9902/HarvardOxford.tgz'
     else:
-        raise ValueError("Atlas source {} is not valid.".format(
-            atlas_source))
+        raise ValueError(f"Atlas source {atlas_source} is not valid.")
     # For practical reasons, we mimic the FSL data directory here.
     data_dir = _get_dataset_dir('fsl', data_dir=data_dir,
                                 verbose=verbose)
@@ -591,9 +594,10 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
         label_file = "Juelich.xml"
         is_lateralized = False
     label_file = os.path.join(root, label_file)
-    atlas_file = os.path.join(root, atlas_source,
-                              '{}-{}.nii.gz'.format(atlas_source,
-                                                    atlas_name))
+    atlas_file = os.path.join(
+        root, atlas_source, f'{atlas_source}-{atlas_name}.nii.gz'
+    )
+
     atlas_file, label_file = _fetch_files(
         data_dir,
         [(atlas_file, url, opts),
@@ -601,9 +605,8 @@ def _get_atlas_data_and_labels(atlas_source, atlas_name, symmetric_split=False,
         resume=resume, verbose=verbose)
     # Reorder image to have positive affine diagonal
     atlas_img = reorder_img(atlas_file)
-    names = {}
     from xml.etree import ElementTree
-    names[0] = 'Background'
+    names = {0: 'Background'}
     for n, label in enumerate(
             ElementTree.parse(label_file).findall('.//label')):
         new_idx = int(label.get('index')) + 1
@@ -1126,7 +1129,7 @@ def fetch_atlas_aal(version='SPM12', data_dir=None, url=None, resume=True,
             labels.append(label.find('name').text)
     else:
         with open(labels_file, "r") as fp:
-            for line in fp.readlines():
+            for line in fp:
                 _, label, index = line.strip().split('\t')
                 indices.append(index)
                 labels.append(label)
@@ -1469,10 +1472,12 @@ def fetch_atlas_allen_2011(data_dir=None, url=None, resume=True, verbose=1):
 
     fdescr = _get_dataset_descr(dataset_name)
 
-    params = [('description', fdescr),
-              ('rsn_indices', labels),
-              ('networks', networks)]
-    params.extend(list(zip(keys, sub_files)))
+    params = [
+        ('description', fdescr),
+        ('rsn_indices', labels),
+        ('networks', networks),
+        *list(zip(keys, sub_files)),
+    ]
 
     return Bunch(**dict(params))
 
@@ -1537,12 +1542,19 @@ def fetch_atlas_surf_destrieux(data_dir=None, url=None,
     annots = []
     for hemi in [('lh', 'left'), ('rh', 'right')]:
 
-        annot = _fetch_files(data_dir,
-                             [(annot_file % (hemi[1]),
-                               annot_url % (annot_nids['%s annot' % hemi[0]],
-                                            hemi[0]),
-                              {'move': annot_file % (hemi[1])})],
-                             resume=resume, verbose=verbose)[0]
+        annot = _fetch_files(
+            data_dir,
+            [
+                (
+                    annot_file % (hemi[1]),
+                    (annot_url % (annot_nids[f'{hemi[0]} annot'], hemi[0])),
+                    {'move': annot_file % (hemi[1])},
+                )
+            ],
+            resume=resume,
+            verbose=verbose,
+        )[0]
+
         annots.append(annot)
 
     annot_left = nb.freesurfer.read_annot(annots[0])
@@ -1566,8 +1578,7 @@ def _separate_talairach_levels(atlas_img, labels, output_dir, verbose):
 
     """
     if verbose:
-        print(
-            'Separating talairach atlas levels: {}'.format(_TALAIRACH_LEVELS))
+        print(f'Separating talairach atlas levels: {_TALAIRACH_LEVELS}')
     for level_name, old_level_labels in zip(_TALAIRACH_LEVELS,
                                             np.asarray(labels).T):
         if verbose:
@@ -1651,8 +1662,7 @@ def fetch_atlas_talairach(level_name, data_dir=None, verbose=1):
 
     """
     if level_name not in _TALAIRACH_LEVELS:
-        raise ValueError(
-            '"level_name" should be one of {}'.format(_TALAIRACH_LEVELS))
+        raise ValueError(f'"level_name" should be one of {_TALAIRACH_LEVELS}')
     talairach_dir = Path(
         _get_dataset_dir('talairach_atlas', data_dir=data_dir,
                          verbose=verbose))
@@ -1732,8 +1742,10 @@ def fetch_atlas_pauli_2017(version='prob', data_dir=None, verbose=1):
         url_maps = 'https://osf.io/5mqfx/download'
         filename = 'pauli_2017_det.nii.gz'
     else:
-        raise NotImplementedError('{} is no valid version for '.format(version) + \
-                                  'the Pauli atlas')
+        raise NotImplementedError(
+            (f'{version} is no valid version for ' + 'the Pauli atlas')
+        )
+
 
     url_labels = 'https://osf.io/6qrcb/download'
     dataset_name = 'pauli_2017'
@@ -1850,16 +1862,20 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
     valid_yeo_networks = [7, 17]
     valid_resolution_mm = [1, 2]
     if n_rois not in valid_n_rois:
-        raise ValueError("Requested n_rois={} not available. Valid "
-                         "options: {}".format(n_rois, valid_n_rois))
+        raise ValueError(
+            f"Requested n_rois={n_rois} not available. Valid options: {valid_n_rois}"
+        )
+
     if yeo_networks not in valid_yeo_networks:
-        raise ValueError("Requested yeo_networks={} not available. Valid "
-                         "options: {}".format(yeo_networks,valid_yeo_networks))
+        raise ValueError(
+            f"Requested yeo_networks={yeo_networks} not available. Valid options: {valid_yeo_networks}"
+        )
+
     if resolution_mm not in valid_resolution_mm:
-        raise ValueError("Requested resolution_mm={} not available. Valid "
-                         "options: {}".format(resolution_mm,
-                                              valid_resolution_mm)
-                         )
+        raise ValueError(
+            f"Requested resolution_mm={resolution_mm} not available. Valid options: {valid_resolution_mm}"
+        )
+
 
     if base_url is None:
         base_url = ('https://raw.githubusercontent.com/ThomasYeoLab/CBIG/'
@@ -1868,13 +1884,16 @@ def fetch_atlas_schaefer_2018(n_rois=400, yeo_networks=7, resolution_mm=1,
                     'Schaefer2018_LocalGlobal/Parcellations/MNI/'
                     )
 
-    files = []
     labels_file_template = 'Schaefer2018_{}Parcels_{}Networks_order.txt'
     img_file_template = ('Schaefer2018_{}Parcels_'
                          '{}Networks_order_FSLMNI152_{}mm.nii.gz')
-    for f in [labels_file_template.format(n_rois, yeo_networks),
-              img_file_template.format(n_rois, yeo_networks, resolution_mm)]:
-        files.append((f, base_url + f, {}))
+    files = [
+        (f, base_url + f, {})
+        for f in [
+            labels_file_template.format(n_rois, yeo_networks),
+            img_file_template.format(n_rois, yeo_networks, resolution_mm),
+        ]
+    ]
 
     dataset_name = 'schaefer_2018'
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,

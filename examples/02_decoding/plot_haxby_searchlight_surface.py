@@ -9,6 +9,7 @@ searchlight decoding. NeuroImage 56, 582–592.
 
 """
 
+
 #########################################################################
 # Load Haxby dataset
 # -------------------
@@ -44,14 +45,14 @@ hemi = 'left'
 
 # Average voxels 5 mm close to the 3d pial surface
 radius = 5.
-pial_mesh = fsaverage['pial_' + hemi]
+pial_mesh = fsaverage[f'pial_{hemi}']
 X = surface.vol_to_surf(fmri_img, pial_mesh, radius=radius).T
 
 # To define the :term:`BOLD` responses to be included within each searchlight "sphere"
 # we define an adjacency matrix based on the inflated surface vertices such
 # that nearby surfaces are concatenated within the same searchlight.
 
-infl_mesh = fsaverage['infl_' + hemi]
+infl_mesh = fsaverage[f'infl_{hemi}']
 coords, _ = surface.load_surf_mesh(infl_mesh)
 radius = 3.
 nn = neighbors.NearestNeighbors(radius=radius)
@@ -81,8 +82,14 @@ scores = search_light(X, y, estimator, adjacency, cv=cv, n_jobs=1)
 # -------------
 from nilearn import plotting
 chance = .5
-plotting.plot_surf_stat_map(infl_mesh, scores - chance,
-                            view='medial', colorbar=True, threshold=0.1,
-                            bg_map=fsaverage['sulc_' + hemi],
-                            title='Accuracy map, left hemisphere')
+plotting.plot_surf_stat_map(
+    infl_mesh,
+    scores - chance,
+    view='medial',
+    colorbar=True,
+    threshold=0.1,
+    bg_map=fsaverage[f'sulc_{hemi}'],
+    title='Accuracy map, left hemisphere',
+)
+
 plotting.show()

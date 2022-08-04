@@ -13,22 +13,22 @@ from .helpers import stringify_path
 def _asarray(arr, dtype=None, order=None):
     # np.asarray does not take "K" and "A" orders in version 1.3.0
     if order in ("K", "A", None):
-        if (arr.itemsize == 1 and dtype in (bool, np.bool_)) \
-                or (arr.dtype in (bool, np.bool_) and
-                    np.dtype(dtype).itemsize == 1):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype)
-    else:
-        if (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
+        return (
+            arr.view(dtype=dtype)
+            if (arr.itemsize == 1 and dtype in (bool, np.bool_))
+            or (
+                arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1
+            )
+            else np.asarray(arr, dtype=dtype)
+        )
+
+    elif (((arr.itemsize == 1 and dtype in (bool, np.bool)) or
             (arr.dtype in (bool, np.bool_) and np.dtype(dtype).itemsize == 1))
             and (order == "F" and arr.flags["F_CONTIGUOUS"]
                  or order == "C" and arr.flags["C_CONTIGUOUS"])):
-            ret = arr.view(dtype=dtype)
-        else:
-            ret = np.asarray(arr, dtype=dtype, order=order)
-
-    return ret
+        return arr.view(dtype=dtype)
+    else:
+        return np.asarray(arr, dtype=dtype, order=order)
 
 
 def as_ndarray(arr, copy=False, dtype=None, order='K'):
@@ -93,31 +93,28 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
 
     if isinstance(arr, np.memmap):
         if dtype is None:
-            if order in ("K", "A", None):
-                ret = np.array(np.asarray(arr), copy=True)
-            else:
-                ret = np.array(np.asarray(arr), copy=True, order=order)
+            ret = (
+                np.array(np.asarray(arr), copy=True)
+                if order in ("K", "A", None)
+                else np.array(np.asarray(arr), copy=True, order=order)
+            )
+
+        elif order in ("K", "A", None):
+            # always copy (even when dtype does not change)
+            ret = np.asarray(arr).astype(dtype)
         else:
-            if order in ("K", "A", None):
-                # always copy (even when dtype does not change)
-                ret = np.asarray(arr).astype(dtype)
-            else:
-                # First load data from disk without changing order
-                # Changing order while reading through a memmap is incredibly
-                # inefficient.
-                ret = np.array(arr, copy=True)
-                ret = _asarray(ret, dtype=dtype, order=order)
+            # First load data from disk without changing order
+            # Changing order while reading through a memmap is incredibly
+            # inefficient.
+            ret = np.array(arr, copy=True)
+            ret = _asarray(ret, dtype=dtype, order=order)
 
     elif isinstance(arr, np.ndarray):
         ret = _asarray(arr, dtype=dtype, order=order)
         # In the present cas, np.may_share_memory result is always reliable.
         if np.may_share_memory(ret, arr) and copy:
             # order-preserving copy
-            if ret.flags["F_CONTIGUOUS"]:
-                ret = ret.T.copy().T
-            else:
-                ret = ret.copy()
-
+            ret = ret.T.copy().T if ret.flags["F_CONTIGUOUS"] else ret.copy()
     elif isinstance(arr, (list, tuple)):
         if order in ("A", "K"):
             ret = np.asarray(arr, dtype=dtype)
@@ -125,7 +122,7 @@ def as_ndarray(arr, copy=False, dtype=None, order='K'):
             ret = np.asarray(arr, dtype=dtype, order=order)
 
     else:
-        raise ValueError("Type not handled: %s" % arr.__class__)
+        raise ValueError(f"Type not handled: {arr.__class__}")
 
     return ret
 
@@ -153,8 +150,10 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
     """
     csv_path = stringify_path(csv_path)
     if not isinstance(csv_path, str):
-        raise TypeError('CSV must be a file path. Got a CSV of type: %s' %
-                        type(csv_path))
+        raise TypeError(
+            f'CSV must be a file path. Got a CSV of type: {type(csv_path)}'
+        )
+
 
     try:
         # First, we try genfromtxt which works in most cases.
@@ -167,8 +166,7 @@ def csv_to_array(csv_path, delimiters=' \t,;', **kwargs):
             with open(csv_path, 'r') as csv_file:
                 dialect = csv.Sniffer().sniff(csv_file.readline(), delimiters)
         except csv.Error as e:
-            raise TypeError(
-                'Could not read CSV file [%s]: %s' % (csv_path, e.args[0]))
+            raise TypeError(f'Could not read CSV file [{csv_path}]: {e.args[0]}')
 
         array = np.genfromtxt(csv_path, delimiter=dialect.delimiter,
                               encoding=None, **kwargs)
