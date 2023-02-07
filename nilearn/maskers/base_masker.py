@@ -89,7 +89,7 @@ def _filter_and_extract(
     target_affine = parameters.get('target_affine')
     if target_shape is not None or target_affine is not None:
         if verbose > 0:
-            print("[%s] Resampling images" % class_name)
+            print(f"[{class_name}] Resampling images")
         imgs = cache(
             image.resample_img, memory, func_memory_level=2,
             memory_level=memory_level, ignore=['copy'])(
@@ -101,14 +101,14 @@ def _filter_and_extract(
     smoothing_fwhm = parameters.get('smoothing_fwhm')
     if smoothing_fwhm is not None:
         if verbose > 0:
-            print("[%s] Smoothing images" % class_name)
+            print(f"[{class_name}] Smoothing images")
         imgs = cache(
             image.smooth_img, memory, func_memory_level=2,
             memory_level=memory_level)(
                 imgs, parameters['smoothing_fwhm'])
 
     if verbose > 0:
-        print("[%s] Extracting region signals" % class_name)
+        print(f"[{class_name}] Extracting region signals")
     region_signals, aux = cache(extraction_function, memory,
                                 func_memory_level=2,
                                 memory_level=memory_level)(imgs)
@@ -120,7 +120,7 @@ def _filter_and_extract(
     # Confounds removing (from csv file or numpy array)
     # Normalizing
     if verbose > 0:
-        print("[%s] Cleaning extracted signals" % class_name)
+        print(f"[{class_name}] Cleaning extracted signals")
     runs = parameters.get('runs', None)
     region_signals = cache(
         signal.clean, memory=memory, func_memory_level=2,
@@ -277,33 +277,27 @@ class BaseMasker(BaseEstimator, TransformerMixin, CacheMixin):
             Transformed array.
 
         """
-        # non-optimized default implementation; override when a better
-        # method is possible for a given clustering algorithm
         if y is None:
             # fit method of arity 1 (unsupervised transformation)
-            if self.mask_img is None:
-                return self.fit(X, **fit_params
-                                ).transform(X, confounds=confounds,
-                                            sample_mask=sample_mask)
-            else:
-                return self.fit(**fit_params).transform(X,
-                                                        confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
-        else:
-            # fit method of arity 2 (supervised transformation)
-            if self.mask_img is None:
-                return self.fit(X, y, **fit_params
-                                ).transform(X, confounds=confounds,
-                                            sample_mask=sample_mask)
-            else:
-                warnings.warn('[%s.fit] Generation of a mask has been'
-                              ' requested (y != None) while a mask has'
-                              ' been provided at masker creation. Given mask'
-                              ' will be used.' % self.__class__.__name__)
-                return self.fit(**fit_params).transform(X, confounds=confounds,
-                                                        sample_mask=sample_mask
-                                                        )
+            return (
+                self.fit(X, **fit_params).transform(
+                    X, confounds=confounds, sample_mask=sample_mask
+                )
+                if self.mask_img is None
+                else self.fit(**fit_params).transform(
+                    X, confounds=confounds, sample_mask=sample_mask
+                )
+            )
+        if self.mask_img is None:
+            return self.fit(X, y, **fit_params
+                            ).transform(X, confounds=confounds,
+                                        sample_mask=sample_mask)
+        warnings.warn(
+            f'[{self.__class__.__name__}.fit] Generation of a mask has been requested (y != None) while a mask has been provided at masker creation. Given mask will be used.'
+        )
+        return self.fit(**fit_params).transform(X, confounds=confounds,
+                                                sample_mask=sample_mask
+                                                )
 
     def inverse_transform(self, X):
         """ Transform the 2D data matrix back to an image in brain space.
