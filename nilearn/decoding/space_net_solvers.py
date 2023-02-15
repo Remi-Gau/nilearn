@@ -127,7 +127,7 @@ def _graph_net_data_function(X, w, mask, grad_weight):
     out = np.ndarray(X.shape[0] + mask.ndim * X.shape[1])
     out[: X.shape[0]] = X.dot(w)
     out[X.shape[0] :] = np.concatenate(
-        tuple([w_g[i][mask] for i in range(mask.ndim)])
+        tuple(w_g[i][mask] for i in range(mask.ndim))
     )
     return out
 
@@ -192,7 +192,7 @@ def _squared_loss_derivative_lipschitz_constant(
         )
         a /= sqrt(np.dot(a, a))
 
-    lipschitz_constant = np.dot(
+    return np.dot(
         _graph_net_adjoint_data_function(
             X,
             _graph_net_data_function(X, a, mask, actual_grad_weight),
@@ -201,8 +201,6 @@ def _squared_loss_derivative_lipschitz_constant(
         ),
         a,
     ) / np.dot(a, a)
-
-    return lipschitz_constant
 
 
 def _logistic_derivative_lipschitz_constant(
@@ -568,10 +566,7 @@ def tvl1_solver(
             return np.append(_unmask_from_to_3d_array(w[:-1], mask), w[-1])
 
     def maskvec(w):
-        if loss == "mse":
-            return w[flat_mask]
-        else:
-            return np.append(w[:-1][flat_mask], w[-1])
+        return w[flat_mask] if loss == "mse" else np.append(w[:-1][flat_mask], w[-1])
 
     # function to compute derivative of f1
     def f1_grad(w):

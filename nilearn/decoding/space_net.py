@@ -242,21 +242,23 @@ class _EarlyStoppingCallback:
         score = self.test_score(w)[0]
 
         self.test_scores.append(score)
-        if not (self.counter > 20 and (self.counter % 10) == 2):
+        if self.counter <= 20 or self.counter % 10 != 2:
             return
 
         # check whether score increased on average over last 5 iterations
-        if len(self.test_scores) > 4:
-            if np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol:
-                if self.verbose:
-                    if self.verbose > 1:
-                        print(
-                            "Early stopping. "
-                            f"Test score: {score:.8f} {40 * '-'}"
-                        )
-                    else:
-                        sys.stderr.write(".")
-                return True
+        if (
+            len(self.test_scores) > 4
+            and np.mean(np.diff(self.test_scores[-5:][::-1])) >= self.tol
+        ):
+            if self.verbose:
+                if self.verbose > 1:
+                    print(
+                        "Early stopping. "
+                        f"Test score: {score:.8f} {40 * '-'}"
+                    )
+                else:
+                    sys.stderr.write(".")
+            return True
 
         if self.verbose > 1:
             print(f"Test score: {score:.8f}")
@@ -800,23 +802,11 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
             )
         if self.penalty not in self.SUPPORTED_PENALTIES:
             raise ValueError(
-                "'penalty' parameter must be one of %s%s or %s; got %s"
-                % (
-                    ",".join(self.SUPPORTED_PENALTIES[:-1]),
-                    "," if len(self.SUPPORTED_PENALTIES) > 2 else "",
-                    self.SUPPORTED_PENALTIES[-1],
-                    self.penalty,
-                )
+                f"""'penalty' parameter must be one of {",".join(self.SUPPORTED_PENALTIES[:-1])}{"," if len(self.SUPPORTED_PENALTIES) > 2 else ""} or {self.SUPPORTED_PENALTIES[-1]}; got {self.penalty}"""
             )
-        if not (self.loss is None or self.loss in self.SUPPORTED_LOSSES):
+        if self.loss is not None and self.loss not in self.SUPPORTED_LOSSES:
             raise ValueError(
-                "'loss' parameter must be one of %s%s or %s; got %s"
-                % (
-                    ",".join(self.SUPPORTED_LOSSES[:-1]),
-                    "," if len(self.SUPPORTED_LOSSES) > 2 else "",
-                    self.SUPPORTED_LOSSES[-1],
-                    self.loss,
-                )
+                f"""'loss' parameter must be one of {",".join(self.SUPPORTED_LOSSES[:-1])}{"," if len(self.SUPPORTED_LOSSES) > 2 else ""} or {self.SUPPORTED_LOSSES[-1]}; got {self.loss}"""
             )
         if (
             self.loss is not None
@@ -884,9 +874,7 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         if not self.is_classif and np.all(np.diff(y) == 0.0):
             raise ValueError(
-                "The given input y must have at least 2 targets"
-                " to do regression analysis. You provided only"
-                " one target {}".format(np.unique(y))
+                f"The given input y must have at least 2 targets to do regression analysis. You provided only one target {np.unique(y)}"
             )
 
         # misc
@@ -901,9 +889,8 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if alphas is not None:
-            if not isinstance(alphas, collections.abc.Iterable):
-                alphas = [alphas]
+        if alphas is not None and not isinstance(alphas, collections.abc.Iterable):
+            alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
         elif self.is_classif:
@@ -913,15 +900,15 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         # set backend solver
         if self.penalty.lower() == "graph-net":
-            if not self.is_classif or loss == "mse":
-                solver = _graph_net_squared_loss
-            else:
-                solver = _graph_net_logistic
+            solver = (
+                _graph_net_squared_loss
+                if not self.is_classif or loss == "mse"
+                else _graph_net_logistic
+            )
+        elif not self.is_classif or loss == "mse":
+            solver = partial(tvl1_solver, loss="mse")
         else:
-            if not self.is_classif or loss == "mse":
-                solver = partial(tvl1_solver, loss="mse")
-            else:
-                solver = partial(tvl1_solver, loss="logistic")
+            solver = partial(tvl1_solver, loss="logistic")
 
         # generate fold indices
         case1 = (None in [alphas, l1_ratios]) and self.n_alphas > 1
@@ -936,22 +923,15 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         n_folds = len(self.cv_)
 
         # number of problems to solve
-        if self.is_classif:
-            y = self._binarize_y(y)
-        else:
-            y = y[:, np.newaxis]
-        if self.is_classif and self.n_classes_ > 2:
-            n_problems = self.n_classes_
-        else:
-            n_problems = 1
-
+        y = self._binarize_y(y) if self.is_classif else y[:, np.newaxis]
+        n_problems = self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
         if n_problems == 1:
             y = y[:, 0]
 
         # scores & mean weights map over all folds
-        self.cv_scores_ = [[] for i in range(n_problems)]
+        self.cv_scores_ = [[] for _ in range(n_problems)]
         w = np.zeros((n_problems, X.shape[1] + 1))
         self.all_coef_ = np.ndarray((n_problems, n_folds, X.shape[1]))
 

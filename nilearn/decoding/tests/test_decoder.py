@@ -179,8 +179,7 @@ def test_parallel_fit():
         screening_percentile=None, mask_img=None, is_classification=False
     )
     for params in svr_params:
-        param_grid = {}
-        param_grid["C"] = np.array(params)
+        param_grid = {"C": np.array(params)}
         outputs.append(
             list(
                 _parallel_fit(

@@ -169,7 +169,7 @@ def _prox_tvl1(
     input_img_flat = input_img.view()
     input_img_flat.shape = input_img.size
     input_img_norm = np.dot(input_img_flat, input_img_flat)
-    if not input_img.dtype.kind == "f":
+    if input_img.dtype.kind != "f":
         input_img = input_img.astype(np.float64)
     shape = [len(input_img.shape) + 1] + list(input_img.shape)
     grad_im = np.zeros(shape)
@@ -182,11 +182,7 @@ def _prox_tvl1(
 
     # negated_output is the negated primal variable in the optimization
     # loop
-    if init is None:
-        negated_output = -input_img
-    else:
-        negated_output = -init
-
+    negated_output = -input_img if init is None else -init
     # Clipping values for the inner loop
     negated_val_min = np.inf
     negated_val_max = -np.inf
@@ -194,10 +190,9 @@ def _prox_tvl1(
         negated_val_min = -val_min
     if val_max is not None:
         negated_val_max = -val_max
-    if True or (val_min is not None or val_max is not None):
-        # With bound constraints, the stopping criterion is on the
-        # evolution of the output
-        negated_output_old = negated_output.copy()
+    # With bound constraints, the stopping criterion is on the
+    # evolution of the output
+    negated_output_old = negated_output.copy()
     grad_tmp = None
     old_dgap = np.inf
     dgap = np.inf

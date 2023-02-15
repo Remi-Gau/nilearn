@@ -82,7 +82,7 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
         Gradient of energy (returned if `compute_grad` is set).
 
     """
-    if not (compute_energy or compute_grad):
+    if not compute_energy and not compute_grad:
         raise RuntimeError(
             "At least one of compute_energy or compute_grad must be True."
         )
@@ -97,10 +97,7 @@ def _squared_loss(X, y, w, compute_energy=True, compute_grad=False):
 
     grad = np.dot(X.T, residual)
 
-    if not compute_energy:
-        return grad
-
-    return energy, grad
+    return (energy, grad) if compute_energy else grad
 
 
 def _tv_l1_from_gradient(spatial_grad):
@@ -222,8 +219,7 @@ def _sigmoid(t, copy=True):
     t *= -1.0
     t = np.exp(t, t)
     t += 1.0
-    t = np.reciprocal(t, t)
-    return t
+    return np.reciprocal(t, t)
 
 
 def _logistic(X, y, w):

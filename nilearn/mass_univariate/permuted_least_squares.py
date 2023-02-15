@@ -275,11 +275,7 @@ def _permuted_ols_on_chunk(
             step = 11 - min(verbose, 10)
             if i_perm % step == 0:
                 # If there is only one job, progress information is fixed
-                if n_perm == n_perm_chunk:
-                    crlf = '\r'
-                else:
-                    crlf = '\n'
-
+                crlf = '\r' if n_perm == n_perm_chunk else '\n'
                 percent = float(i_perm) / n_perm_chunk
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
