@@ -889,7 +889,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
         if not isinstance(l1_ratios, collections.abc.Iterable):
             l1_ratios = [l1_ratios]
         alphas = self.alphas
-        if alphas is not None and not isinstance(alphas, collections.abc.Iterable):
+        if alphas is not None and not isinstance(
+            alphas, collections.abc.Iterable
+        ):
             alphas = [alphas]
         if self.loss is not None:
             loss = self.loss
@@ -924,7 +926,9 @@ class BaseSpaceNet(LinearRegression, CacheMixin):
 
         # number of problems to solve
         y = self._binarize_y(y) if self.is_classif else y[:, np.newaxis]
-        n_problems = self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
+        n_problems = (
+            self.n_classes_ if self.is_classif and self.n_classes_ > 2 else 1
+        )
         # standardize y
         self.ymean_ = np.zeros(y.shape[0])
         if n_problems == 1:
