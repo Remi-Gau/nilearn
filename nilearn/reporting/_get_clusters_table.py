@@ -291,7 +291,7 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     # check that stat_img is niimg-like object and 3D
     stat_img = check_niimg_3d(stat_img)
     affine = stat_img.affine
-    
+
     # Apply threshold(s) to image
     stat_img = threshold_img(
         img=stat_img,
@@ -404,7 +404,4 @@ def get_clusters_table(stat_img, stat_threshold, cluster_threshold=None,
     else:
         df = pd.DataFrame(columns=cols, data=rows)
 
-    if return_label_maps:
-        return df, label_maps
-    else:
-        return df
+    return (df, label_maps) if return_label_maps else df

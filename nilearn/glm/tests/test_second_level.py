@@ -86,10 +86,11 @@ def test_check_second_level_input():
                              "least two first level models or niimgs"):
         _check_second_level_input([FirstLevelModel()], pd.DataFrame())
     with pytest.raises(ValueError,
-                       match="Model sub_1 at index 0 has not been fit yet"):
-        _check_second_level_input([FirstLevelModel(
-            subject_label="sub_{}".format(i))
-            for i in range(1, 3)], pd.DataFrame())
+                           match="Model sub_1 at index 0 has not been fit yet"):
+        _check_second_level_input(
+            [FirstLevelModel(subject_label=f"sub_{i}") for i in range(1, 3)],
+            pd.DataFrame(),
+        )
     with InTemporaryDirectory():
         shapes, rk = [(7, 8, 9, 15)], 3
         mask, fmri_data, design_matrices = \
@@ -312,15 +313,13 @@ def test_high_level_non_parametric_inference_with_paths():
                 n_perm=n_perm, verbose=1
             ) for second_level_input in [Y, df_input]
         ]
-        assert all(
-            [isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs]
-        )
+        assert all(isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs)
         for img in neg_log_pvals_imgs:
             assert_array_equal(img.affine, load(mask).affine)
         neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
         for neg_log_pvals in neg_log_pvals_list:
             assert np.all(neg_log_pvals <= - np.log10(1.0 / (n_perm + 1)))
-            assert np.all(0 <= neg_log_pvals)
+            assert np.all(neg_log_pvals >= 0)
 
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,
@@ -481,10 +480,13 @@ def _first_level_dataframe():
     names = ['con_01', 'con_01', 'con_01']
     subjects = ['01', '02', '03']
     maps = ['', '', '']
-    dataframe = pd.DataFrame({'map_name': names,
-                              'subject_label': subjects,
-                              'effects_map_path': maps})
-    return dataframe
+    return pd.DataFrame(
+        {
+            'map_name': names,
+            'subject_label': subjects,
+            'effects_map_path': maps,
+        }
+    )
 
 
 def test_second_level_glm_computation():
