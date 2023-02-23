@@ -400,7 +400,7 @@ def crop_img(img, rtol=1e-8, copy=True, pad=True, return_offset=False):
 
     slices = [slice(s, e) for s, e in zip(start, end)][:3]
     cropped_im = _crop_img_to(img, slices, copy=copy)
-    return cropped_im if not return_offset else (cropped_im, tuple(slices))
+    return (cropped_im, tuple(slices)) if return_offset else cropped_im
 
 
 def _pad_array(array, pad_sizes):
