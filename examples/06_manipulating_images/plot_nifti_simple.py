@@ -13,11 +13,12 @@ The mask is computed and visualized.
 # Retrieve the brain development functional dataset
 
 from nilearn import datasets
+
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print('First functional nifti image (4D) is at: %s' % func_filename)
+print(f"First functional nifti image (4D) is at: {func_filename}")
 
 ###########################################################################
 # Compute the mask
@@ -26,9 +27,13 @@ from nilearn.maskers import NiftiMasker
 # As this is raw movie watching based EPI, the background is noisy and we
 # cannot rely on the 'background' masking strategy. We need to use the 'epi'
 # one
-nifti_masker = NiftiMasker(standardize=True, mask_strategy='epi',
-                           memory="nilearn_cache", memory_level=2,
-                           smoothing_fwhm=8)
+nifti_masker = NiftiMasker(
+    standardize=True,
+    mask_strategy="epi",
+    memory="nilearn_cache",
+    memory_level=2,
+    smoothing_fwhm=8,
+)
 nifti_masker.fit(func_filename)
 mask_img = nifti_masker.mask_img_
 
@@ -40,7 +45,7 @@ from nilearn.image.image import mean_img
 # calculate mean image for the background
 mean_func_img = mean_img(func_filename)
 
-plot_roi(mask_img, mean_func_img, display_mode='y', cut_coords=4, title="Mask")
+plot_roi(mask_img, mean_func_img, display_mode="y", cut_coords=4, title="Mask")
 
 ###########################################################################
 # Visualize the mask using the 'generate_report' method
@@ -59,6 +64,7 @@ fmri_masked = nifti_masker.transform(func_filename)
 ###########################################################################
 # Run an algorithm
 from sklearn.decomposition import FastICA
+
 n_components = 10
 ica = FastICA(n_components=n_components, random_state=42)
 components_masked = ica.fit_transform(fmri_masked.T).T
@@ -75,7 +81,12 @@ from nilearn.image.image import mean_img
 # calculate mean image for the background
 mean_func_img = mean_img(func_filename)
 
-plot_stat_map(index_img(components, 0), mean_func_img,
-              display_mode='y', cut_coords=4, title="Component 0")
+plot_stat_map(
+    index_img(components, 0),
+    mean_func_img,
+    display_mode="y",
+    cut_coords=4,
+    title="Component 0",
+)
 
 show()
