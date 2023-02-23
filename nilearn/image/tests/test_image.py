@@ -1,6 +1,4 @@
-"""
-Test image pre-processing functions
-"""
+"""Test image pre-processing functions."""
 import platform
 import os
 import sys
@@ -273,8 +271,8 @@ def test_crop_img():
 
 def test_crop_threshold_tolerance():
     """Check to see whether crop can skip values that are extremely
-    close to zero in a relative sense and will crop them away"""
-
+    close to zero in a relative sense and will crop them away
+    """
     data = np.zeros([10, 14, 12])
     data[3:7, 3:7, 5:9] = 1.0
     active_shape = (4 + 2, 4 + 2, 4 + 2)  # add padding
@@ -509,7 +507,6 @@ def test_new_img_like_mgz():
     This is usually when computing masks using MGZ inputs, e.g.
     when using plot_stap_map
     """
-
     ref_img = nibabel.load(os.path.join(datadir, "test.mgz"))
     data = np.ones(get_data(ref_img).shape, dtype=bool)
     affine = ref_img.affine
@@ -821,7 +818,6 @@ def test_largest_cc_img():
     Similar to smooth_img tests for largest connected_component_img, here also
     only the added features for largest_connected_component are tested.
     """
-
     # Test whether dimension of 3Dimg and list of 3Dimgs are kept.
     shapes = ((10, 11, 12), (13, 14, 15))
     regions = [1, 3]

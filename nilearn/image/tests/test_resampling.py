@@ -1,6 +1,4 @@
-"""
-Test the resampling code.
-"""
+"""Test the resampling code."""
 import os
 import copy
 import math
@@ -30,7 +28,7 @@ from nilearn.image import get_data
 ###############################################################################
 # Helper function
 def rotation(theta, phi):
-    """Returns a rotation 3x3 matrix."""
+    """Return a rotation 3x3 matrix."""
     cos = np.cos
     sin = np.sin
     a1 = np.array(
@@ -147,7 +145,7 @@ def test_downsample():
 
 
 def test_resampling_fill_value():
-    """Test resampling with a non-zero fill value"""
+    """Test resampling with a non-zero fill value."""
     rng = np.random.RandomState(42)
 
     data_3d = rng.uniform(size=(1, 4, 4))

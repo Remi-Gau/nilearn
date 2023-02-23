@@ -1,5 +1,5 @@
-"""
-Utilities to resample a Niimg-like object
+"""Utilities to resample a Niimg-like object.
+
 See http://nilearn.github.io/manipulating_images/input_output.html
 """
 # Author: Gael Varoquaux, Alexandre Abraham, Michael Eickenberg
@@ -91,8 +91,7 @@ def from_matrix_vector(matrix, vector):
 
 
 def coord_transform(x, y, z, affine):
-    """Convert the x, y, z coordinates from one image space to another
-        space.
+    """Convert the x, y, z coordinates from one image space to another space.
 
     Parameters
     ----------
@@ -206,7 +205,7 @@ def get_mask_bounds(img):
         background.
 
     Returns
-    --------
+    -------
     xmin, xmax, ymin, ymax, zmin, zmax : floats
         The world-space bounds (field of view) occupied by the
         non-zero values in the image
@@ -246,11 +245,12 @@ def get_mask_bounds(img):
 
 
 class BoundingBoxError(ValueError):
-    """This error is raised when a resampling transformation is
+    """Error raised when a resampling transformation is \
     incompatible with the given data.
 
     This can happen, for example, if the field of view of a target affine
-    matrix does not contain any of the original data."""
+    matrix does not contain any of the original data.
+    """
 
     pass
 
@@ -262,7 +262,7 @@ class BoundingBoxError(ValueError):
 def _resample_one_img(
     data, A, b, target_shape, interpolation_order, out, copy=True, fill_value=0
 ):
-    "Internal function for resample_img, do not use"
+    """Resample img."""
     if data.dtype.kind in ("i", "u"):
         # Integers are always finite
         has_not_finite = False
@@ -341,7 +341,7 @@ def resample_img(
     fill_value=0,
     force_resample=False,
 ):
-    """Resample a Niimg-like object
+    """Resample a Niimg-like object.
 
     Parameters
     ----------
@@ -699,8 +699,9 @@ def resample_to_img(
     fill_value=0,
     force_resample=False,
 ):
-    """Resample a Niimg-like source image on a target Niimg-like image
-    (no registration is performed: the image should already be aligned).
+    """Resample a Niimg-like source image on a target Niimg-like image.
+
+    No registration is performed: the image should already be aligned.
 
     .. versionadded:: 0.2.4
 
@@ -773,13 +774,14 @@ def resample_to_img(
 
 
 def reorder_img(img, resample=None):
-    """Returns an image with the affine diagonal (by permuting axes).
+    """Return an image with the affine diagonal (by permuting axes).
+
     The orientation of the new image will be RAS (Right, Anterior, Superior).
     If it is impossible to get xyz ordering by permuting the axes, a
     'ValueError' is raised.
 
     Parameters
-    -----------
+    ----------
     img : Niimg-like object
         See :ref:`extracting_data`.
         Image to reorder.

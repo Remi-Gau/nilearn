@@ -59,7 +59,7 @@ def get_data(img):
 def high_variance_confounds(
     imgs, n_confounds=5, percentile=2.0, detrend=True, mask_img=None
 ):
-    """Return confounds signals extracted from input signals with highest
+    """Return confounds signals extracted from input signals with highest \
     variance.
 
     Parameters
@@ -91,7 +91,7 @@ def high_variance_confounds(
         Highest variance confounds. Shape: *(number_of_scans, n_confounds)*.
 
     Notes
-    ------
+    -----
     This method is related to what has been published in the literature
     as 'CompCor' (Behzadi NeuroImage 2007).
 
@@ -103,7 +103,7 @@ def high_variance_confounds(
     - Returns a given number (n_confounds) of signals from the SVD with
       highest singular values.
 
-    See also
+    See Also
     --------
     nilearn.signal.high_variance_confounds
 
@@ -126,7 +126,7 @@ def high_variance_confounds(
 
 
 def _fast_smooth_array(arr):
-    """Simple smoothing which is less computationally expensive than
+    """Apply simple smoothing which is less computationally expensive than \
     applying a Gaussian filter.
 
     Only the first three dimensions of the array will be smoothed. The
@@ -263,7 +263,6 @@ def smooth_img(imgs, fwhm):
         then `filtered_img` is a list.
 
     """
-
     # Use hasattr() instead of isinstance to workaround a Python 2.6/2.7 bug
     # See http://bugs.python.org/issue7624
     imgs = stringify_path(imgs)
@@ -574,7 +573,7 @@ def mean_img(imgs, target_affine=None, target_shape=None, verbose=0, n_jobs=1):
 
 
 def swap_img_hemispheres(img):
-    """Performs swapping of hemispheres in the indicated NIfTI image.
+    """Perform swapping of hemispheres in the indicated NIfTI image.
 
        Use case: synchronizing ROIs across hemispheres.
 
@@ -672,7 +671,7 @@ def index_img(imgs, index):
 
 
 def iter_img(imgs):
-    """Iterates over a 4D Niimg-like object in the fourth dimension.
+    """Iterate over a 4D Niimg-like object in the fourth dimension.
 
     Parameters
     ----------
@@ -692,8 +691,9 @@ def iter_img(imgs):
 
 
 def _downcast_from_int64_if_possible(data):
-    """If `data` is 64-bit ints and can be converted to (signed) int 32,
-    return an int32 copy, otherwise return `data` itself."""
+    """Return an int32 copy if `data` is 64-bit ints \
+    and can be converted to (signed) int 32, \
+    otherwise return `data` itself."""
     if data.dtype not in (np.int64, np.uint64):
         return data
     img_min, img_max = np.min(data), np.max(data)
@@ -721,7 +721,7 @@ def _downcast_from_int64_if_possible(data):
 
 
 def new_img_like(ref_niimg, data, affine=None, copy_header=False):
-    """Create a new image of the same class as the reference image
+    """Create a new image of the same class as the reference image.
 
     Parameters
     ----------
@@ -805,7 +805,7 @@ def new_img_like(ref_niimg, data, affine=None, copy_header=False):
 
 
 def _apply_cluster_size_threshold(arr, cluster_threshold, copy=True):
-    """Apply cluster-extent thresholding to an array that has already been
+    """Apply cluster-extent thresholding to an array that has already been \
     voxel-wise thresholded.
 
     Parameters
@@ -862,7 +862,7 @@ def threshold_img(
     mask_img=None,
     copy=True,
 ):
-    """Threshold the given input image, mostly statistical or atlas images.
+    """Threshold the given input image mostly statistical or atlas images.
 
     Thresholding can be done based on direct image intensities or selection
     threshold with given percentile.
@@ -919,7 +919,7 @@ def threshold_img(
     :class:`~nibabel.nifti1.Nifti1Image`
         Thresholded image of the given input image.
 
-    See also
+    See Also
     --------
     nilearn.glm.threshold_stats_img :
         Threshold a statistical image using the alpha value, optionally with
