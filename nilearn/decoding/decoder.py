@@ -513,7 +513,7 @@ class _BaseDecoder(LinearRegression, CacheMixin):
         X = self._apply_mask(X)
         X, y = check_X_y(X, y, dtype=np.float64, multi_output=True)
 
-        if y.ndim == 1:
+        if y.ndim==1:
             self.n_outputs_ = 1
         else:
             self.n_outputs_ = y.shape[1]
