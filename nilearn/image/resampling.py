@@ -451,9 +451,7 @@ def resample_img(
 
     if target_shape is not None and len(target_shape) != 3:
         raise ValueError(
-            "The shape specified should be the shape of "
-            "the 3D grid, and thus of length 3. %s was specified"
-            % str(target_shape)
+            f"The shape specified should be the shape of the 3D grid, and thus of length 3. {str(target_shape)} was specified"
         )
 
     if target_shape is not None and target_affine.shape == (3, 3):
@@ -469,10 +467,7 @@ def resample_img(
     elif interpolation == "nearest":
         interpolation_order = 0
     else:
-        message = (
-            "interpolation must be either 'continuous', 'linear' "
-            "or 'nearest' but it was set to '{}'"
-        ).format(interpolation)
+        message = f"interpolation must be either 'continuous', 'linear' or 'nearest' but it was set to '{interpolation}'"
         raise ValueError(message)
 
     img = stringify_path(img)
@@ -577,8 +572,6 @@ def resample_img(
     # Make sure that we have a list here
     if isinstance(target_shape, np.ndarray):
         target_shape = target_shape.tolist()
-    target_shape = tuple(target_shape)
-
     if _compare_version(scipy.__version__, "<", "0.20"):
         # Before scipy 0.20, force native data types due to endian issues
         # that caused instability.
@@ -610,13 +603,12 @@ def resample_img(
 
     # Code is generic enough to work for both 3D and 4D images
     other_shape = data_shape[3:]
+    target_shape = tuple(target_shape)
     resampled_data = np.zeros(
         list(target_shape) + other_shape,
         order=order,
         dtype=resampled_data_dtype,
     )
-
-    all_img = (slice(None),) * 3
 
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
@@ -642,12 +634,10 @@ def resample_img(
             for off, dim_b in zip(offsets[:3], b[:3])
         ]
 
-        # If image are not fully overlapping, place only portion of image.
-        slices = []
-        for dimsize, index in zip(resampled_data.shape, indices):
-            slices.append(
-                slice(np.max((0, index[0])), np.min((dimsize, index[1])))
-            )
+        slices = [
+            slice(np.max((0, index[0])), np.min((dimsize, index[1])))
+            for dimsize, index in zip(resampled_data.shape, indices)
+        ]
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
@@ -662,6 +652,8 @@ def resample_img(
                 # different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
+        all_img = (slice(None),) * 3
+
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
