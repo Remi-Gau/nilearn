@@ -244,7 +244,7 @@ def test_resampling_error_checks():
 
     # Invalid interpolation
     interpolation = 'an_invalid_interpolation'
-    pattern = "interpolation must be either.+{0}".format(interpolation)
+    pattern = "interpolation must be one of.+{0}".format(interpolation)
     with pytest.raises(ValueError, match=pattern):
         resample_img(img,
                      target_shape=target_shape,
@@ -689,7 +689,7 @@ def test_reorder_img():
 
     # Make sure invalid resample argument is included in the error message
     interpolation = 'an_invalid_interpolation'
-    pattern = "interpolation must be either.+{0}".format(interpolation)
+    pattern = "interpolation must be one of.+{0}".format(interpolation)
     with pytest.raises(ValueError, match=pattern):
         reorder_img(ref_img, resample=interpolation)
 

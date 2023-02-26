@@ -409,38 +409,14 @@ def resample_img(img, target_affine=None, target_shape=None,
     """
     from .image import new_img_like  # avoid circular imports
 
-    # Do as many checks as possible before loading data, to avoid potentially
-    # costly calls before raising an exception.
-    if target_shape is not None and target_affine is None:
-        raise ValueError("If target_shape is specified, target_affine should"
-                         " be specified too.")
-
-    if target_shape is not None and not len(target_shape) == 3:
-        raise ValueError('The shape specified should be the shape of '
-                         'the 3D grid, and thus of length 3. %s was specified'
-                         % str(target_shape))
-
-    if target_shape is not None and target_affine.shape == (3, 3):
-        raise ValueError("Given target shape without anchor vector: "
-                         "Affine shape should be (4, 4) and not (3, 3)")
-
-    if interpolation == 'continuous':
-        interpolation_order = 3
-    elif interpolation == 'linear':
-        interpolation_order = 1
-    elif interpolation == 'nearest':
-        interpolation_order = 0
-    else:
-        message = ("interpolation must be either 'continuous', 'linear' "
-                   "or 'nearest' but it was set to '{0}'").format(interpolation)
-        raise ValueError(message)
+    _ALLOWED_INTERPOLATIONS = ['continuous', 'linear', 'nearest']
+    _check_param_resample_img(target_shape,
+                              target_affine,
+                              interpolation,
+                              _ALLOWED_INTERPOLATIONS)
 
     img = stringify_path(img)
-    if isinstance(img, str):
-        # Avoid a useless copy
-        input_img_is_string = True
-    else:
-        input_img_is_string = False
+    input_img_is_string = isinstance(img, str)
 
     img = _utils.check_niimg(img)
     shape = img.shape
@@ -452,8 +428,8 @@ def resample_img(img, target_affine=None, target_shape=None,
         _, sform_code = img.get_sform(coded=True)
         if not sform_code:
             warnings.warn("The provided image has no sform in its header. "
-                        "Please check the provided file. "
-                        "Results may not be as expected.")
+                          "Please check the provided file. "
+                          "Results may not be as expected.")
 
     # noop cases
     if target_affine is None and target_shape is None:
@@ -482,14 +458,14 @@ def resample_img(img, target_affine=None, target_shape=None,
 
     # Get a bounding box for the transformed data
     # Embed target_affine in 4x4 shape if necessary
+    missing_offset = False
+    target_affine = target_affine.copy()
     if target_affine.shape == (3, 3):
         missing_offset = True
         target_affine_tmp = np.eye(4)
         target_affine_tmp[:3, :3] = target_affine
         target_affine = target_affine_tmp
-    else:
-        missing_offset = False
-        target_affine = target_affine.copy()
+
     transform_affine = np.linalg.inv(target_affine).dot(affine)
     (xmin, xmax), (ymin, ymax), (zmin, zmax) = get_bounds(
         data.shape[:3], transform_affine)
@@ -519,11 +495,10 @@ def resample_img(img, target_affine=None, target_shape=None,
                                "by the target affine does "
                                "not contain any of the data")
 
+    transform_affine = np.dot(linalg.inv(affine), target_affine)
     if np.all(target_affine == affine):
         # Small trick to be more numerically stable
         transform_affine = np.eye(4)
-    else:
-        transform_affine = np.dot(linalg.inv(affine), target_affine)
     A, b = to_matrix_vector(transform_affine)
 
     data_shape = list(data.shape)
@@ -537,16 +512,15 @@ def resample_img(img, target_affine=None, target_shape=None,
         # that caused instability.
         data = data.astype(data.dtype.newbyteorder('N'))
 
+    resampled_data_dtype = data.dtype
     if interpolation == 'continuous' and data.dtype.kind == 'i':
         # cast unsupported data types to closest support dtype
         aux = data.dtype.name.replace('int', 'float')
         aux = aux.replace("ufloat", "float").replace("floatc", "float")
         if aux in ["float8", "float16"]:
             aux = "float32"
-        warnings.warn("Casting data from %s to %s" % (data.dtype.name, aux))
+        warnings.warn(f"Casting data from {data.dtype.name} to {aux}")
         resampled_data_dtype = np.dtype(aux)
-    else:
-        resampled_data_dtype = data.dtype
 
     # Since the release of 0.17, resampling nifti images have some issues
     # when affine is passed as 1D array and if data is of non-native
@@ -566,11 +540,10 @@ def resample_img(img, target_affine=None, target_shape=None,
     resampled_data = np.zeros(list(target_shape) + other_shape,
                               order=order, dtype=resampled_data_dtype)
 
-    all_img = (slice(None), ) * 3
-
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
-    if (np.all(np.eye(3) == A) and all(bt == np.round(bt) for bt in b) and
+    if (np.all(np.eye(3) == A) and
+        all(bt == np.round(bt) for bt in b) and
         not force_resample):
         # TODO: also check for sign flips
         # TODO: also check for permutations of I
@@ -595,7 +568,7 @@ def resample_img(img, target_affine=None, target_shape=None,
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
-        subset_indices = tuple(slice(0, s.stop-s.start) for s in slices)
+        subset_indices = tuple(slice(0, s.stop - s.start) for s in slices)
         resampled_data[slices] = _get_data(cropped_img)[subset_indices]
     else:
         # If A is diagonal, ndimage.affine_transform is clever enough to use a
@@ -609,23 +582,64 @@ def resample_img(img, target_affine=None, target_shape=None,
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost
+        all_img = (slice(None), ) * 3
         for ind in np.ndindex(*other_shape):
             _resample_one_img(data[all_img + ind], A, b, target_shape,
-                              interpolation_order,
+                              _interpolation_order(interpolation),
                               out=resampled_data[all_img + ind],
                               copy=not input_img_is_string,
                               fill_value=fill_value)
 
-    if clip:
-        # force resampled data to have a range contained in the original data
-        # preventing ringing artefact
-        # We need to add zero as a value considered for clipping, as it
-        # appears in padding images.
-        vmin = min(data.min(), 0)
-        vmax = max(data.max(), 0)
-        resampled_data.clip(vmin, vmax, out=resampled_data)
+    resampled_data = _clip_img(data, resampled_data, clip)
 
     return new_img_like(img, resampled_data, target_affine)
+
+
+def _clip_img(data, resampled_data, clip):
+    if not clip:
+        return resampled_data
+    # force resampled data to have a range contained in the original data
+    # preventing ringing artefact
+    # We need to add zero as a value considered for clipping, as it
+    # appears in padding images.
+    vmin = min(data.min(), 0)
+    vmax = max(data.max(), 0)
+    resampled_data.clip(vmin, vmax, out=resampled_data)
+    return resampled_data
+
+
+def _interpolation_order(interpolation):
+    if interpolation == 'continuous':
+        return 3
+    elif interpolation == 'linear':
+        return 1
+    elif interpolation == 'nearest':
+        return 0
+
+
+def _check_param_resample_img(target_shape,
+                              target_affine,
+                              interpolation,
+                              _ALLOWED_INTERPOLATIONS):
+    # Do as many checks as possible before loading data, to avoid potentially
+    # costly calls before raising an exception.
+    if target_shape is not None and target_affine is None:
+        raise ValueError("If target_shape is specified, target_affine should"
+                         " be specified too.")
+
+    if target_shape is not None and len(target_shape) != 3:
+        raise ValueError('The shape specified should be the shape of '
+                         'the 3D grid, and thus of length 3. %s was specified'
+                         % str(target_shape))
+
+    if target_shape is not None and target_affine.shape == (3, 3):
+        raise ValueError("Given target shape without anchor vector: "
+                         "Affine shape should be (4, 4) and not (3, 3)")
+
+    if interpolation not in _ALLOWED_INTERPOLATIONS:
+        message = (f"interpolation must be one of: {_ALLOWED_INTERPOLATIONS} "
+                   f"but it was set to '{interpolation}'")
+        raise ValueError(message)
 
 
 def resample_to_img(source_img, target_img,

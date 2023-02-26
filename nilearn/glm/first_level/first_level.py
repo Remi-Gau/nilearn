@@ -534,21 +534,10 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(run_imgs)
         t0 = time.time()
         for run_idx, run_img in enumerate(run_imgs):
-            # Report progress
-            if self.verbose > 0:
-                percent = float(run_idx) / n_runs
-                percent = round(percent * 100, 2)
-                dt = time.time() - t0
-                # We use a max to avoid a division by zero
-                if run_idx == 0:
-                    remaining = 'go take a coffee, a big one'
-                else:
-                    remaining = (100. - percent) / max(0.01, percent) * dt
-                    remaining = '%i seconds remaining' % remaining
 
-                sys.stderr.write(
-                    "Computing run %d out of %d runs (%s)\n"
-                    % (run_idx + 1, n_runs, remaining))
+            remaining = self._compute_remaining(run_idx, n_runs, t0)
+            msg = f"Computing run {run_idx + 1} out of {n_runs} runs ({remaining})\n"
+            self._report_progress(msg)
 
             # Build the experimental design for the glm
             run_img = check_niimg(run_img, ensure_ndim=4)
@@ -579,28 +568,24 @@ class FirstLevelModel(BaseGLM):
                                                         self.min_onset
                                                         )
             else:
-                design = design_matrices[run_idx]
+                design = design_matrices[run_idx]                
+                
 
             if sample_masks is not None:
                 sample_mask = sample_masks[run_idx]
                 design = design.iloc[sample_mask, :]
             else:
                 sample_mask = None
-
+                
             self.design_matrices_.append(design)
 
             # Mask and prepare data for GLM
-            if self.verbose > 1:
-                t_masking = time.time()
-                sys.stderr.write('Starting masker computation \r')
-
+            t_masking = time.time()
+            self._report_progress(f'Starting masker computation \r')
             Y = self.masker_.transform(run_img, sample_mask=sample_mask)
+            t_masking = time.time() - t_masking
+            self._report_progress(f'Masker took {t_masking} seconds       \n')
             del run_img  # Delete unmasked image to save memory
-
-            if self.verbose > 1:
-                t_masking = time.time() - t_masking
-                sys.stderr.write('Masker took %d seconds       \n'
-                                 % t_masking)
 
             if self.signal_scaling is not False:  # noqa
                 Y, _ = mean_scaling(Y, self.signal_scaling)
@@ -610,16 +595,14 @@ class FirstLevelModel(BaseGLM):
                 mem_glm = run_glm
 
             # compute GLM
-            if self.verbose > 1:
-                t_glm = time.time()
-                sys.stderr.write('Performing GLM computation\r')
+            t_glm = time.time()
+            self._report_progress('Performing GLM computation\r')
             labels, results = mem_glm(Y, design.values,
                                       noise_model=self.noise_model,
                                       bins=bins, n_jobs=self.n_jobs,
                                       random_state=self.random_state)
-            if self.verbose > 1:
-                t_glm = time.time() - t_glm
-                sys.stderr.write('GLM took %d seconds         \n' % t_glm)
+            t_glm = time.time() - t_glm
+            self._report_progress(f'GLM took {t_glm} seconds         \n')
 
             self.labels_.append(labels)
             # We save memory if inspecting model details is not necessary
@@ -629,11 +612,26 @@ class FirstLevelModel(BaseGLM):
             self.results_.append(results)
             del Y
 
-        # Report progress
-        if self.verbose > 0:
-            sys.stderr.write("\nComputation of %d runs done in %i seconds\n\n"
-                             % (n_runs, time.time() - t0))
+        self._report_progress(f"\nComputation of {n_runs} runs " +
+                              f"done in {time.time() - t0} seconds\n\n")
         return self
+
+    def _compute_remaining(self, run_idx, n_runs, t0):
+        percent = float(run_idx) / n_runs
+        percent = round(percent * 100, 2)
+        remaining = 'go take a coffee, a big one'
+        if run_idx != 0:
+            dt = time.time() - t0
+            # We use a max to avoid a division by zero
+            remaining = (100.0 - percent) / max(0.01, percent) * dt
+            remaining = '%i seconds remaining' % remaining  
+        return remaining     
+
+    def _report_progress(self, msg):
+        if self.verbose == 0:
+            return
+        sys.stderr.write(msg)
+
 
     def compute_contrast(self, contrast_def, stat_type=None,
                          output_type='z_score'):

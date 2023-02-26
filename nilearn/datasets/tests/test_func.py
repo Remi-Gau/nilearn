@@ -23,7 +23,6 @@ from sklearn.utils import check_random_state
 from nilearn.datasets import func
 from nilearn.datasets._testing import list_to_archive, dict_to_archive
 from nilearn.datasets.utils import _get_dataset_dir
-from nilearn._utils.testing import check_deprecation
 
 
 def _load_localizer_index():
@@ -201,7 +200,20 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     assert len(dataset.cmaps) == 2 * 2  # two contrasts are fetched
     assert len(dataset['ext_vars']) == 2
 
-    # all get_*=True
+    # grab a given list of subjects
+    dataset2 = func.fetch_localizer_contrasts(
+        ['checkerboard'],
+        n_subjects=[2, 3, 5],
+        data_dir=tmp_path,
+        verbose=1,
+        legacy_format=False)
+    assert len(dataset2['ext_vars']) == 3
+    assert len(dataset2.cmaps) == 3
+    assert (list(dataset2['ext_vars']['participant_id'].values) == ['S02',
+                                                                    'S03',
+                                                                    'S05'])
+
+def test_fetch_localizer_contrasts_all_true(tmp_path, request_mocker, localizer_mocker):
     dataset = func.fetch_localizer_contrasts(
         ['checkerboard'],
         n_subjects=1,
@@ -222,19 +234,6 @@ def test_fetch_localizer_contrasts(tmp_path, request_mocker, localizer_mocker):
     assert len(dataset.masks) == 1
     assert len(dataset.tmaps) == 1
     assert dataset.description != ''
-
-    # grab a given list of subjects
-    dataset2 = func.fetch_localizer_contrasts(
-        ['checkerboard'],
-        n_subjects=[2, 3, 5],
-        data_dir=tmp_path,
-        verbose=1,
-        legacy_format=False)
-    assert len(dataset2['ext_vars']) == 3
-    assert len(dataset2.cmaps) == 3
-    assert (list(dataset2['ext_vars']['participant_id'].values) == ['S02',
-                                                                    'S03',
-                                                                    'S05'])
 
 
 def test_fetch_localizer_calculation_task(tmp_path, request_mocker,

@@ -553,11 +553,118 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     .. footbibliography::
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_button_task
 
     """
+    def _convert_contrast_names(contrasts,
+                                allowed_contrasts,
+                                contrast_name_wrapper):
+        contrasts_wrapped = []
+        for contrast in contrasts:
+            if contrast in allowed_contrasts:
+                contrasts_wrapped.append(contrast.title().replace(" ", ""))
+            elif contrast in contrast_name_wrapper:
+                name = contrast_name_wrapper[contrast]
+                contrasts_wrapped.append(name.title().replace(" ", ""))
+            else:
+                raise ValueError("Contrast \'%s\' is not available" % contrast)
+        return contrasts_wrapped
+
+
+    def _is_valid_path(path, index, verbose):
+        if path not in index:
+            if verbose > 0:
+                print("Skipping path '{0}'...".format(path))
+            return False
+        return True
+
+    def _file_url(root_url, index, path):
+        return root_url.format(index[path][1:])
+
+    def _append_file_to_download(file_url, file_path, data_type, filenames, files):
+        opts = {"move": file_path}
+        filenames.append((file_path, file_url, opts))
+        files.setdefault(data_type, []).append(file_path)
+        return filenames, files
+
+    def _get_masks(get_masks,
+                subject_ids,
+                path,
+                index,
+                verbose,
+                root_url,
+                filenames,
+                files):
+
+        if not get_masks:
+            return filenames, files
+
+        # Fetch masks if asked by user
+        for subject_id in subject_ids:
+            file_path = os.path.join(
+                "brainomics_data",
+                subject_id,
+                "boolean_mask_mask.nii.gz")
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_1st_level",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_mask.nii.gz",
+                ]
+            )
+            if _is_valid_path(path, index, verbose=verbose):
+                (filenames, files) = _append_file_to_download(
+                                        _file_url(root_url, index, path), 
+                                        file_path, 
+                                        "masks",
+                                        filenames,
+                                        files)
+
+        return filenames, files
+
+
+    def _get_anats(get_anats,
+                subject_ids,
+                path,
+                index,
+                verbose,
+                root_url,
+                filenames,
+                files):
+
+        if not get_anats:
+            return filenames, files
+
+        # Fetch anats if asked by user
+        for subject_id in subject_ids:
+            file_path = os.path.join(
+                "brainomics_data",
+                subject_id,
+                "normalized_T1_anat_defaced.nii.gz")
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_preprocessing",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_T1w.nii.gz"
+                ]
+            )
+            if _is_valid_path(path, index, verbose=verbose):
+                (filenames, files) = _append_file_to_download(
+                                        _file_url(root_url, index, path), 
+                                        file_path, 
+                                        "anats",
+                                        filenames,
+                                        files)            
+
+        return filenames, files
+
+
     if isinstance(contrasts, str):
         raise ValueError('Contrasts should be a list of strings, but '
                          'a single string was given: "%s"' % contrasts)
@@ -627,21 +734,9 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             "auditory&visual motor vs cognitive processing"}
     allowed_contrasts = list(contrast_name_wrapper.values())
 
-    # convert contrast names
-    contrasts_wrapped = []
-    # get a unique ID for each contrast. It is used to give a unique name to
-    # each download file and avoid name collisions.
-    contrasts_indices = []
-    for contrast in contrasts:
-        if contrast in allowed_contrasts:
-            contrasts_wrapped.append(contrast.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(contrast))
-        elif contrast in contrast_name_wrapper:
-            name = contrast_name_wrapper[contrast]
-            contrasts_wrapped.append(name.title().replace(" ", ""))
-            contrasts_indices.append(allowed_contrasts.index(name))
-        else:
-            raise ValueError("Contrast \'%s\' is not available" % contrast)
+    contrasts_wrapped = _convert_contrast_names(contrasts,
+                                                allowed_contrasts,
+                                                contrast_name_wrapper)
 
     # Get the dataset OSF index
     dataset_name = "brainomics_localizer"
@@ -653,91 +748,88 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         index = json.load(of)
 
     # Build data URLs that will be fetched
-    files = {}
+
     # Download from the relevant OSF project, using hashes generated
     # from the OSF API. Note the trailing slash. For more info, see:
     # https://gist.github.com/emdupre/3cb4d564511d495ea6bf89c6a577da74
     root_url = "https://osf.io/download/{0}/"
+
     if isinstance(n_subjects, numbers.Number):
         subject_mask = np.arange(1, n_subjects + 1)
     else:
         subject_mask = np.array(n_subjects)
     subject_ids = ["S%02d" % s for s in subject_mask]
+
     data_types = ["cmaps"]
     if get_tmaps:
         data_types.append("tmaps")
-    filenames = []
 
-    def _is_valid_path(path, index, verbose):
-        if path not in index:
-            if verbose > 0:
-                print("Skipping path '{0}'...".format(path))
-            return False
-        return True
+    files = {}
+    filenames = []
 
     for subject_id in subject_ids:
         for data_type in data_types:
-            for contrast_id, contrast in enumerate(contrasts_wrapped):
+            for _, contrast in enumerate(contrasts_wrapped):
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
-                file_path = os.path.join(
-                    "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
-                path = "/".join([
-                    "/localizer", "derivatives", "spm_1st_level",
-                    "sub-%s" % subject_id,
-                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
-                        subject_id, contrast, data_type)])
+                file_path = os.path.join("brainomics_data", 
+                                         subject_id, 
+                                         f"{name_aux}.nii.gz")
+                path = "/".join(
+                    [
+                        "/localizer",
+                        "derivatives",
+                        "spm_1st_level",
+                        f"sub-{subject_id}",
+                        f"sub-{subject_id}_task-localizer_" +
+                        f"acq-{contrast}_{data_type}.nii.gz",
+                    ]
+                )
                 if _is_valid_path(path, index, verbose=verbose):
-                    file_url = root_url.format(index[path][1:])
-                    opts = {"move": file_path}
-                    filenames.append((file_path, file_url, opts))
-                    files.setdefault(data_type, []).append(file_path)
+                    (filenames, files) = _append_file_to_download(
+                                            _file_url(root_url, index, path),
+                                            file_path,
+                                            data_type,
+                                            filenames,
+                                            files)
 
-    # Fetch masks if asked by user
-    if get_masks:
-        for subject_id in subject_ids:
-            file_path = os.path.join(
-                "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
-            path = "/".join([
-                "/localizer", "derivatives", "spm_1st_level",
-                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id])
-            if _is_valid_path(path, index, verbose=verbose):
-                file_url = root_url.format(index[path][1:])
-                opts = {"move": file_path}
-                filenames.append((file_path, file_url, opts))
-                files.setdefault("masks", []).append(file_path)
+    (filenames, files) = _get_masks(get_masks,
+                                    subject_ids,
+                                    path,
+                                    index,
+                                    verbose,
+                                    root_url,
+                                    filenames,
+                                    files)
 
-    # Fetch anats if asked by user
-    if get_anats:
-        for subject_id in subject_ids:
-            file_path = os.path.join(
-                "brainomics_data", subject_id,
-                "normalized_T1_anat_defaced.nii.gz")
-            path = "/".join([
-                "/localizer", "derivatives", "spm_preprocessing",
-                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id])
-            if _is_valid_path(path, index, verbose=verbose):
-                file_url = root_url.format(index[path][1:])
-                opts = {"move": file_path}
-                filenames.append((file_path, file_url, opts))
-                files.setdefault("anats", []).append(file_path)
+    (filenames, files) = _get_anats(get_anats,
+                                    subject_ids,
+                                    path, index,
+                                    verbose,
+                                    root_url,
+                                    filenames,
+                                    files)
 
     # Fetch subject characteristics
     participants_file = os.path.join("brainomics_data", "participants.tsv")
     path = "/localizer/participants.tsv"
     if _is_valid_path(path, index, verbose=verbose):
-        file_url = root_url.format(index[path][1:])
-        opts = {"move": participants_file}
-        filenames.append((participants_file, file_url, opts))
+        (filenames, files) = _append_file_to_download(_file_url(root_url, index, path),
+                                                      participants_file,
+                                                      participants_file,
+                                                      filenames,
+                                                      files)
 
     # Fetch behavioural
     behavioural_file = os.path.join(
         "brainomics_data", "phenotype", "behavioural.tsv")
     path = "/localizer/phenotype/behavioural.tsv"
     if _is_valid_path(path, index, verbose=verbose):
-        file_url = root_url.format(index[path][1:])
-        opts = {"move": behavioural_file}
-        filenames.append((behavioural_file, file_url, opts))
+        (filenames, files) = _append_file_to_download(_file_url(root_url, index, path),
+                                                      behavioural_file,
+                                                      behavioural_file,
+                                                      filenames,
+                                                      files)
 
     # Actual data fetching
     fdescr = _get_dataset_descr(dataset_name)
@@ -787,13 +879,13 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
         'cmaps': string list, giving paths to nifti contrast maps
 
     Notes
-    ------
+    -----
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'calculation (auditory and visual cue)' contrast is used.
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_button_task
     nilearn.datasets.fetch_localizer_contrasts
 
@@ -829,13 +921,13 @@ def fetch_localizer_button_task(data_dir=None, url=None,
         - 'anat': string, giving paths to normalized anatomical image
 
     Notes
-    ------
+    -----
     This function is only a caller for the fetch_localizer_contrasts in order
     to simplify examples reading and understanding.
     The 'left vs right button press' contrast is used.
 
     See Also
-    ---------
+    --------
     nilearn.datasets.fetch_localizer_calculation_task
     nilearn.datasets.fetch_localizer_contrasts
 
