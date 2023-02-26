@@ -230,14 +230,15 @@ def _checks_in_debug_mode(W, W_inv, omega, feature_n, subject_n, debug):
 
 
 def _initial_state(omega, feature_n, debug):
-    # Initial state: remove first col/row
+    # remove first col/row
     W = omega[1:, 1:, :].copy()   # stack of W(i_subject)
     W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
     for subject_n in range(W.shape[2]):
         # stack of W^-1(i_subject)
         W_inv[..., subject_n] = scipy.linalg.inv(W[..., subject_n])
         _checks_in_debug_mode(W, W_inv, omega, feature_n, subject_n, debug)
-    return W, W_inv-
+    return W, W_inv
+
 
 def _newton_raphson(c, q, alpha2, debug):
     # Newton-Raphson loop. Loosely based on Scipy's.
@@ -245,7 +246,8 @@ def _newton_raphson(c, q, alpha2, debug):
     # stability (tolerance of 1e-2 works) but has an effect on
     # overall convergence rate (the tighter the better.)
 
-    gamma = 0.0  # initial value
+    # initial value
+    gamma = 0.0  
     
     cc = c * c
     two_ccq = 2.0 * cc * q
@@ -253,14 +255,16 @@ def _newton_raphson(c, q, alpha2, debug):
         # Function whose zero must be determined (fval) and
         # its derivative (fder).
         # Written inplace to save some function calls.
+
         aq = 1.0 + gamma * q
         aq2 = aq * aq
-        fder = (two_ccq / (aq2 * aq)).sum()
 
+        fder = (two_ccq / (aq2 * aq)).sum()
         if fder == 0:
             msg = "derivative was zero."
             warnings.warn(msg, RuntimeWarning)
             break
+
         fval = - (alpha2 - (cc / aq2).sum()) / fder
         gamma = fval + gamma
         if abs(fval) < 1.5e-8:
@@ -272,7 +276,7 @@ def _newton_raphson(c, q, alpha2, debug):
                     "system.")
 
     if debug:
-        assert gamma >= 0., gamma
+        assert gamma >= 0.0, gamma
 
     return gamma, aq
 
@@ -287,6 +291,7 @@ def _group_sparse_covariance(emp_covs,
                              verbose=0,
                              debug=False):
     """Internal version of group_sparse_covariance.
+    
     See its docstring for details.
 
     """
@@ -362,18 +367,20 @@ def _group_sparse_covariance(emp_covs,
     # Used in the innermost loop. Computed here to save some computation.
     alpha2 = alpha ** 2
 
+    if max_norm is not None:
+        suffix = (" variation (max norm): {max_norm:.3e} ".format(
+            max_norm=max_norm))
+    else:
+        suffix = ""
+
     for iter_n in range(max_iter):
-        if max_norm is not None:
-            suffix = (" variation (max norm): {max_norm:.3e} ".format(
-                max_norm=max_norm))
-        else:
-            suffix = ""
+
         if verbose > 1:
             logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
                        " ...".format(iter_n=iter_n,
                                      percentage=100.0 * iter_n / max_iter,
-                                     suffix=suffix), 
-                        verbose=verbose)
+                                     suffix=suffix),
+                       verbose=verbose)
 
         omega_old[...] = omega
         for feature_n in range(n_features):
@@ -425,59 +432,24 @@ def _group_sparse_covariance(emp_covs,
                 y_1[:, :m] = y[:, :m]
                 y_1[:, m:] = y[:, m + 1:]
 
-                c[:] = - n_samples * (
-                    emp_covs[feature_n, feature_n, :] * 
-                    (h_12 * y_1).sum(axis=1) + 
-                    u[:, m]
-                    )
+                c[:] = - n_samples * (emp_covs[feature_n, feature_n, :] *
+                                      (h_12 * y_1).sum(axis=1) +
+                                      u[:, m]
+                                     )
                 c2 = np.sqrt(np.dot(c, c))
 
                 # x -> y[:][m]
                 if c2 <= alpha:
                     y[:, m] = 0  # x* = 0
+
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> gamma   (lambda is a Python keyword)
                     q[:] = n_samples * emp_covs[feature_n, feature_n, :] * W_inv[m, m, :]
                     if debug:
-                        assert(np.all(q > 0))
+                        assert (np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
-
                     gamma, aq = _newton_raphson(c, q, alpha2, debug)
-
-                    # Newton-Raphson loop. Loosely based on Scipy's.
-                    # Tolerance does not seem to be important for numerical
-                    # stability (tolerance of 1e-2 works) but has an effect on
-                    # overall convergence rate (the tighter the better.)
-
-                    gamma = 0.  # initial value
-                    # Precompute some quantities
-                    cc = c * c
-                    two_ccq = 2. * cc * q
-                    for _ in itertools.repeat(None, 100):
-                        # Function whose zero must be determined (fval) and
-                        # its derivative (fder).
-                        # Written inplace to save some function calls.
-                        aq = 1. + gamma * q
-                        aq2 = aq * aq
-                        fder = (two_ccq / (aq2 * aq)).sum()
-
-                        if fder == 0:
-                            msg = "derivative was zero."
-                            warnings.warn(msg, RuntimeWarning)
-                            break
-                        fval = - (alpha2 - (cc / aq2).sum()) / fder
-                        gamma = fval + gamma
-                        if abs(fval) < 1.5e-8:
-                            break
-
-                    if abs(fval) > 0.1:
-                        warnings.warn("Newton-Raphson step did not converge.\iter_n"
-                                      "This may indicate a badly conditioned "
-                                      "system.")
-
-                    if debug:
-                        assert gamma >= 0., gamma
                     y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
@@ -487,15 +459,15 @@ def _group_sparse_covariance(emp_covs,
             omega[feature_n, feature_n + 1:, :] = y[:, feature_n:].T
 
             for k in range(n_subjects):
-                omega[feature_n, feature_n, k] = 1.0 / emp_covs[feature_n, 
-                                                                feature_n, 
+                omega[feature_n, feature_n, k] = 1.0 / emp_covs[feature_n,
+                                                                feature_n,
                                                                 k] + np.dot(np.dot(y[k, :],
-                                                                                   W_inv[..., 
+                                                                                   W_inv[...,
                                                                                    k]),
                                                                             y[k, :])
 
                 if debug:
-                    assert(is_spd(omega[..., k]))
+                    assert (is_spd(omega[..., k]))
 
         if probe_function is not None:
             if probe_function(emp_covs,

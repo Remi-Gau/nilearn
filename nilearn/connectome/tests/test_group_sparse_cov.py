@@ -58,13 +58,19 @@ def test_group_sparse_covariance():
                   [np.ones((2, 2)), np.ones((2, 3))], alpha)
 
     # Check consistency between classes
-    gsc1 = GroupSparseCovarianceCV(alphas=4, tol=1e-1, max_iter=20, verbose=0,
+    gsc1 = GroupSparseCovarianceCV(alphas=4,
+                                   tol=1e-1,
+                                   max_iter=20,
+                                   verbose=0,
                                    early_stopping=True)
     gsc1.fit(signals)
 
-    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_, tol=1e-1, max_iter=20,
+    gsc2 = GroupSparseCovariance(alpha=gsc1.alpha_,
+                                 tol=1e-1,
+                                 max_iter=20,
                                  verbose=0)
     gsc2.fit(signals)
 
-    np.testing.assert_almost_equal(gsc1.precisions_, gsc2.precisions_,
+    np.testing.assert_almost_equal(gsc1.precisions_,
+                                   gsc2.precisions_,
                                    decimal=4)
