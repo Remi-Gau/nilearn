@@ -237,8 +237,7 @@ def _initial_state(omega, feature_n, debug):
         # stack of W^-1(i_subject)
         W_inv[..., subject_n] = scipy.linalg.inv(W[..., subject_n])
         _checks_in_debug_mode(W, W_inv, omega, feature_n, subject_n, debug)
-    return W, W_inv
-
+    return W, W_inv-
 
 def _newton_raphson(c, q, alpha2, debug):
     # Newton-Raphson loop. Loosely based on Scipy's.
@@ -443,6 +442,8 @@ def _group_sparse_covariance(emp_covs,
                     if debug:
                         assert(np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
+
+                    gamma, aq = _newton_raphson(c, q, alpha2, debug)
 
                     # Newton-Raphson loop. Loosely based on Scipy's.
                     # Tolerance does not seem to be important for numerical
