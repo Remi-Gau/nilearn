@@ -369,8 +369,10 @@ def _group_sparse_covariance(emp_covs,
             suffix = ""
         if verbose > 1:
             logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
-                    " ...".format(iter_n=iter_n, percentage=100. * iter_n / max_iter,
-                                  suffix=suffix), verbose=verbose)
+                       " ...".format(iter_n=iter_n,
+                                     percentage=100.0 * iter_n / max_iter,
+                                     suffix=suffix), 
+                        verbose=verbose)
 
         omega_old[...] = omega
         for feature_n in range(n_features):
@@ -423,7 +425,9 @@ def _group_sparse_covariance(emp_covs,
                 y_1[:, m:] = y[:, m + 1:]
 
                 c[:] = - n_samples * (
-                    emp_covs[feature_n, feature_n, :] * (h_12 * y_1).sum(axis=1) + u[:, m]
+                    emp_covs[feature_n, feature_n, :] * 
+                    (h_12 * y_1).sum(axis=1) + 
+                    u[:, m]
                     )
                 c2 = np.sqrt(np.dot(c, c))
 
