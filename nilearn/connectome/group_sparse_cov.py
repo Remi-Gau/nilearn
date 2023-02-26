@@ -74,58 +74,58 @@ def compute_alpha_max(emp_covs, n_samples):
     return np.max(norms), np.min(norms[norms > 0])
 
 
-def _update_submatrix(full, sub, sub_inv, p, h, v):
+def _update_submatrix(full, sub, sub_inv, feature_n, h, v):
     """Update submatrix and its inverse.
 
     sub_inv is the inverse of the submatrix of "full" obtained by removing
-    the p-th row and column.
+    the feature_n-th row and column.
 
     sub_inv is modified in-place. After execution of this function, it contains
-    the inverse of the submatrix of "full" obtained by removing the n+1-th row
+    the inverse of the submatrix of "full" obtained by removing the iter_n+1-th row
     and column.
 
     This computation is based on the Sherman-Woodbury-Morrison identity.
 
     """
-    n = p - 1
-    v[:n + 1] = full[:n + 1, n]
-    v[n + 1:] = full[n + 2:, n]
-    h[:n + 1] = full[n, :n + 1]
-    h[n + 1:] = full[n, n + 2:]
+    iter_n = feature_n - 1
+    v[:iter_n + 1] = full[:iter_n + 1, iter_n]
+    v[iter_n + 1:] = full[iter_n + 2:, iter_n]
+    h[:iter_n + 1] = full[iter_n, :iter_n + 1]
+    h[iter_n + 1:] = full[iter_n, iter_n + 2:]
 
     # change row: first usage of SWM identity
-    coln = sub_inv[:, n:n + 1]  # 2d array, useful for sub_inv below
-    V = h - sub[n, :]
+    coln = sub_inv[:, iter_n:iter_n + 1]  # 2d array, useful for sub_inv below
+    V = h - sub[iter_n, :]
     coln = coln / (1. + np.dot(V, coln))
     # The following line is equivalent to
     # sub_inv -= np.outer(coln, np.dot(V, sub_inv))
     sub_inv -= np.dot(coln, np.dot(V, sub_inv)[np.newaxis, :])
-    sub[n, :] = h
+    sub[iter_n, :] = h
 
     # change column: second usage of SWM identity
-    rown = sub_inv[n:n + 1, :]  # 2d array, useful for sub_inv below
-    U = v - sub[:, n]
+    rown = sub_inv[iter_n:iter_n + 1, :]  # 2d array, useful for sub_inv below
+    U = v - sub[:, iter_n]
     rown = rown / (1. + np.dot(rown, U))
     # The following line is equivalent to (but faster)
     # sub_inv -= np.outer(np.dot(sub_inv, U), rown)
     sub_inv -= np.dot(np.dot(sub_inv, U)[:, np.newaxis], rown)
-    sub[:, n] = v   # equivalent to sub[n, :] += U
+    sub[:, iter_n] = v   # equivalent to sub[iter_n, :] += U
 
     # Make sub_inv symmetric (overcome some numerical limitations)
     sub_inv += sub_inv.T.copy()
     sub_inv /= 2.
 
 
-def _assert_submatrix(full, sub, n):
-    """Check that "sub" is the matrix obtained by removing the p-th col and row
+def _assert_submatrix(full, sub, iter_n):
+    """Check that "sub" is the matrix obtained by removing the feature_n-th col and row
     in "full". Used only for debugging.
 
     """
     true_sub = np.empty_like(sub)
-    true_sub[:n, :n] = full[:n, :n]
-    true_sub[n:, n:] = full[n + 1:, n + 1:]
-    true_sub[:n, n:] = full[:n, n + 1:]
-    true_sub[n:, :n] = full[n + 1:, :n]
+    true_sub[:iter_n, :iter_n] = full[:iter_n, :iter_n]
+    true_sub[iter_n:, iter_n:] = full[iter_n + 1:, iter_n + 1:]
+    true_sub[:iter_n, iter_n:] = full[:iter_n, iter_n + 1:]
+    true_sub[iter_n:, :iter_n] = full[iter_n + 1:, :iter_n]
 
     np.testing.assert_almost_equal(true_sub, sub)
 
@@ -267,7 +267,7 @@ def _newton_raphson(c, q, alpha2, debug):
             break
 
     if abs(fval) > 0.1:
-        warnings.warn("Newton-Raphson step did not converge.\n"
+        warnings.warn("Newton-Raphson step did not converge.\iter_n"
                     "This may indicate a badly conditioned "
                     "system.")
 
@@ -294,7 +294,7 @@ def _group_sparse_covariance(emp_covs,
         tol = None
     if not isinstance(alpha, (int, float)) or alpha < 0:
         raise ValueError("Regularization parameter alpha must be a "
-                         "positive number.\n"
+                         "positive number.\iter_n"
                          "You provided: {0}".format(str(alpha)))
 
     n_subjects = emp_covs.shape[-1]
@@ -356,7 +356,7 @@ def _group_sparse_covariance(emp_covs,
     # Used in the innermost loop. Computed here to save some computation.
     alpha2 = alpha ** 2
 
-    for n in range(max_iter):
+    for iter_n in range(max_iter):
         if max_norm is not None:
             suffix = (" variation (max norm): {max_norm:.3e} ".format(
                 max_norm=max_norm))
@@ -364,13 +364,13 @@ def _group_sparse_covariance(emp_covs,
             suffix = ""
         if verbose > 1:
             logger.log("* iteration {iter_n:d} ({percentage:.0f} %){suffix}"
-                    " ...".format(iter_n=n, percentage=100. * n / max_iter,
+                    " ...".format(iter_n=iter_n, percentage=100. * iter_n / max_iter,
                                   suffix=suffix), verbose=verbose)
 
         omega_old[...] = omega
-        for p in range(n_features):
+        for feature_n in range(n_features):
 
-            if p == 0:
+            if feature_n == 0:
                 # Initial state: remove first col/row
                 W = omega[1:, 1:, :].copy()   # stack of W(k)
                 W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
@@ -381,7 +381,7 @@ def _group_sparse_covariance(emp_covs,
                         np.testing.assert_almost_equal(
                             np.dot(W_inv[..., k], W[..., k]),
                             np.eye(W_inv[..., k].shape[0]), decimal=10)
-                        _assert_submatrix(omega[..., k], W[..., k], p)
+                        _assert_submatrix(omega[..., k], W[..., k], feature_n)
                         assert(is_spd(W_inv[..., k]))
             else:
                 # Update W and W_inv
@@ -390,10 +390,10 @@ def _group_sparse_covariance(emp_covs,
 
                 for k in range(n_subjects):
                     _update_submatrix(omega[..., k],
-                                      W[..., k], W_inv[..., k], p, h, v)
+                                      W[..., k], W_inv[..., k], feature_n, h, v)
 
                     if debug:
-                        _assert_submatrix(omega[..., k], W[..., k], p)
+                        _assert_submatrix(omega[..., k], W[..., k], feature_n)
                         assert(is_spd(W_inv[..., k], decimal=14))
                         np.testing.assert_almost_equal(
                             np.dot(W[..., k], W_inv[..., k]),
@@ -404,17 +404,17 @@ def _group_sparse_covariance(emp_covs,
 
             # In the following lines, implicit loop on k (subjects)
             # Extract y and u
-            y[:, :p] = omega[:p, p, :].T
-            y[:, p:] = omega[p + 1:, p, :].T
+            y[:, :feature_n] = omega[:feature_n, feature_n, :].T
+            y[:, feature_n:] = omega[feature_n + 1:, feature_n, :].T
 
-            u[:, :p] = emp_covs[:p, p, :].T
-            u[:, p:] = emp_covs[p + 1:, p, :].T
+            u[:, :feature_n] = emp_covs[:feature_n, feature_n, :].T
+            u[:, feature_n:] = emp_covs[feature_n + 1:, feature_n, :].T
 
             for m in range(n_features - 1):
                 # Coordinate descent on y
 
                 # T(k) -> n_samples[k]
-                # v(k) -> emp_covs[p, p, k]
+                # v(k) -> emp_covs[feature_n, feature_n, k]
                 # h_22(k) -> W_inv[m, m, k]
                 # h_12(k) -> W_inv[:m, m, k],  W_inv[m+1:, m, k]
                 # y_1(k) -> y[k, :m], y[k, m+1:]
@@ -425,7 +425,7 @@ def _group_sparse_covariance(emp_covs,
                 y_1[:, m:] = y[:, m + 1:]
 
                 c[:] = - n_samples * (
-                    emp_covs[p, p, :] * (h_12 * y_1).sum(axis=1) + u[:, m]
+                    emp_covs[feature_n, feature_n, :] * (h_12 * y_1).sum(axis=1) + u[:, m]
                     )
                 c2 = np.sqrt(np.dot(c, c))
 
@@ -435,7 +435,7 @@ def _group_sparse_covariance(emp_covs,
                 else:
                     # q(k) -> T(k) * v(k) * h_22(k)
                     # \lambda -> gamma   (lambda is a Python keyword)
-                    q[:] = n_samples * emp_covs[p, p, :] * W_inv[m, m, :]
+                    q[:] = n_samples * emp_covs[feature_n, feature_n, :] * W_inv[m, m, :]
                     if debug:
                         assert(np.all(q > 0))
                     # x* = \lambda* diag(1 + \lambda q)^{-1} c
@@ -467,7 +467,7 @@ def _group_sparse_covariance(emp_covs,
                             break
 
                     if abs(fval) > 0.1:
-                        warnings.warn("Newton-Raphson step did not converge.\n"
+                        warnings.warn("Newton-Raphson step did not converge.\iter_n"
                                       "This may indicate a badly conditioned "
                                       "system.")
 
@@ -476,13 +476,13 @@ def _group_sparse_covariance(emp_covs,
                     y[:, m] = (gamma * c) / aq  # x*
 
             # Copy back y in omega (column and row)
-            omega[:p, p, :] = y[:, :p].T
-            omega[p + 1:, p, :] = y[:, p:].T
-            omega[p, :p, :] = y[:, :p].T
-            omega[p, p + 1:, :] = y[:, p:].T
+            omega[:feature_n, feature_n, :] = y[:, :feature_n].T
+            omega[feature_n + 1:, feature_n, :] = y[:, feature_n:].T
+            omega[feature_n, :feature_n, :] = y[:, :feature_n].T
+            omega[feature_n, feature_n + 1:, :] = y[:, feature_n:].T
 
             for k in range(n_subjects):
-                omega[p, p, k] = 1. / emp_covs[p, p, k] + np.dot(
+                omega[feature_n, feature_n, k] = 1. / emp_covs[feature_n, feature_n, k] + np.dot(
                     np.dot(y[k, :], W_inv[..., k]), y[k, :])
 
                 if debug:
@@ -490,7 +490,7 @@ def _group_sparse_covariance(emp_covs,
 
         if probe_function is not None:
             if probe_function(emp_covs, n_samples, alpha, max_iter, tol,
-                              n, omega, omega_old) is True:
+                              iter_n, omega, omega_old) is True:
                 probe_interrupted = True
                 logger.log("probe_function interrupted loop", verbose=verbose,
                            msg_level=2)
@@ -503,7 +503,7 @@ def _group_sparse_covariance(emp_covs,
 
         if tol is not None and max_norm < tol:
             logger.log("tolerance reached at iteration number {0:d}: {1:.3e}"
-                       "".format(n + 1, max_norm), verbose=verbose)
+                       "".format(iter_n + 1, max_norm), verbose=verbose)
             tolerance_reached = True
             break
 
