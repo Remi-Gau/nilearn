@@ -469,19 +469,24 @@ def _group_sparse_covariance(emp_covs,
                 if debug:
                     assert (is_spd(omega[..., k]))
 
-        if probe_function is not None:
-            if probe_function(emp_covs,
-                              n_samples,
-                              alpha,
-                              max_iter,
-                              tol,
-                              iter_n,
-                              omega,
-                              omega_old) is True:
-                probe_interrupted = True
-                logger.log("probe_function interrupted loop", verbose=verbose,
-                           msg_level=2)
-                break
+        if (
+            probe_function is not None
+            and probe_function(
+                emp_covs,
+                n_samples,
+                alpha,
+                max_iter,
+                tol,
+                iter_n,
+                omega,
+                omega_old,
+            )
+            is True
+        ):
+            probe_interrupted = True
+            logger.log("probe_function interrupted loop", verbose=verbose,
+                       msg_level=2)
+            break
 
         # Compute max of variation
         omega_old -= omega
@@ -835,10 +840,7 @@ def group_sparse_covariance_path(train_subjs, alphas, test_subjs=None,
         precisions_list.append(precisions)
         precisions_init = precisions
 
-    if test_subjs is not None:
-        return precisions_list, scores
-    else:
-        return precisions_list
+    return (precisions_list, scores) if test_subjs is not None else precisions_list
 
 
 class EarlyStopProbe:
@@ -991,19 +993,16 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         """
         # Empirical covariances
         emp_covs, n_samples = \
-                  empirical_covariances(subjects, assume_centered=False)
+                      empirical_covariances(subjects, assume_centered=False)
         n_subjects = emp_covs.shape[2]
 
-        # One cv generator per subject must be created, because each subject
-        # can have a different number of samples from the others.
-        cv = []
-        for k in range(n_subjects):
-            cv.append(check_cv(
-                    self.cv, np.ones(subjects[k].shape[0]),
-                    classifier=False
-                    ).split(subjects[k])
-                      )
-        path = list()  # List of (alpha, scores, covs)
+        cv = [
+            check_cv(
+                self.cv, np.ones(subjects[k].shape[0]), classifier=False
+            ).split(subjects[k])
+            for k in range(n_subjects)
+        ]
+        path = []
         n_alphas = self.alphas
 
         if isinstance(n_alphas, collections.abc.Sequence):
@@ -1021,7 +1020,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
         # Copying the cv generators to use them n_refinements times.
         cv_ = zip(*cv)
 
-        for i, (this_cv) in enumerate(itertools.tee(cv_, n_refinements)):
+        for i, this_cv in enumerate(itertools.tee(cv_, n_refinements)):
             # Compute the cross-validated loss on the current grid
             train_test_subjs = []
             for train_test in this_cv:
@@ -1086,8 +1085,7 @@ class GroupSparseCovarianceCV(BaseEstimator, CacheMixin):
                 alpha_1 = path[0][0]
                 alpha_0 = path[1][0]
                 covs_init = path[0][2]
-            elif (best_index == last_finite_idx
-                    and not best_index == len(path) - 1):
+            elif best_index == last_finite_idx and best_index != len(path) - 1:
                 # We have non-converged models on the upper bound of the
                 # grid, we need to refine the grid there
                 alpha_1 = path[best_index][0]

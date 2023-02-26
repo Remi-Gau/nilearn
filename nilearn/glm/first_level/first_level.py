@@ -201,17 +201,13 @@ def run_glm(Y, X, noise_model='ar1', bins=100,
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
-
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(X, ar_coef_[labels == val][0],
                                    Y[:, labels == val])
             for val in unique_labels)
 
-        # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result))
         del unique_labels
         del ar_result
 
@@ -369,10 +365,7 @@ class FirstLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.standardize = standardize
         if signal_scaling is False:
@@ -698,12 +691,16 @@ class FirstLevelModel(BaseGLM):
                 con_vals[cidx] = expression_to_contrast_vector(
                     con, design_columns)
 
-        valid_types = ['z_score', 'stat', 'p_value', 'effect_size',
-                       'effect_variance']
-        valid_types.append('all')  # ensuring 'all' is the final entry.
+        valid_types = [
+            'z_score',
+            'stat',
+            'p_value',
+            'effect_size',
+            'effect_variance',
+            'all',
+        ]
         if output_type not in valid_types:
-            raise ValueError(
-                'output_type must be one of {}'.format(valid_types))
+            raise ValueError(f'output_type must be one of {valid_types}')
         contrast = _compute_fixed_effect_contrast(self.labels_, self.results_,
                                                   con_vals, stat_type)
         output_types = (valid_types[:-1]
@@ -714,8 +711,7 @@ class FirstLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_vals)
-            output.header['descrip'] = (
-                '%s of contrast %s' % (output_type_, contrast_name))
+            output.header['descrip'] = f'{output_type_} of contrast {contrast_name}'
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output

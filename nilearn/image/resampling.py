@@ -560,11 +560,10 @@ def resample_img(img, target_affine=None, target_shape=None,
         indices = [(int(off.start - dim_b), int(off.stop - dim_b))
                    for off, dim_b in zip(offsets[:3], b[:3])]
 
-        # If image are not fully overlapping, place only portion of image.
-        slices = []
-        for dimsize, index in zip(resampled_data.shape, indices):
-            slices.append(slice(np.max((0, index[0])),
-                                np.min((dimsize, index[1]))))
+        slices = [
+            slice(np.max((0, index[0])), np.min((dimsize, index[1])))
+            for dimsize, index in zip(resampled_data.shape, indices)
+        ]
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
@@ -742,18 +741,16 @@ def reorder_img(img, resample=None):
     A, b = to_matrix_vector(affine)
 
     if not np.all((np.abs(A) > 0.001).sum(axis=0) == 1):
-        # The affine is not nearly diagonal
         if resample is None:
             raise ValueError('Cannot reorder the axes: '
                              'the image affine contains rotations')
-        else:
-            # Identify the voxel size using a QR decomposition of the
-            # affine
-            Q, R = np.linalg.qr(affine[:3, :3])
-            target_affine = np.diag(np.abs(np.diag(R))[
-                                                np.abs(Q).argmax(axis=1)])
-            return resample_img(img, target_affine=target_affine,
-                                interpolation=resample)
+        # Identify the voxel size using a QR decomposition of the
+        # affine
+        Q, R = np.linalg.qr(affine[:3, :3])
+        target_affine = np.diag(np.abs(np.diag(R))[
+                                            np.abs(Q).argmax(axis=1)])
+        return resample_img(img, target_affine=target_affine,
+                            interpolation=resample)
 
     axis_numbers = np.argmax(np.abs(A), axis=0)
     data = _get_data(img)

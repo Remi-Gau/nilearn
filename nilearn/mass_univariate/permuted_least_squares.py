@@ -275,11 +275,7 @@ def _permuted_ols_on_chunk(
             step = 11 - min(verbose, 10)
             if i_perm % step == 0:
                 # If there is only one job, progress information is fixed
-                if n_perm == n_perm_chunk:
-                    crlf = '\r'
-                else:
-                    crlf = '\n'
-
+                crlf = '\r' if n_perm == n_perm_chunk else '\n'
                 percent = float(i_perm) / n_perm_chunk
                 percent = round(percent * 100, 2)
                 dt = time.time() - t0
@@ -668,17 +664,13 @@ def permuted_ols(
 
     n_samples, n_regressors = tested_vars.shape
 
-    # check if explanatory variates contain an intercept (constant) or not
-    intercept_test = False
-    if n_regressors == np.unique(tested_vars).size == 1:
-        intercept_test = True
-    
+    intercept_test = n_regressors == np.unique(tested_vars).size == 1
     (confounding_vars, 
      intercept_test, 
      model_intercept) = _check_for_intercept_in_confounds(confounding_vars, 
                                                   intercept_test,
                                                   model_intercept)
-    
+
     confounding_vars = _optionally_add_intercept(confounding_vars,
                                                     model_intercept,
                                                     intercept_test,
@@ -688,7 +680,7 @@ def permuted_ols(
     covars_orthonormalized = None
     targetvars_resid_covars = _normalize_matrix_on_axis(target_vars).T
     testedvars_resid_covars = _normalize_matrix_on_axis(tested_vars).copy()
-    n_covars = 0    
+    n_covars = 0
     if confounding_vars is not None:
         # step 1: extract effect of covars from target vars
         covars_orthonormalized = _orthonormalize_matrix(confounding_vars)
@@ -775,7 +767,7 @@ def permuted_ols(
         n_perm_chunks = np.asarray([n_perm / n_jobs] * n_jobs, dtype=int)
         n_perm_chunks[-1] += n_perm % n_jobs
 
-    elif n_perm > 0:
+    else:
         warnings.warn(
             f'The specified number of permutations is {n_perm} and the number '
             f'of jobs to be performed in parallel has set to {n_jobs}. '
