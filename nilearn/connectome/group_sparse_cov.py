@@ -352,7 +352,9 @@ def _group_sparse_covariance(emp_covs,
                        alpha,
                        max_iter,
                        tol,
-                       -1, omega, None)
+                       -1,
+                       omega,
+                       None)
     probe_interrupted = False
 
     # Start optimization loop. Variables are named following (mostly) the
@@ -484,15 +486,25 @@ def _group_sparse_covariance(emp_covs,
             omega[feature_n, feature_n + 1:, :] = y[:, feature_n:].T
 
             for k in range(n_subjects):
-                omega[feature_n, feature_n, k] = 1. / emp_covs[feature_n, feature_n, k] + np.dot(
-                    np.dot(y[k, :], W_inv[..., k]), y[k, :])
+                omega[feature_n, feature_n, k] = 1.0 / emp_covs[feature_n, 
+                                                                feature_n, 
+                                                                k] + np.dot(np.dot(y[k, :],
+                                                                                   W_inv[..., 
+                                                                                   k]),
+                                                                            y[k, :])
 
                 if debug:
                     assert(is_spd(omega[..., k]))
 
         if probe_function is not None:
-            if probe_function(emp_covs, n_samples, alpha, max_iter, tol,
-                              iter_n, omega, omega_old) is True:
+            if probe_function(emp_covs,
+                              n_samples,
+                              alpha,
+                              max_iter,
+                              tol,
+                              iter_n,
+                              omega,
+                              omega_old) is True:
                 probe_interrupted = True
                 logger.log("probe_function interrupted loop", verbose=verbose,
                            msg_level=2)
