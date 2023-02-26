@@ -414,6 +414,112 @@ def fetch_miyawaki2008(data_dir=None, url=None, resume=True, verbose=1):
         background=bg_img,
         description=fdescr)
 
+def _convert_contrast_names(contrasts,
+                            allowed_contrasts,
+                            contrast_name_wrapper):
+    contrasts_wrapped = []
+    for contrast in contrasts:
+        if contrast in allowed_contrasts:
+            contrasts_wrapped.append(contrast.title().replace(" ", ""))
+        elif contrast in contrast_name_wrapper:
+            name = contrast_name_wrapper[contrast]
+            contrasts_wrapped.append(name.title().replace(" ", ""))
+        else:
+            raise ValueError("Contrast \'%s\' is not available" % contrast)
+    return contrasts_wrapped
+
+
+def _is_valid_path(path, index, verbose):
+    if path not in index:
+        if verbose > 0:
+            print("Skipping path '{0}'...".format(path))
+        return False
+    return True
+
+def _file_url(root_url, index, path):
+    return root_url.format(index[path][1:])
+
+def _append_file_to_download(file_url, file_path, data_type, filenames, files):
+    opts = {"move": file_path}
+    filenames.append((file_path, file_url, opts))
+    files.setdefault(data_type, []).append(file_path)
+    return filenames, files
+
+def _get_masks(get_masks,
+            subject_ids,
+            path,
+            index,
+            verbose,
+            root_url,
+            filenames,
+            files):
+
+    if not get_masks:
+        return filenames, files
+
+    # Fetch masks if asked by user
+    for subject_id in subject_ids:
+        file_path = os.path.join(
+            "brainomics_data",
+            subject_id,
+            "boolean_mask_mask.nii.gz")
+        path = "/".join(
+            [
+                "/localizer",
+                "derivatives",
+                "spm_1st_level",
+                f"sub-{subject_id}",
+                f"sub-{subject_id}_mask.nii.gz",
+            ]
+        )
+        if _is_valid_path(path, index, verbose=verbose):
+            (filenames, files) = _append_file_to_download(
+                                    _file_url(root_url, index, path), 
+                                    file_path, 
+                                    "masks",
+                                    filenames,
+                                    files)
+
+    return filenames, files
+
+
+def _get_anats(get_anats,
+            subject_ids,
+            path,
+            index,
+            verbose,
+            root_url,
+            filenames,
+            files):
+
+    if not get_anats:
+        return filenames, files
+
+    # Fetch anats if asked by user
+    for subject_id in subject_ids:
+        file_path = os.path.join(
+            "brainomics_data",
+            subject_id,
+            "normalized_T1_anat_defaced.nii.gz")
+        path = "/".join(
+            [
+                "/localizer",
+                "derivatives",
+                "spm_preprocessing",
+                f"sub-{subject_id}",
+                f"sub-{subject_id}_T1w.nii.gz"
+            ]
+        )
+        if _is_valid_path(path, index, verbose=verbose):
+            (filenames, files) = _append_file_to_download(
+                                    _file_url(root_url, index, path), 
+                                    file_path, 
+                                    "anats",
+                                    filenames,
+                                    files)            
+
+    return filenames, files
+
 
 @fill_doc
 def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
@@ -558,112 +664,6 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
     nilearn.datasets.fetch_localizer_button_task
 
     """
-    def _convert_contrast_names(contrasts,
-                                allowed_contrasts,
-                                contrast_name_wrapper):
-        contrasts_wrapped = []
-        for contrast in contrasts:
-            if contrast in allowed_contrasts:
-                contrasts_wrapped.append(contrast.title().replace(" ", ""))
-            elif contrast in contrast_name_wrapper:
-                name = contrast_name_wrapper[contrast]
-                contrasts_wrapped.append(name.title().replace(" ", ""))
-            else:
-                raise ValueError("Contrast \'%s\' is not available" % contrast)
-        return contrasts_wrapped
-
-
-    def _is_valid_path(path, index, verbose):
-        if path not in index:
-            if verbose > 0:
-                print("Skipping path '{0}'...".format(path))
-            return False
-        return True
-
-    def _file_url(root_url, index, path):
-        return root_url.format(index[path][1:])
-
-    def _append_file_to_download(file_url, file_path, data_type, filenames, files):
-        opts = {"move": file_path}
-        filenames.append((file_path, file_url, opts))
-        files.setdefault(data_type, []).append(file_path)
-        return filenames, files
-
-    def _get_masks(get_masks,
-                subject_ids,
-                path,
-                index,
-                verbose,
-                root_url,
-                filenames,
-                files):
-
-        if not get_masks:
-            return filenames, files
-
-        # Fetch masks if asked by user
-        for subject_id in subject_ids:
-            file_path = os.path.join(
-                "brainomics_data",
-                subject_id,
-                "boolean_mask_mask.nii.gz")
-            path = "/".join(
-                [
-                    "/localizer",
-                    "derivatives",
-                    "spm_1st_level",
-                    f"sub-{subject_id}",
-                    f"sub-{subject_id}_mask.nii.gz",
-                ]
-            )
-            if _is_valid_path(path, index, verbose=verbose):
-                (filenames, files) = _append_file_to_download(
-                                        _file_url(root_url, index, path), 
-                                        file_path, 
-                                        "masks",
-                                        filenames,
-                                        files)
-
-        return filenames, files
-
-
-    def _get_anats(get_anats,
-                subject_ids,
-                path,
-                index,
-                verbose,
-                root_url,
-                filenames,
-                files):
-
-        if not get_anats:
-            return filenames, files
-
-        # Fetch anats if asked by user
-        for subject_id in subject_ids:
-            file_path = os.path.join(
-                "brainomics_data",
-                subject_id,
-                "normalized_T1_anat_defaced.nii.gz")
-            path = "/".join(
-                [
-                    "/localizer",
-                    "derivatives",
-                    "spm_preprocessing",
-                    f"sub-{subject_id}",
-                    f"sub-{subject_id}_T1w.nii.gz"
-                ]
-            )
-            if _is_valid_path(path, index, verbose=verbose):
-                (filenames, files) = _append_file_to_download(
-                                        _file_url(root_url, index, path), 
-                                        file_path, 
-                                        "anats",
-                                        filenames,
-                                        files)            
-
-        return filenames, files
-
 
     if isinstance(contrasts, str):
         raise ValueError('Contrasts should be a list of strings, but '
