@@ -218,9 +218,74 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     return emp_covs, precisions
 
 
-def _group_sparse_covariance(emp_covs, n_samples, alpha, max_iter=10, tol=1e-3,
-                             precisions_init=None, probe_function=None,
-                             verbose=0, debug=False):
+def _checks_in_debug_mode(W, W_inv, omega, i_feature, i_subject, debug):
+    if not debug:
+        return
+    np.testing.assert_almost_equal(
+        np.dot(W_inv[..., i_subject], W[..., i_subject]),
+        np.eye(W_inv[..., i_subject].shape[0]), 
+        decimal=10)
+    _assert_submatrix(omega[..., i_subject], W[..., i_subject], i_feature)
+    assert(is_spd(W_inv[..., i_subject], decimal=14))
+
+
+def _initial_state(omega, i_feature, debug):
+    # Initial state: remove first col/row
+    W = omega[1:, 1:, :].copy()   # stack of W(i_subject)
+    W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
+    for i_subject in range(W.shape[2]):
+        # stack of W^-1(i_subject)
+        W_inv[..., i_subject] = scipy.linalg.inv(W[..., i_subject])
+        _checks_in_debug_mode(W, W_inv, omega, i_feature, i_subject, debug)
+    return W, W_inv
+
+def _newton_raphson(c, q, alpha2, debug):
+    # Newton-Raphson loop. Loosely based on Scipy's.
+    # Tolerance does not seem to be important for numerical
+    # stability (tolerance of 1e-2 works) but has an effect on
+    # overall convergence rate (the tighter the better.)
+
+    gamma = 0.0  # initial value
+    
+    cc = c * c
+    two_ccq = 2.0 * cc * q
+    for _ in itertools.repeat(None, 100):
+        # Function whose zero must be determined (fval) and
+        # its derivative (fder).
+        # Written inplace to save some function calls.
+        aq = 1.0 + gamma * q
+        aq2 = aq * aq
+        fder = (two_ccq / (aq2 * aq)).sum()
+
+        if fder == 0:
+            msg = "derivative was zero."
+            warnings.warn(msg, RuntimeWarning)
+            break
+        fval = - (alpha2 - (cc / aq2).sum()) / fder
+        gamma = fval + gamma
+        if abs(fval) < 1.5e-8:
+            break
+
+    if abs(fval) > 0.1:
+        warnings.warn("Newton-Raphson step did not converge.\n"
+                    "This may indicate a badly conditioned "
+                    "system.")
+
+    if debug:
+        assert gamma >= 0., gamma
+
+    return gamma, aq
+
+
+def _group_sparse_covariance(emp_covs,
+                             n_samples,
+                             alpha,
+                             max_iter=10,
+                             tol=1e-3,
+                             precisions_init=None,
+                             probe_function=None,
+                             verbose=0,
+                             debug=False):
     """Internal version of group_sparse_covariance.
     See its docstring for details.
 
