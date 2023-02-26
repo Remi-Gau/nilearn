@@ -218,14 +218,14 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     return emp_covs, precisions
 
 
-def _checks_in_debug_mode(W, W_inv, omega, i_feature, i_subject, debug):
+def _checks_in_debug_mode(W, W_inv, omega, feature_n, i_subject, debug):
     if not debug:
         return
     np.testing.assert_almost_equal(
         np.dot(W_inv[..., i_subject], W[..., i_subject]),
         np.eye(W_inv[..., i_subject].shape[0]), 
         decimal=10)
-    _assert_submatrix(omega[..., i_subject], W[..., i_subject], i_feature)
+    _assert_submatrix(omega[..., i_subject], W[..., i_subject], feature_n)
     assert(is_spd(W_inv[..., i_subject], decimal=14))
 
 
@@ -238,6 +238,8 @@ def _initial_state(omega, i_feature, debug):
         W_inv[..., i_subject] = scipy.linalg.inv(W[..., i_subject])
         _checks_in_debug_mode(W, W_inv, omega, i_feature, i_subject, debug)
     return W, W_inv
+
+
 
 def _newton_raphson(c, q, alpha2, debug):
     # Newton-Raphson loop. Loosely based on Scipy's.
@@ -371,18 +373,8 @@ def _group_sparse_covariance(emp_covs,
         for feature_n in range(n_features):
 
             if feature_n == 0:
-                # Initial state: remove first col/row
-                W = omega[1:, 1:, :].copy()   # stack of W(k)
-                W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
-                for k in range(W.shape[2]):
-                    # stack of W^-1(k)
-                    W_inv[..., k] = scipy.linalg.inv(W[..., k])
-                    if debug:
-                        np.testing.assert_almost_equal(
-                            np.dot(W_inv[..., k], W[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=10)
-                        _assert_submatrix(omega[..., k], W[..., k], feature_n)
-                        assert(is_spd(W_inv[..., k]))
+                W, W_inv = _initial_state(omega, feature_n, debug)
+
             else:
                 # Update W and W_inv
                 if debug:
