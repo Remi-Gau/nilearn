@@ -218,27 +218,26 @@ def group_sparse_covariance(subjects, alpha, max_iter=50, tol=1e-3, verbose=0,
     return emp_covs, precisions
 
 
-def _checks_in_debug_mode(W, W_inv, omega, feature_n, i_subject, debug):
+def _checks_in_debug_mode(W, W_inv, omega, feature_n, subject_n, debug):
     if not debug:
         return
     np.testing.assert_almost_equal(
-        np.dot(W_inv[..., i_subject], W[..., i_subject]),
-        np.eye(W_inv[..., i_subject].shape[0]), 
+        np.dot(W_inv[..., subject_n], W[..., subject_n]),
+        np.eye(W_inv[..., subject_n].shape[0]), 
         decimal=10)
-    _assert_submatrix(omega[..., i_subject], W[..., i_subject], feature_n)
-    assert(is_spd(W_inv[..., i_subject], decimal=14))
+    _assert_submatrix(omega[..., subject_n], W[..., subject_n], feature_n)
+    assert(is_spd(W_inv[..., subject_n], decimal=14))
 
 
-def _initial_state(omega, i_feature, debug):
+def _initial_state(omega, feature_n, debug):
     # Initial state: remove first col/row
     W = omega[1:, 1:, :].copy()   # stack of W(i_subject)
     W_inv = np.ndarray(shape=W.shape, dtype=np.float64)
-    for i_subject in range(W.shape[2]):
+    for subject_n in range(W.shape[2]):
         # stack of W^-1(i_subject)
-        W_inv[..., i_subject] = scipy.linalg.inv(W[..., i_subject])
-        _checks_in_debug_mode(W, W_inv, omega, i_feature, i_subject, debug)
+        W_inv[..., subject_n] = scipy.linalg.inv(W[..., subject_n])
+        _checks_in_debug_mode(W, W_inv, omega, feature_n, subject_n, debug)
     return W, W_inv
-
 
 
 def _newton_raphson(c, q, alpha2, debug):
@@ -348,7 +347,11 @@ def _group_sparse_covariance(emp_covs,
     omega_old = np.empty_like(omega)
     if probe_function is not None:
         # iteration number -1 means called before iteration loop.
-        probe_function(emp_covs, n_samples, alpha, max_iter, tol,
+        probe_function(emp_covs,
+                       n_samples,
+                       alpha,
+                       max_iter,
+                       tol,
                        -1, omega, None)
     probe_interrupted = False
 
@@ -380,16 +383,19 @@ def _group_sparse_covariance(emp_covs,
                 if debug:
                     omega_orig = omega.copy()
 
-                for k in range(n_subjects):
-                    _update_submatrix(omega[..., k],
-                                      W[..., k], W_inv[..., k], feature_n, h, v)
-
-                    if debug:
-                        _assert_submatrix(omega[..., k], W[..., k], feature_n)
-                        assert(is_spd(W_inv[..., k], decimal=14))
-                        np.testing.assert_almost_equal(
-                            np.dot(W[..., k], W_inv[..., k]),
-                            np.eye(W_inv[..., k].shape[0]), decimal=10)
+                for subject_n in range(n_subjects):
+                    _update_submatrix(omega[..., subject_n],
+                                      W[..., subject_n],
+                                      W_inv[..., subject_n],
+                                      feature_n,
+                                      h,
+                                      v)
+                    _checks_in_debug_mode(W,
+                                          W_inv,
+                                          omega,
+                                          feature_n,
+                                          subject_n,
+                                          debug)
                 if debug:
                     # Check that omega has not been modified.
                     np.testing.assert_almost_equal(omega_orig, omega)
