@@ -32,21 +32,26 @@ atlas_filename = atlas_data.maps
 #############################################################################
 # Visualizing a probabilistic atlas with plot_stat_map and add_overlay object
 # ---------------------------------------------------------------------------
-from nilearn import plotting, image
+from nilearn import image, plotting
 
 # First plot the map for the PCC: index 4 in the atlas
-display = plotting.plot_stat_map(image.index_img(atlas_filename, 4),
-                                 colorbar=False,
-                                 title="DMN nodes in MSDL atlas")
+display = plotting.plot_stat_map(
+    image.index_img(atlas_filename, 4),
+    colorbar=False,
+    title="DMN nodes in MSDL atlas",
+)
 
 # Now add as an overlay the maps for the ACC and the left and right
 # parietal nodes
-display.add_overlay(image.index_img(atlas_filename, 5),
-                    cmap=plotting.cm.black_blue)
-display.add_overlay(image.index_img(atlas_filename, 6),
-                    cmap=plotting.cm.black_green)
-display.add_overlay(image.index_img(atlas_filename, 3),
-                    cmap=plotting.cm.black_pink)
+display.add_overlay(
+    image.index_img(atlas_filename, 5), cmap=plotting.cm.black_blue
+)
+display.add_overlay(
+    image.index_img(atlas_filename, 6), cmap=plotting.cm.black_green
+)
+display.add_overlay(
+    image.index_img(atlas_filename, 3), cmap=plotting.cm.black_pink
+)
 
 plotting.show()
 
@@ -66,7 +71,7 @@ dmn_nodes = image.index_img(atlas_filename, [3, 4, 5, 6])
 print(dmn_nodes.shape)
 ####################################
 
-display = plotting.plot_prob_atlas(dmn_nodes,
-                                   cut_coords=(0, -55, 29),
-                                   title="DMN nodes in MSDL atlas")
+display = plotting.plot_prob_atlas(
+    dmn_nodes, cut_coords=(0, -55, 29), title="DMN nodes in MSDL atlas"
+)
 plotting.show()

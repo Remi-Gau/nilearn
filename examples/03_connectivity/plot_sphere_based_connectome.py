@@ -34,11 +34,13 @@ computing a connectome from them.
 # connectivity dataset.
 
 from nilearn import datasets
+
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
-print('First subject functional nifti image (4D) is at: %s' %
-      dataset.func[0])  # 4D data
+print(
+    "First subject functional nifti image (4D) is at: %s" % dataset.func[0]
+)  # 4D data
 
 
 ##########################################################################
@@ -46,10 +48,10 @@ print('First subject functional nifti image (4D) is at: %s' %
 # ------------------------------------
 dmn_coords = [(0, -52, 18), (-46, -68, 32), (46, -68, 32), (1, 50, -5)]
 labels = [
-    'Posterior Cingulate Cortex',
-    'Left Temporoparietal junction',
-    'Right Temporoparietal junction',
-    'Medial prefrontal cortex',
+    "Posterior Cingulate Cortex",
+    "Left Temporoparietal junction",
+    "Right Temporoparietal junction",
+    "Medial prefrontal cortex",
 ]
 
 ##########################################################################
@@ -72,10 +74,10 @@ masker = NiftiSpheresMasker(
     low_pass=0.1,
     high_pass=0.01,
     t_r=2,
-    memory='nilearn_cache',
+    memory="nilearn_cache",
     memory_level=1,
     verbose=2,
-    clean__butterworth__padtype='even',  # kwarg to modify Butterworth filter
+    clean__butterworth__padtype="even",  # kwarg to modify Butterworth filter
 )
 
 # Additionally, we pass confound information to ensure our extracted
@@ -84,8 +86,9 @@ masker = NiftiSpheresMasker(
 func_filename = dataset.func[0]
 confounds_filename = dataset.confounds[0]
 
-time_series = masker.fit_transform(func_filename,
-                                   confounds=[confounds_filename])
+time_series = masker.fit_transform(
+    func_filename, confounds=[confounds_filename]
+)
 
 ##########################################################################
 # Display time series
@@ -95,9 +98,9 @@ import matplotlib.pyplot as plt
 for time_serie, label in zip(time_series.T, labels):
     plt.plot(time_serie, label=label)
 
-plt.title('Default Mode Network Time Series')
-plt.xlabel('Scan number')
-plt.ylabel('Normalized signal')
+plt.title("Default Mode Network Time Series")
+plt.xlabel("Scan number")
+plt.ylabel("Normalized signal")
 plt.legend()
 plt.tight_layout()
 
@@ -110,9 +113,11 @@ plt.tight_layout()
 # partial correlations.
 
 from nilearn.connectome import ConnectivityMeasure
-connectivity_measure = ConnectivityMeasure(kind='partial correlation')
-partial_correlation_matrix = connectivity_measure.fit_transform(
-    [time_series])[0]
+
+connectivity_measure = ConnectivityMeasure(kind="partial correlation")
+partial_correlation_matrix = connectivity_measure.fit_transform([time_series])[
+    0
+]
 
 
 ##########################################################################
@@ -124,16 +129,22 @@ partial_correlation_matrix = connectivity_measure.fit_transform(
 
 from nilearn import plotting
 
-plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
-                         title="Default Mode Network Connectivity")
+plotting.plot_connectome(
+    partial_correlation_matrix,
+    dmn_coords,
+    title="Default Mode Network Connectivity",
+)
 
 
 ##########################################################################
 # Display connectome with hemispheric projections.
 # Notice (0, -52, 18) is included in both hemispheres since x == 0.
-plotting.plot_connectome(partial_correlation_matrix, dmn_coords,
-                         title="Connectivity projected on hemispheres",
-                         display_mode='lyrz')
+plotting.plot_connectome(
+    partial_correlation_matrix,
+    dmn_coords,
+    title="Connectivity projected on hemispheres",
+    display_mode="lyrz",
+)
 
 plotting.show()
 
@@ -170,7 +181,7 @@ view
 # First we fetch the coordinates of the Power atlas
 
 power = datasets.fetch_coords_power_2011(legacy_format=False)
-print('Power atlas comes with {0}.'.format(power.keys()))
+print(f"Power atlas comes with {power.keys()}.")
 
 
 #########################################################################
@@ -189,20 +200,28 @@ print('Power atlas comes with {0}.'.format(power.keys()))
 # We collect the regions coordinates in a numpy array
 import numpy as np
 
-coords = np.vstack((power.rois['x'], power.rois['y'], power.rois['z'])).T
+coords = np.vstack((power.rois["x"], power.rois["y"], power.rois["z"])).T
 
-print('Stacked power coordinates in array of shape {0}.'.format(coords.shape))
+print(f"Stacked power coordinates in array of shape {coords.shape}.")
 
 
 ###############################################################################
 # and define spheres masker, with small enough radius to avoid regions overlap.
 
 spheres_masker = NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=6, radius=5.,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
+    seeds=coords,
+    smoothing_fwhm=6,
+    radius=5.0,
+    detrend=True,
+    standardize=True,
+    low_pass=0.1,
+    high_pass=0.01,
+    t_r=2,
+)
 
-timeseries = spheres_masker.fit_transform(func_filename,
-                                          confounds=confounds_filename)
+timeseries = spheres_masker.fit_transform(
+    func_filename, confounds=confounds_filename
+)
 
 
 ###############################################################################
@@ -211,7 +230,7 @@ timeseries = spheres_masker.fit_transform(func_filename,
 #
 # We start by estimating the signal **covariance** matrix. Here the
 # number of ROIs exceeds the number of samples,
-print('time series has {0} samples'.format(timeseries.shape[0]))
+print(f"time series has {timeseries.shape[0]} samples")
 
 
 ###############################################################################
@@ -234,7 +253,7 @@ covariance_estimator.fit(timeseries)
 ###############################################################################
 # and get the ROI-to-ROI covariance matrix.
 matrix = covariance_estimator.covariance_
-print('Covariance matrix has shape {0}.'.format(matrix.shape))
+print(f"Covariance matrix has shape {matrix.shape}.")
 
 
 ###############################################################################
@@ -245,12 +264,23 @@ print('Covariance matrix has shape {0}.'.format(matrix.shape))
 # and display the graph of connections with `nilearn.plotting.plot_connectome`.
 from nilearn import plotting
 
-plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
-                     title='Power correlation matrix')
+plotting.plot_matrix(
+    matrix,
+    vmin=-1.0,
+    vmax=1.0,
+    colorbar=True,
+    title="Power correlation matrix",
+)
 
 # Tweak edge_threshold to keep only the strongest connections.
-plotting.plot_connectome(matrix, coords, title='Power correlation graph',
-                         edge_threshold='99.8%', node_size=20, colorbar=True)
+plotting.plot_connectome(
+    matrix,
+    coords,
+    title="Power correlation graph",
+    edge_threshold="99.8%",
+    node_size=20,
+    colorbar=True,
+)
 
 
 ###############################################################################
@@ -273,7 +303,7 @@ node_strength /= np.max(node_strength)
 plotting.plot_markers(
     node_strength,
     coords,
-    title='Node strength for absolute value of edges for Power atlas',
+    title="Node strength for absolute value of edges for Power atlas",
 )
 
 
@@ -300,16 +330,16 @@ node_strength_negative /= np.max(node_strength_negative)
 plotting.plot_markers(
     node_strength_positive,
     coords,
-    title='Node strength for the positive edges for Power atlas',
-    node_cmap=cm.YlOrRd
+    title="Node strength for the positive edges for Power atlas",
+    node_cmap=cm.YlOrRd,
 )
 
 # plot nodes' strength for negative edges
 plotting.plot_markers(
     node_strength_negative,
     coords,
-    title='Node strength for the negative edges for Power atlas',
-    node_cmap=cm.PuBu
+    title="Node strength for the negative edges for Power atlas",
+    node_cmap=cm.PuBu,
 )
 
 ###############################################################################
@@ -319,28 +349,49 @@ plotting.plot_markers(
 # We repeat the same steps for Dosenbach's atlas.
 dosenbach = datasets.fetch_coords_dosenbach_2010(legacy_format=False)
 
-coords = np.vstack((
-    dosenbach.rois['x'],
-    dosenbach.rois['y'],
-    dosenbach.rois['z'],
-)).T
+coords = np.vstack(
+    (
+        dosenbach.rois["x"],
+        dosenbach.rois["y"],
+        dosenbach.rois["z"],
+    )
+).T
 
 spheres_masker = NiftiSpheresMasker(
-    seeds=coords, smoothing_fwhm=6, radius=4.5,
-    detrend=True, standardize=True, low_pass=0.1, high_pass=0.01, t_r=2)
+    seeds=coords,
+    smoothing_fwhm=6,
+    radius=4.5,
+    detrend=True,
+    standardize=True,
+    low_pass=0.1,
+    high_pass=0.01,
+    t_r=2,
+)
 
-timeseries = spheres_masker.fit_transform(func_filename,
-                                          confounds=confounds_filename)
+timeseries = spheres_masker.fit_transform(
+    func_filename, confounds=confounds_filename
+)
 
 covariance_estimator = GraphicalLassoCV()
 covariance_estimator.fit(timeseries)
 matrix = covariance_estimator.covariance_
 
-plotting.plot_matrix(matrix, vmin=-1., vmax=1., colorbar=True,
-                     title='Dosenbach correlation matrix')
+plotting.plot_matrix(
+    matrix,
+    vmin=-1.0,
+    vmax=1.0,
+    colorbar=True,
+    title="Dosenbach correlation matrix",
+)
 
-plotting.plot_connectome(matrix, coords, title='Dosenbach correlation graph',
-                         edge_threshold="99.7%", node_size=20, colorbar=True)
+plotting.plot_connectome(
+    matrix,
+    coords,
+    title="Dosenbach correlation graph",
+    edge_threshold="99.7%",
+    node_size=20,
+    colorbar=True,
+)
 
 
 # calculate average strength for each node
@@ -350,7 +401,7 @@ node_strength /= np.max(node_strength)
 plotting.plot_markers(
     node_strength,
     coords,
-    title='Node strength for absolute value of edges for Dosenbach atlas',
+    title="Node strength for absolute value of edges for Dosenbach atlas",
 )
 
 # clip connectivity matrix to preserve positive and negative edges
@@ -367,21 +418,21 @@ node_strength_negative /= np.max(node_strength_negative)
 plotting.plot_markers(
     node_strength_positive,
     coords,
-    title='Node strength for the positive edges for Dosenbach atlas',
-    node_cmap=cm.YlOrRd
+    title="Node strength for the positive edges for Dosenbach atlas",
+    node_cmap=cm.YlOrRd,
 )
 
 # plot nodes' strength for negative edges
 plotting.plot_markers(
     node_strength_negative,
     coords,
-    title='Node strength for the negative edges for Dosenbach atlas',
-    node_cmap=cm.PuBu
+    title="Node strength for the negative edges for Dosenbach atlas",
+    node_cmap=cm.PuBu,
 )
 
 ###############################################################################
 # We can easily identify the Dosenbach's networks from the matrix blocks.
-print('Dosenbach networks names are {0}'.format(np.unique(dosenbach.networks)))
+print(f"Dosenbach networks names are {np.unique(dosenbach.networks)}")
 
 plotting.show()
 

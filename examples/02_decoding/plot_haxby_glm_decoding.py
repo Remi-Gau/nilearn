@@ -22,6 +22,7 @@ More specifically:
 import numpy as np
 import pandas as pd
 from nilearn import datasets
+
 haxby_dataset = datasets.fetch_haxby()
 
 # repetition has to be known
@@ -32,12 +33,12 @@ TR = 2.5
 # -------------------------
 
 # Load target information as string and give a numerical identifier to each
-behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=' ')
-conditions = behavioral['labels'].values
+behavioral = pd.read_csv(haxby_dataset.session_target[0], sep=" ")
+conditions = behavioral["labels"].values
 
 # Record these as an array of sessions
-sessions = behavioral['chunks'].values
-unique_sessions = behavioral['chunks'].unique()
+sessions = behavioral["chunks"].values
+unique_sessions = behavioral["chunks"].unique()
 
 # fMRI data: a unique file for each session
 func_filename = haxby_dataset.func[0]
@@ -59,9 +60,14 @@ for session in unique_sessions:
     duration = TR * np.ones(n_scans)
     # Define the events object
     events_ = pd.DataFrame(
-        {'onset': frame_times, 'trial_type': conditions_session, 'duration': duration})
+        {
+            "onset": frame_times,
+            "trial_type": conditions_session,
+            "duration": duration,
+        }
+    )
     # remove the rest condition and insert into the dictionary
-    events[session] = events_[events_.trial_type != 'rest']
+    events[session] = events_[events_.trial_type != "rest"]
 
 ##############################################################################
 # Instantiate and run FirstLevelModel
@@ -75,17 +81,21 @@ session_label = []
 
 # Instantiate the glm
 from nilearn.glm.first_level import FirstLevelModel
-glm = FirstLevelModel(t_r=TR,
-                      mask_img=haxby_dataset.mask,
-                      high_pass=.008,
-                      smoothing_fwhm=4,
-                      memory='nilearn_cache')
+
+glm = FirstLevelModel(
+    t_r=TR,
+    mask_img=haxby_dataset.mask,
+    high_pass=0.008,
+    smoothing_fwhm=4,
+    memory="nilearn_cache",
+)
 
 ##############################################################################
 # Run the glm on data from each session
 # --------------------------------------
 events[session].trial_type.unique()
 from nilearn.image import index_img
+
 for session in unique_sessions:
     # grab the fmri data for that particular session
     fmri_session = index_img(func_filename, sessions == session)
@@ -108,11 +118,13 @@ for session in unique_sessions:
 
 from nilearn.image import mean_img
 from nilearn.reporting import make_glm_report
+
 mean_img_ = mean_img(func_filename)
-report = make_glm_report(glm,
-                         contrasts=conditions,
-                         bg_img=mean_img_,
-                         )
+report = make_glm_report(
+    glm,
+    contrasts=conditions,
+    bg_img=mean_img_,
+)
 
 report  # This report can be viewed in a notebook
 
@@ -149,13 +161,22 @@ report  # This report can be viewed in a notebook
 
 from nilearn.decoding import Decoder
 from sklearn.model_selection import LeaveOneGroupOut
-decoder = Decoder(estimator='svc', mask=haxby_dataset.mask, standardize=False,
-                  screening_percentile=5, cv=LeaveOneGroupOut())
+
+decoder = Decoder(
+    estimator="svc",
+    mask=haxby_dataset.mask,
+    standardize=False,
+    screening_percentile=5,
+    cv=LeaveOneGroupOut(),
+)
 decoder.fit(z_maps, conditions_label, groups=session_label)
 
 # Return the corresponding mean prediction accuracy compared to chance
 
 classification_accuracy = np.mean(list(decoder.cv_scores_.values()))
-chance_level = 1. / len(np.unique(conditions))
-print('Classification accuracy: {:.4f} / Chance level: {}'.format(
-    classification_accuracy, chance_level))
+chance_level = 1.0 / len(np.unique(conditions))
+print(
+    "Classification accuracy: {:.4f} / Chance level: {}".format(
+        classification_accuracy, chance_level
+    )
+)
