@@ -105,8 +105,8 @@ def make_localizer_contrasts(design_matrix):
     # first generate canonical contrasts
     contrast_matrix = np.eye(design_matrix.shape[1])
     contrasts = {
-            column: contrast_matrix[i]
-            for i, column in enumerate(design_matrix.columns)
+        column: contrast_matrix[i]
+        for i, column in enumerate(design_matrix.columns)
     }
 
     contrasts["audio"] = (

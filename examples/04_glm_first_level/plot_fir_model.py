@@ -56,8 +56,8 @@ import numpy as np
 
 contrast_matrix = np.eye(design_matrix.shape[1])
 contrasts = {
-        column: contrast_matrix[i]
-        for i, column in enumerate(design_matrix.columns)
+    column: contrast_matrix[i]
+    for i, column in enumerate(design_matrix.columns)
 }
 conditions = events.trial_type.unique()
 for condition in conditions:

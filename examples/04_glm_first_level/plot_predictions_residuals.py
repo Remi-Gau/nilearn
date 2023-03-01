@@ -14,7 +14,6 @@ quality of the model fit.
 """
 
 
-
 import pandas as pd
 from nilearn import image, masking
 

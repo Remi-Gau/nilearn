@@ -9,7 +9,6 @@ could have been computed with nilearn :func:`nilearn.image.mean_img` function.
 """
 
 
-
 ###############################################################################
 # Fetching 2 subject movie watching brain development fmri datasets.
 from nilearn import datasets

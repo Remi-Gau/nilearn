@@ -97,8 +97,8 @@ for idx, img in enumerate(fmri_img, start=1):
 # We start by specifying canonical contrast that isolate design matrix columns.
 contrast_matrix = np.eye(design_matrix.shape[1])
 basic_contrasts = {
-        column: contrast_matrix[i]
-        for i, column in enumerate(design_matrix.columns)
+    column: contrast_matrix[i]
+    for i, column in enumerate(design_matrix.columns)
 }
 
 #########################################################################

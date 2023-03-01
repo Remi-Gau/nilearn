@@ -803,9 +803,7 @@ def reorder_img(img, resample=None):
         # Identify the voxel size using a QR decomposition of the
         # affine
         Q, R = np.linalg.qr(affine[:3, :3])
-        target_affine = np.diag(
-            np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)]
-        )
+        target_affine = np.diag(np.abs(np.diag(R))[np.abs(Q).argmax(axis=1)])
         return resample_img(
             img, target_affine=target_affine, interpolation=resample
         )
