@@ -14,9 +14,11 @@ See :func:`nilearn.datasets.fetch_megatrawls_netmats` documentation for more det
 # timeseries method 'eigen regression'
 from nilearn import datasets
 
-netmats = datasets.fetch_megatrawls_netmats(dimensionality=300,
-                                            timeseries='eigen_regression',
-                                            matrices='partial_correlation')
+netmats = datasets.fetch_megatrawls_netmats(
+    dimensionality=300,
+    timeseries="eigen_regression",
+    matrices="partial_correlation",
+)
 # Partial correlation matrices array of size (300, 300) are stored in the name
 # of 'correlation_matrices'
 partial_correlation = netmats.correlation_matrices
@@ -29,6 +31,5 @@ partial_correlation = netmats.correlation_matrices
 from nilearn import plotting
 
 title = "Partial correlation matrices\n for d=300"
-display = plotting.plot_matrix(partial_correlation, colorbar=True,
-                               title=title)
+display = plotting.plot_matrix(partial_correlation, colorbar=True, title=title)
 plotting.show()
