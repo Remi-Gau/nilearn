@@ -18,6 +18,7 @@ is included in the model.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 import matplotlib.pyplot as plt
 
 # Author: Virgile Fritsch, <virgile.fritsch@inria.fr>, May. 2014
@@ -37,8 +38,7 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
 
 # print basic information on the dataset
 print(
-    "First contrast nifti image (3D) is located at: %s"
-    % localizer_dataset.cmaps[0]
+    f"First contrast nifti image (3D) is located at: {localizer_dataset.cmaps[0]}"
 )
 
 tested_var = localizer_dataset.ext_vars["pseudo"]
@@ -131,7 +131,7 @@ fig, axes = plt.subplots(figsize=(12, 3), ncols=3)
 for i_col, (title, img) in enumerate(images_to_plot.items()):
     ax = axes[i_col]
     n_detections = (get_data(img) > threshold).sum()
-    new_title = title + f"\n{n_detections} sig. voxels"
+    new_title = f"{title}\n{n_detections} sig. voxels"
 
     plotting.plot_glass_brain(
         img,

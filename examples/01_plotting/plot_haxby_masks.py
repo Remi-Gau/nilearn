@@ -4,6 +4,7 @@ Plot Haxby masks
 
 Small script to plot the masks of the Haxby dataset.
 """
+
 import matplotlib.pyplot as plt
 from nilearn import datasets
 
@@ -11,13 +12,11 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) is at: %s"
-    % haxby_dataset.anat[0]
+    f"First subject anatomical nifti image (3D) is at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is at: %s"
-    % haxby_dataset.func[0]
-)  # 4D data
+    f"First subject functional nifti image (4D) is at: {haxby_dataset.func[0]}"
+)
 
 # Build the mean image because we have no anatomic data
 from nilearn import image

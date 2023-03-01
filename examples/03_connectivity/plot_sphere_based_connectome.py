@@ -26,6 +26,7 @@ computing a connectome from them.
 
 """
 
+
 ##########################################################################
 # Retrieve the brain development fmri dataset
 # -------------------------------------------
@@ -38,9 +39,7 @@ from nilearn import datasets
 dataset = datasets.fetch_development_fmri(n_subjects=10)
 
 # print basic information on the dataset
-print(
-    "First subject functional nifti image (4D) is at: %s" % dataset.func[0]
-)  # 4D data
+print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 ##########################################################################

@@ -30,6 +30,7 @@ documentation <parcellation_time_series>` for more.
 
 """
 
+
 ##############################################################################
 # Retrieve the atlas and the data
 # -------------------------------
@@ -39,9 +40,7 @@ dataset = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 atlas_filename = dataset.maps
 labels = dataset.labels
 
-print(
-    "Atlas ROIs are located in nifti image (4D) at: %s" % atlas_filename
-)  # 4D data
+print(f"Atlas ROIs are located in nifti image (4D) at: {atlas_filename}")
 
 # One subject of brain development fmri data
 data = datasets.fetch_development_fmri(n_subjects=1, reduce_confounds=True)
@@ -189,9 +188,7 @@ confounds_scrub, sample_mask = load_confounds(
 )
 
 print(
-    "After scrubbing, {} out of {} volumes remains".format(
-        sample_mask.shape[0], confounds_scrub.shape[0]
-    )
+    f"After scrubbing, {sample_mask.shape[0]} out of {confounds_scrub.shape[0]} volumes remains"
 )
 print("The shape of the confounds matrix is:", confounds_simple.shape)
 print(confounds_scrub.columns)

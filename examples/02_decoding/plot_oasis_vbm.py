@@ -43,6 +43,7 @@ ____
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 import matplotlib.pyplot as plt
 
 # Authors: Elvis Dhomatob, <elvis.dohmatob@inria.fr>, Apr. 2014
@@ -74,13 +75,11 @@ gm_imgs_train, gm_imgs_test, age_train, age_test = train_test_split(
 
 # print basic information on the dataset
 print(
-    "First gray-matter anatomy image (3D) is located at: %s"
-    % oasis_dataset.gray_matter_maps[0]
-)  # 3D data
+    f"First gray-matter anatomy image (3D) is located at: {oasis_dataset.gray_matter_maps[0]}"
+)
 print(
-    "First white-matter anatomy image (3D) is located at: %s"
-    % oasis_dataset.white_matter_maps[0]
-)  # 3D data
+    f"First white-matter anatomy image (3D) is located at: {oasis_dataset.white_matter_maps[0]}"
+)
 
 #############################################################################
 # Preprocess data

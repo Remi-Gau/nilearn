@@ -20,6 +20,7 @@ More specifically:
 4. Display contrast plot and uncorrected first level statistics table report.
 """
 
+
 ##############################################################################
 # Fetch openneuro BIDS dataset
 # -----------------------------
@@ -95,7 +96,7 @@ model, imgs, events, confounds = (
     models_events[0],
     models_confounds[0],
 )
-subject = "sub-" + model.subject_label
+subject = f"sub-{model.subject_label}"
 model.minimize_memory = False  # override default
 
 import os
@@ -230,7 +231,7 @@ save_glm_to_bids(
     contrasts="StopSuccess - Go",
     contrast_types={"StopSuccess - Go": "t"},
     out_dir="derivatives/nilearn_glm/",
-    prefix=subject + "_task-stopsignal",
+    prefix=f"{subject}_task-stopsignal",
 )
 
 #########################################################################

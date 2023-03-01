@@ -17,6 +17,7 @@ It is not a minimalistic example, as it strives to be didactic. It is not
 meant to be copied to analyze new data: many of the steps are unnecessary.
 """
 
+
 ###########################################################################
 # Retrieve and load the fMRI data from the Haxby study
 # ------------------------------------------------------
@@ -35,9 +36,7 @@ haxby_dataset = datasets.fetch_haxby()
 fmri_filename = haxby_dataset.func[0]
 
 # print basic information on the dataset
-print(
-    "First subject functional nifti images (4D) are at: %s" % fmri_filename
-)  # 4D data
+print(f"First subject functional nifti images (4D) are at: {fmri_filename}")
 
 ###########################################################################
 # Visualizing the fmri volume
@@ -201,11 +200,7 @@ from sklearn.model_selection import KFold
 
 cv = KFold(n_splits=5)
 
-# The "cv" object's split method can now accept data and create a
-# generator which can yield the splits.
-fold = 0
-for train, test in cv.split(conditions):
-    fold += 1
+for fold, (train, test) in enumerate(cv.split(conditions), start=1):
     decoder = Decoder(estimator="svc", mask=mask_filename, standardize=True)
     decoder.fit(index_img(fmri_niimgs, train), conditions[train])
     prediction = decoder.predict(index_img(fmri_niimgs, test))

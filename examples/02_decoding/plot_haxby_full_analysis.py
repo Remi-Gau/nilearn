@@ -15,6 +15,7 @@ that have been defined via a standard GLM-based analysis.
 
 """
 
+
 ##########################################################################
 # Load and prepare the data
 # -----------------------------------
@@ -28,12 +29,10 @@ func_filename = haxby_dataset.func[0]
 
 # Print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) located is at: %s"
-    % haxby_dataset.anat[0]
+    f"First subject anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is located at: %s"
-    % func_filename
+    f"First subject functional nifti image (4D) is located at: {func_filename}"
 )
 
 # load labels
@@ -81,7 +80,7 @@ mask_scores = {}
 mask_chance_scores = {}
 
 for mask_name in mask_names:
-    print("Working on %s" % mask_name)
+    print(f"Working on {mask_name}")
     # For decoding, standardizing is often very important
     mask_filename = haxby_dataset[mask_name][0]
     masker = NiftiMasker(mask_img=mask_filename, standardize=True)
@@ -89,7 +88,7 @@ for mask_name in mask_names:
     mask_chance_scores[mask_name] = {}
 
     for category in categories:
-        print("Processing {} {}".format(mask_name, category))
+        print(f"Processing {mask_name} {category}")
         classification_target = stimuli[task_mask] == category
         # Specify the classifier to the decoder object.
         # With the decoder we can input the masker directly.

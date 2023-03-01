@@ -602,12 +602,7 @@ def swap_img_hemispheres(img):
     # get nifti in x-y-z order
     img = reorder_img(img)
 
-    # create swapped nifti object
-    out_img = new_img_like(
-        img, get_data(img)[::-1], img.affine, copy_header=True
-    )
-
-    return out_img
+    return new_img_like(img, get_data(img)[::-1], img.affine, copy_header=True)
 
 
 def index_img(imgs, index):
@@ -978,10 +973,7 @@ def threshold_img(
         # Reduce back to 3D
         img_data = img_data[:, :, :, 0]
 
-    # Reconstitute img object
-    thresholded_img = new_img_like(img, img_data, affine)
-
-    return thresholded_img
+    return new_img_like(img, img_data, affine)
 
 
 def math_img(formula, **imgs):
@@ -1039,9 +1031,7 @@ def math_img(formula, **imgs):
         _check_same_fov(*niimgs, raise_error=True)
     except Exception as exc:
         exc.args = (
-            "Input images cannot be compared, you provided '{}',".format(
-                imgs.values()
-            ),
+            f"Input images cannot be compared, you provided '{imgs.values()}',",
         ) + exc.args
         raise
 

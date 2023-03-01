@@ -11,6 +11,7 @@ is included in the model.
 
 
 """
+
 # Author: Virgile Fritsch, Bertrand Thirion, 2014 -- 2018
 #         Jerome-Alexis Chevalier, 2019
 
@@ -28,8 +29,7 @@ localizer_dataset = datasets.fetch_localizer_contrasts(
 ##############################################################################
 # Let's print basic information on the dataset.
 print(
-    "First contrast nifti image (3D) is located at: %s"
-    % localizer_dataset.cmaps[0]
+    f"First contrast nifti image (3D) is located at: {localizer_dataset.cmaps[0]}"
 )
 
 ##############################################################################

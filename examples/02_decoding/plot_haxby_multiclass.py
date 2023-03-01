@@ -9,6 +9,7 @@ cross-validated accuracy and the confusion matrix.
 
 """
 
+
 import numpy as np
 import pandas as pd
 
@@ -21,8 +22,8 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 
 # Print basic information on the dataset
-print("Mask nifti images are located at: %s" % haxby_dataset.mask)
-print("Functional nifti images are located at: %s" % haxby_dataset.func[0])
+print(f"Mask nifti images are located at: {haxby_dataset.mask}")
+print(f"Functional nifti images are located at: {haxby_dataset.func[0]}")
 
 func_filename = haxby_dataset.func[0]
 mask_filename = haxby_dataset.mask

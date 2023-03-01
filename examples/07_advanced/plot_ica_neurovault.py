@@ -12,6 +12,7 @@ documentation for more details.
 .. include:: ../../../examples/masker_note.rst
 
 """
+
 # Author: Ben Cipollini
 # License: BSD
 # Ported from code authored by Chris Filo Gorgolewski, Gael Varoquaux
@@ -88,13 +89,7 @@ with warnings.catch_warnings():
         except Exception as e:
             meta = nv_data["images_meta"][index]
             print(
-                "Failed to mask/reshape image: id: {}; "
-                "name: '{}'; collection: {}; error: {}".format(
-                    meta.get("id"),
-                    meta.get("name"),
-                    meta.get("collection_id"),
-                    e,
-                )
+                f"""Failed to mask/reshape image: id: {meta.get("id")}; name: '{meta.get("name")}'; collection: {meta.get("collection_id")}; error: {e}"""
             )
             is_usable[index] = False
 

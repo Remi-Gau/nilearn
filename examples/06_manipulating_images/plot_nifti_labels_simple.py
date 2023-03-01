@@ -12,6 +12,7 @@ operation in just a few lines of code.
 
 """
 
+
 ###########################################################################
 # Retrieve the brain development functional dataset
 #
@@ -24,7 +25,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print("First functional nifti image (4D) is at: %s" % func_filename)
+print(f"First functional nifti image (4D) is at: {func_filename}")
 
 ###########################################################################
 # Load an atlas
@@ -33,11 +34,7 @@ print("First functional nifti image (4D) is at: %s" % func_filename)
 atlas = datasets.fetch_atlas_harvard_oxford("cort-maxprob-thr25-2mm")
 
 # The first label correspond to the background
-print(
-    "The atlas contains {} non-overlapping regions".format(
-        len(atlas.labels) - 1
-    )
-)
+print(f"The atlas contains {len(atlas.labels) - 1} non-overlapping regions")
 
 ###########################################################################
 # Instantiate the mask and visualize atlas

@@ -22,6 +22,7 @@ be given by a call to fit_transform).
 
 """
 
+
 #####################################################################
 # Load movie watching dataset
 from nilearn import datasets
@@ -31,9 +32,7 @@ dataset = datasets.fetch_development_fmri(n_subjects=1)
 func_filename = dataset.func[0]
 
 # print basic information on the dataset
-print(
-    "First subject functional nifti image (4D) is at: %s" % dataset.func[0]
-)  # 4D data
+print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 #####################################################################

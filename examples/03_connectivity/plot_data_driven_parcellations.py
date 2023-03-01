@@ -38,6 +38,7 @@ The big picture discussion corresponding to this example can be found
 in the documentation section :ref:`parcellating_brain`.
 """
 
+
 ########################################################################
 # Download a brain development fmri dataset and turn it to a data matrix
 # -----------------------------------------------------------------------
@@ -56,9 +57,7 @@ from nilearn.regions import Parcellations
 dataset = datasets.fetch_development_fmri(n_subjects=1)
 
 # print basic information on the dataset
-print(
-    "First subject functional nifti image (4D) is at: %s" % dataset.func[0]
-)  # 4D data
+print(f"First subject functional nifti image (4D) is at: {dataset.func[0]}")
 
 
 #########################################################################

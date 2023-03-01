@@ -9,6 +9,7 @@ See :func:`nilearn.datasets.fetch_neurovault_ids`
 documentation for more details.
 
 """
+
 # Author: Ben Cipollini
 # License: BSD
 import scipy
@@ -51,7 +52,7 @@ print("\nplotting glass brain for collected images\n")
 for im in images_meta:
     plotting.plot_glass_brain(
         im["absolute_path"],
-        title="image {}: {}".format(im["id"], im["contrast_definition"]),
+        title=f'image {im["id"]}: {im["contrast_definition"]}',
     )
 
 ######################################################################
@@ -61,8 +62,7 @@ for im in images_meta:
 
 def t_to_z(t_scores, deg_of_freedom):
     p_values = scipy.stats.t.sf(t_scores, df=deg_of_freedom)
-    z_values = scipy.stats.norm.isf(p_values)
-    return z_values
+    return scipy.stats.norm.isf(p_values)
 
 
 # Compute z values
@@ -76,7 +76,7 @@ print("\nComputing maps...")
 # convert t to z for all images
 for this_meta in images_meta:
     if this_meta["collection_id"] != current_collection:
-        print("\n\nCollection {}:".format(this_meta["id"]))
+        print(f'\n\nCollection {this_meta["id"]}:')
         current_collection = this_meta["collection_id"]
 
     # Load and validate the downloaded image.

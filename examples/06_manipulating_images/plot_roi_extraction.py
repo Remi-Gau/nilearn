@@ -24,6 +24,7 @@ of brain connected networks given in 4D image.
 
 """
 
+
 ##############################################################################
 # Coordinates of the slice we are interested in each direction. We will be
 # using them for visualization.
@@ -56,16 +57,13 @@ haxby_dataset = datasets.fetch_haxby()
 
 # print basic information on the dataset
 print(
-    "First subject anatomical nifti image (3D) located is at: %s"
-    % haxby_dataset.anat[0]
+    f"First subject anatomical nifti image (3D) located is at: {haxby_dataset.anat[0]}"
 )
 print(
-    "First subject functional nifti image (4D) is located at: %s"
-    % haxby_dataset.func[0]
+    f"First subject functional nifti image (4D) is located at: {haxby_dataset.func[0]}"
 )
 print(
-    "Labels of haxby dataset (text file) is located at: %s"
-    % haxby_dataset.session_target[0]
+    f"Labels of haxby dataset (text file) is located at: {haxby_dataset.session_target[0]}"
 )
 
 # Second, load the labels stored in a text file into array using pandas

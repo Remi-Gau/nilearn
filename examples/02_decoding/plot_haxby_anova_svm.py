@@ -7,6 +7,7 @@ using a feature selection, followed by an SVM.
 
 """
 
+
 #############################################################################
 # Retrieve the files of the Haxby dataset
 # ----------------------------------------
@@ -16,8 +17,8 @@ from nilearn import datasets
 haxby_dataset = datasets.fetch_haxby()
 func_img = haxby_dataset.func[0]
 # print basic information on the dataset
-print("Mask nifti image (3D) is located at: %s" % haxby_dataset.mask)
-print("Functional nifti image (4D) is located at: %s" % func_img)
+print(f"Mask nifti image (3D) is located at: {haxby_dataset.mask}")
+print(f"Functional nifti image (4D) is located at: {func_img}")
 
 #############################################################################
 # Load the behavioral data

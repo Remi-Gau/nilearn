@@ -30,7 +30,7 @@ def plot_matrices(cov, prec, title, labels):
         cmap=plotting.cm.bwr,
         vmin=-1,
         vmax=1,
-        title="%s / covariance" % title,
+        title=f"{title} / covariance",
         labels=labels,
     )
     # Display precision matrix
@@ -39,7 +39,7 @@ def plot_matrices(cov, prec, title, labels):
         cmap=plotting.cm.bwr,
         vmin=-span,
         vmax=span,
-        title="%s / precision" % title,
+        title=f"{title} / precision",
         labels=labels,
     )
 
@@ -54,9 +54,8 @@ rest_dataset = datasets.fetch_development_fmri(n_subjects=n_subjects)
 
 # print basic information on the dataset
 print(
-    "First subject functional nifti image (4D) is at: %s"
-    % rest_dataset.func[0]
-)  # 4D data
+    f"First subject functional nifti image (4D) is at: {rest_dataset.func[0]}"
+)
 
 
 # A "memory" to avoid recomputation
@@ -90,7 +89,7 @@ confound_filenames = rest_dataset.confounds
 for func_filename, confound_filename in zip(
     func_filenames, confound_filenames
 ):
-    print("Processing file %s" % func_filename)
+    print(f"Processing file {func_filename}")
 
     region_ts = masker.transform(func_filename, confounds=confound_filename)
     subject_time_series.append(region_ts)

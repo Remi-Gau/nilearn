@@ -19,6 +19,7 @@ underlying routine that extract masks from EPI
 
 """
 
+
 import nilearn.image as image
 
 # Load Miyawaki dataset
@@ -40,9 +41,8 @@ miyawaki_dataset = datasets.fetch_miyawaki2008()
 
 # print basic information on the dataset
 print(
-    "First functional nifti image (4D) is located at: %s"
-    % miyawaki_dataset.func[0]
-)  # 4D data
+    f"First functional nifti image (4D) is located at: {miyawaki_dataset.func[0]}"
+)
 
 miyawaki_filename = miyawaki_dataset.func[0]
 miyawaki_mean_img = image.mean_img(miyawaki_filename)
