@@ -22,7 +22,7 @@
 #
 __version__ = "0.10.1.dev"
 
-_NILEARN_INSTALL_MSG = 'See https://nilearn.github.io/stable/introduction.html#installation for installation information.'
+_NILEARN_INSTALL_MSG = "See https://nilearn.github.io/stable/introduction.html#installation for installation information."
 
 import operator
 

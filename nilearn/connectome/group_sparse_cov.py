@@ -321,7 +321,11 @@ def _group_sparse_covariance(
     alpha2 = alpha**2
 
     for n in range(max_iter):
-        suffix = "" if max_norm is None else f" variation (max norm): {max_norm:.3e} "
+        suffix = (
+            ""
+            if max_norm is None
+            else f" variation (max norm): {max_norm:.3e} "
+        )
         if verbose > 1:
             logger.log(
                 f"* iteration {n:d} "
