@@ -449,7 +449,7 @@ def resample_img(
             " be specified too."
         )
 
-    if target_shape is not None and not len(target_shape) == 3:
+    if target_shape is not None and len(target_shape) != 3:
         raise ValueError(
             "The shape specified should be the shape of "
             "the 3D grid, and thus of length 3. "
@@ -476,12 +476,8 @@ def resample_img(
     elif interpolation == "nearest":
         interpolation_order = 0
 
-    input_img_is_string = False
     img = stringify_path(img)
-    if isinstance(img, str):
-        # Avoid a useless copy
-        input_img_is_string = True
-
+    input_img_is_string = isinstance(img, str)
     img = _utils.check_niimg(img)
     shape = img.shape
     affine = img.affine
@@ -620,8 +616,6 @@ def resample_img(
         dtype=resampled_data_dtype,
     )
 
-    all_img = (slice(None),) * 3
-
     # if (A == I OR some combination of permutation(I) and sign-flipped(I)) AND
     # all(b == integers):
     if (
@@ -646,12 +640,10 @@ def resample_img(
             for off, dim_b in zip(offsets[:3], b[:3])
         ]
 
-        # If image are not fully overlapping, place only portion of image.
-        slices = []
-        for dimsize, index in zip(resampled_data.shape, indices):
-            slices.append(
-                slice(np.max((0, index[0])), np.min((dimsize, index[1])))
-            )
+        slices = [
+            slice(np.max((0, index[0])), np.min((dimsize, index[1])))
+            for dimsize, index in zip(resampled_data.shape, indices)
+        ]
         slices = tuple(slices)
 
         # ensure the source image being placed isn't larger than the dest
@@ -666,6 +658,8 @@ def resample_img(
                 # different logic to the offset for diagonal affine
                 b = np.dot(linalg.inv(A), b)
             A = np.diag(A)
+        all_img = (slice(None),) * 3
+
         # Iterate over a set of 3D volumes, as the interpolation problem is
         # separable in the extra dimensions. This reduces the
         # computational cost

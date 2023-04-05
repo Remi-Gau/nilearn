@@ -87,8 +87,7 @@ n_features = X_train.shape[1]
 
 
 def flatten(list_of_2d_array):
-    flattened = [array.ravel() for array in list_of_2d_array]
-    return flattened
+    return [array.ravel() for array in list_of_2d_array]
 
 
 # Build the design matrix for multiscale computation

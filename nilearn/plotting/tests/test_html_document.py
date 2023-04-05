@@ -14,7 +14,7 @@ from numpy.testing import assert_no_warnings
 
 
 def _open_mock(f):
-    print('opened {}'.format(f))
+    print(f'opened {f}')
 
 
 def test_temp_file_removing():
@@ -51,11 +51,11 @@ def test_temp_file_removing():
 
 
 def _open_views():
-    return [html_document.HTMLDocument('') for i in range(12)]
+    return [html_document.HTMLDocument('') for _ in range(12)]
 
 
 def _open_one_view():
-    for i in range(12):
+    for _ in range(12):
         v = html_document.HTMLDocument('')
     return v
 

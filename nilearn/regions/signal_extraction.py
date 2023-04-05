@@ -158,9 +158,9 @@ def _get_labels_data(
     if background_label in labels:
         labels.remove(background_label)
 
-    # Consider only data within the mask
-    use_mask = _check_shape_and_affine_compatibility(target_img, mask_img, dim)
-    if use_mask:
+    if use_mask := _check_shape_and_affine_compatibility(
+        target_img, mask_img, dim
+    ):
         mask_img = _utils.check_niimg_3d(mask_img)
         mask_data = _safe_get_data(mask_img, ensure_finite=True)
         labels_data = labels_data.copy()
@@ -424,8 +424,7 @@ def img_to_signals_maps(imgs, maps_img, mask_img=None):
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
     labels = np.arange(maps_data.shape[-1], dtype=int)
 
-    use_mask = _check_shape_and_affine_compatibility(imgs, mask_img)
-    if use_mask:
+    if use_mask := _check_shape_and_affine_compatibility(imgs, mask_img):
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, labels = _trim_maps(
             maps_data,
@@ -483,8 +482,7 @@ def signals_to_img_maps(region_signals, maps_img, mask_img=None):
 
     maps_mask = np.ones(maps_data.shape[:3], dtype=bool)
 
-    use_mask = _check_shape_and_affine_compatibility(maps_img, mask_img)
-    if use_mask:
+    if use_mask := _check_shape_and_affine_compatibility(maps_img, mask_img):
         mask_img = _utils.check_niimg_3d(mask_img)
         maps_data, maps_mask, _ = _trim_maps(
             maps_data,

@@ -255,7 +255,7 @@ def generate_labeled_regions(shape,
     """
     n_voxels = shape[0] * shape[1] * shape[2]
     if labels is None:
-        labels = range(0, n_regions + 1)
+        labels = range(n_regions + 1)
         n_regions += 1
     else:
         n_regions = len(labels)
@@ -372,12 +372,10 @@ def generate_fake_fmri(shape=(10, 11, 12),
     target = np.zeros(length, dtype=int)
     rest_max_size = (length - (n_blocks * block_size)) // n_blocks
     if rest_max_size < 0:
-        raise ValueError('%s is too small '
-                         'to put %s blocks of size %s' %
-                         (length, n_blocks, block_size))
-    t_start = 0
-    if rest_max_size > 0:
-        t_start = rand_gen.randint(0, rest_max_size, 1)[0]
+        raise ValueError(
+            f'{length} is too small to put {n_blocks} blocks of size {block_size}'
+        )
+    t_start = rand_gen.randint(0, rest_max_size, 1)[0] if rest_max_size > 0 else 0
     for block in range(n_blocks):
         if block_type == 'classification':
             # Select a random voxel and add some signal to the background
@@ -442,7 +440,7 @@ def generate_fake_fmri_data_and_design(shapes,
     fmri_data = []
     design_matrices = []
     rand_gen = check_random_state(random_state)
-    for i, shape in enumerate(shapes):
+    for shape in shapes:
         data = rand_gen.randn(*shape)
         data[1:-1, 1:-1, 1:-1] += 100
         fmri_data.append(Nifti1Image(data, affine))
@@ -581,16 +579,15 @@ def generate_signals_from_precisions(precisions,
     """
     rand_gen = check_random_state(random_state)
 
-    signals = []
     n_samples = rand_gen.randint(min_n_samples,
                                  high=max_n_samples,
                                  size=len(precisions))
 
     mean = np.zeros(precisions[0].shape[0])
-    for n, prec in zip(n_samples, precisions):
-        signals.append(
-            rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n, )))
-    return signals
+    return [
+        rand_gen.multivariate_normal(mean, np.linalg.inv(prec), (n,))
+        for n, prec in zip(n_samples, precisions)
+    ]
 
 
 def generate_group_sparse_gaussian_graphs(n_subjects=5,
@@ -716,10 +713,9 @@ def basic_paradigm(condition_names_have_spaces=False):
         conditions = [c.replace(' ', '') for c in conditions]
     onsets = [30, 70, 100, 10, 30, 90, 30, 40, 60]
     durations = 1 * np.ones(9)
-    events = pd.DataFrame({'trial_type': conditions,
-                           'onset': onsets,
-                           'duration': durations})
-    return events
+    return pd.DataFrame(
+        {'trial_type': conditions, 'onset': onsets, 'duration': durations}
+    )
 
 
 def basic_confounds(length, random_state=0):
@@ -747,8 +743,7 @@ def basic_confounds(length, random_state=0):
     rand_gen = check_random_state(random_state)
     columns = ['RotX', 'RotY', 'RotZ', 'X', 'Y', 'Z']
     data = rand_gen.rand(length, 6)
-    confounds = pd.DataFrame(data, columns=columns)
-    return confounds
+    return pd.DataFrame(data, columns=columns)
 
 
 def generate_random_img(
@@ -1224,7 +1219,7 @@ def _init_fields(subject,
     _create_bids_filename
 
     """
-    fields = {
+    return {
         "suffix": "bold",
         "extension": "nii.gz",
         "entities": {
@@ -1234,7 +1229,6 @@ def _init_fields(subject,
             "run": run,
         },
     }
-    return fields
 
 
 def _write_bids_raw_anat(subses_dir, subject, session) -> None:

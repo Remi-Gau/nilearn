@@ -198,8 +198,8 @@ def test_set_view_plot_surf_errors():
 
 def test_configure_title_plotly():
     from nilearn.plotting.surf_plotting import _configure_title_plotly
-    assert _configure_title_plotly(None, None) == dict()
-    assert _configure_title_plotly(None, 22) == dict()
+    assert _configure_title_plotly(None, None) == {}
+    assert _configure_title_plotly(None, 22) == {}
     config = _configure_title_plotly("Test Title", 22, color="green")
     assert config["text"] == "Test Title"
     assert config["x"] == 0.5
@@ -372,14 +372,14 @@ def test_plot_surf_avg_method_errors():
                   )
 
     with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "avg_method should be either "
-            "['mean', 'median', 'max', 'min'] "
-            "or a custom function"
-        )
-    ):
-        custom_avg_function = dict()
+            ValueError,
+            match=re.escape(
+                "avg_method should be either "
+                "['mean', 'median', 'max', 'min'] "
+                "or a custom function"
+            )
+        ):
+        custom_avg_function = {}
 
         plot_surf(mesh,
                   surf_map=rng.standard_normal(
@@ -632,8 +632,7 @@ def _generate_img():
     rng = np.random.RandomState(42)
     data_rng = rng.uniform(size=(7, 7, 3))
     data_positive[1:-1, 2:-1, 1:] = data_rng[1:-1, 2:-1, 1:]
-    nii = nibabel.Nifti1Image(data_positive, mni_affine)
-    return nii
+    return nibabel.Nifti1Image(data_positive, mni_affine)
 
 
 def test_plot_img_on_surf_hemispheres_and_orientations():

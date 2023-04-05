@@ -314,7 +314,7 @@ def test_run_glm():
     labels, results = run_glm(Y, X, 'ar1')
     assert len(labels) == n
     assert len(results.keys()) > 1
-    tmp = sum([val.theta.shape[1] for val in results.values()])
+    tmp = sum(val.theta.shape[1] for val in results.values())
     assert tmp == n
     assert results[labels[0]].model.order == 1
     assert type(results[labels[0]].model) == ARModel
@@ -323,7 +323,7 @@ def test_run_glm():
     labels_ar3, results_ar3 = run_glm(Y, X, 'ar3', bins=10)
     assert len(labels_ar3) == n
     assert len(results_ar3.keys()) > 1
-    tmp = sum([val.theta.shape[1] for val in results_ar3.values()])
+    tmp = sum(val.theta.shape[1] for val in results_ar3.values())
     assert tmp == n
     assert type(results_ar3[labels_ar3[0]].model) == ARModel
     assert results_ar3[labels_ar3[0]].model.order == 3
@@ -352,7 +352,7 @@ def test_glm_AR_estimates():
 
     for ar_vals in [[-0.2], [-0.2, -0.5], [-0.2, -0.5, -0.7, -0.3]]:
         ar_order = len(ar_vals)
-        ar_arg = 'ar' + str(ar_order)
+        ar_arg = f'ar{ar_order}'
 
         X = X_orig.copy()
         Y = Y_orig.copy()
@@ -625,14 +625,13 @@ def test_first_level_contrast_computation():
 
 def test_first_level_with_scaling():
     shapes, rk = [(3, 1, 1, 2)], 1
-    fmri_data = list()
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
-    design_matrices = list()
-    design_matrices.append(
+    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4))]
+    design_matrices = [
         pd.DataFrame(
             np.ones((shapes[0][-1], rk)),
-            columns=list('abcdefghijklmnopqrstuvwxyz')[:rk])
-    )
+            columns=list('abcdefghijklmnopqrstuvwxyz')[:rk],
+        )
+    ]
     fmri_glm = FirstLevelModel(
         mask_img=False, noise_model='ols', signal_scaling=0,
         minimize_memory=True
@@ -657,12 +656,12 @@ def test_first_level_with_no_signal_scaling():
     constant design matrix with a single valued fmri image
     """
     shapes, rk = [(3, 1, 1, 2)], 1
-    fmri_data = list()
-    design_matrices = list()
-    design_matrices.append(pd.DataFrame(np.ones((shapes[0][-1], rk)),
-                                        columns=list(
-                                            'abcdefghijklmnopqrstuvwxyz')[:rk])
-                           )
+    design_matrices = [
+        pd.DataFrame(
+            np.ones((shapes[0][-1], rk)),
+            columns=list('abcdefghijklmnopqrstuvwxyz')[:rk],
+        )
+    ]
     # Check error with invalid signal_scaling values
     with pytest.raises(ValueError,
                        match="signal_scaling must be"):
@@ -671,8 +670,7 @@ def test_first_level_with_no_signal_scaling():
 
     first_level = FirstLevelModel(mask_img=False, noise_model='ols',
                                   signal_scaling=False)
-    fmri_data.append(Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4)))
-
+    fmri_data = [Nifti1Image(np.zeros((1, 1, 1, 2)) + 6, np.eye(4))]
     first_level.fit(fmri_data, design_matrices=design_matrices)
     # trivial test of signal_scaling value
     assert first_level.signal_scaling is False

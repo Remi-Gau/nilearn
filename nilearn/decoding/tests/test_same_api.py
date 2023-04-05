@@ -86,10 +86,9 @@ def test_same_energy_calculus_pure_lasso():
 def test_lipschitz_constant_loss_mse():
     rng = check_random_state(42)
     X, _, _, mask = _make_data(rng=rng, masked=True)
-    l1_ratio = 1.0
     alpha = 0.1
     mask = np.ones(X.shape[1]).astype(bool)
-    grad_weight = alpha * X.shape[0] * (1.0 - l1_ratio)
+    grad_weight = alpha * X.shape[0] * 0.0
     a = _squared_loss_derivative_lipschitz_constant(X, mask, grad_weight)
     b = spectral_norm_squared(X)
     np.testing.assert_almost_equal(a, b)
@@ -98,9 +97,7 @@ def test_lipschitz_constant_loss_mse():
 def test_lipschitz_constant_loss_logreg():
     rng = check_random_state(42)
     X, _, _, mask = _make_data(rng=rng, masked=True)
-    l1_ratio = 1.0
-    alpha = 0.1
-    grad_weight = alpha * X.shape[0] * (1.0 - l1_ratio)
+    grad_weight = 0.1 * X.shape[0] * 0.0
     a = _logistic_derivative_lipschitz_constant(X, mask, grad_weight)
     b = _logistic_loss_lipschitz_constant(X)
     assert a == b

@@ -354,9 +354,7 @@ def load_mni152_brain_mask(resolution=None, threshold=0.2):
     # Load MNI template
     target_img = load_mni152_template(resolution=resolution)
     mask_voxels = (get_data(target_img) > threshold).astype("int8")
-    mask_img = new_img_like(target_img, mask_voxels)
-
-    return mask_img
+    return new_img_like(target_img, mask_voxels)
 
 
 def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
@@ -406,9 +404,7 @@ def load_mni152_gm_mask(resolution=None, threshold=0.2, n_iter=2):
     gm_target_mask = (gm_target_data > threshold).astype("int8")
 
     gm_target_mask = binary_closing(gm_target_mask, iterations=n_iter)
-    gm_mask_img = new_img_like(gm_target_img, gm_target_mask)
-
-    return gm_mask_img
+    return new_img_like(gm_target_img, gm_target_mask)
 
 
 def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
@@ -458,9 +454,7 @@ def load_mni152_wm_mask(resolution=None, threshold=0.2, n_iter=2):
     wm_target_mask = (wm_target_data > threshold).astype("int8")
 
     wm_target_mask = binary_closing(wm_target_mask, iterations=n_iter)
-    wm_mask_img = new_img_like(wm_target_img, wm_target_mask)
-
-    return wm_mask_img
+    return new_img_like(wm_target_img, wm_target_mask)
 
 
 @fill_doc
@@ -523,9 +517,7 @@ def fetch_icbm152_brain_gm_mask(data_dir=None, threshold=0.2, resume=True,
     gm_mask = (gm_data > threshold).astype("int8")
 
     gm_mask = binary_closing(gm_mask, iterations=n_iter)
-    gm_mask_img = new_img_like(gm_img, gm_mask)
-
-    return gm_mask_img
+    return new_img_like(gm_img, gm_mask)
 
 
 @fill_doc
@@ -618,13 +610,12 @@ def fetch_oasis_vbm(n_subjects=None, dartel_version=True, data_dir=None,
                           'All of them will be used instead of the wanted %d'
                           % n_subjects)
             n_subjects = 403
-    else:  # all subjects except one are available with non-DARTEL version
-        if n_subjects > 415:
-            warnings.warn('Only 415 subjects are available in the '
-                          'non-DARTEL-normalized version of the dataset. '
-                          'All of them will be used instead of the wanted %d'
-                          % n_subjects)
-            n_subjects = 415
+    elif n_subjects > 415:
+        warnings.warn('Only 415 subjects are available in the '
+                      'non-DARTEL-normalized version of the dataset. '
+                      'All of them will be used instead of the wanted %d'
+                      % n_subjects)
+        n_subjects = 415
     if n_subjects < 1:
         raise ValueError("Incorrect number of subjects (%d)" % n_subjects)
 
@@ -785,11 +776,6 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     .. footbibliography::
 
     """
-    available_meshes = (
-        "fsaverage3", "fsaverage4", "fsaverage5",
-        "fsaverage6", "fsaverage7", "fsaverage",
-    )
-
     # Call a dataset loader depending on the value of mesh
     if mesh in (
         "fsaverage3", "fsaverage4",
@@ -804,6 +790,11 @@ def fetch_surf_fsaverage(mesh='fsaverage5', data_dir=None):
     elif mesh == "fsaverage5":
         return _fetch_surf_fsaverage5()
     else:
+        available_meshes = (
+            "fsaverage3", "fsaverage4", "fsaverage5",
+            "fsaverage6", "fsaverage7", "fsaverage",
+        )
+
         raise ValueError(
             "'mesh' should be one of {}; {!r} was provided".format(
                 available_meshes, mesh
@@ -824,12 +815,17 @@ def _fetch_surf_fsaverage5():
     data_dir = Path(FSAVERAGE5_PATH)
 
     data = {
-        "{}_{}".format(part, hemi): str(
-            data_dir / "{}_{}.gii.gz".format(part, hemi)
-        )
+        f"{part}_{hemi}": str(data_dir / f"{part}_{hemi}.gii.gz")
         for part in [
-            "area", "curv", "flat", "infl", "pial",
-            "sphere", "sulc", "thick", "white"
+            "area",
+            "curv",
+            "flat",
+            "infl",
+            "pial",
+            "sphere",
+            "sulc",
+            "thick",
+            "white",
         ]
         for hemi in ["left", "right"]
     }
@@ -858,10 +854,17 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
 
     # List of attributes exposed by the dataset
     dataset_attributes = [
-        "{}_{}".format(part, hemi)
+        f"{part}_{hemi}"
         for part in [
-            "area", "curv", "flat", "infl", "pial",
-            "sphere", "sulc", "thick", "white"
+            "area",
+            "curv",
+            "flat",
+            "infl",
+            "pial",
+            "sphere",
+            "sulc",
+            "thick",
+            "white",
         ]
         for hemi in ["left", "right"]
     ]
@@ -870,13 +873,13 @@ def _fetch_surf_fsaverage(dataset_name, data_dir=None):
     _fetch_files(
         dataset_dir,
         [
-            ("{}.gii.gz".format(attribute), url, opts)
+            (f"{attribute}.gii.gz", url, opts)
             for attribute in dataset_attributes
-        ]
+        ],
     )
 
     result = {
-        attribute: os.path.join(dataset_dir, "{}.gii.gz".format(attribute))
+        attribute: os.path.join(dataset_dir, f"{attribute}.gii.gz")
         for attribute in dataset_attributes
     }
     result["description"] = str(_get_dataset_descr(dataset_name))

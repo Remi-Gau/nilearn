@@ -17,6 +17,7 @@ sulci using standard anatomical nomenclature. NeuroImage, 53, 1.
 URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 """
 
+
 ###############################################################################
 # Data fetcher
 # ------------
@@ -35,12 +36,15 @@ parcellation = destrieux_atlas['map_left']
 fsaverage = datasets.fetch_surf_fsaverage()
 
 # The fsaverage dataset contains file names pointing to the file locations
-print('Fsaverage5 pial surface of left hemisphere is at: %s' %
-      fsaverage['pial_left'])
-print('Fsaverage5 inflated surface of left hemisphere is at: %s' %
-      fsaverage['infl_left'])
-print('Fsaverage5 sulcal depth map of left hemisphere is at: %s' %
-      fsaverage['sulc_left'])
+print(
+    f"Fsaverage5 pial surface of left hemisphere is at: {fsaverage['pial_left']}"
+)
+print(
+    f"Fsaverage5 inflated surface of left hemisphere is at: {fsaverage['infl_left']}"
+)
+print(
+    f"Fsaverage5 sulcal depth map of left hemisphere is at: {fsaverage['sulc_left']}"
+)
 
 ###############################################################################
 # Visualization
@@ -93,11 +97,11 @@ labels = destrieux_atlas['labels']
 for hemi in ['left', 'right']:
     vert = destrieux_atlas[f'map_{hemi}']
     rr, _ = surface.load_surf_mesh(fsaverage[f'pial_{hemi}'])
-    for k, label in enumerate(labels):
-        if "Unknown" not in str(label):  # Omit the Unknown label.
-            # Compute mean location of vertices in label of index k
-            coordinates.append(np.mean(rr[vert == k], axis=0))
-
+    coordinates.extend(
+        np.mean(rr[vert == k], axis=0)
+        for k, label in enumerate(labels)
+        if "Unknown" not in str(label)
+    )
 coordinates = np.array(coordinates)  # 3D coordinates of parcels
 
 # We now make a synthetic connectivity matrix that connects labels

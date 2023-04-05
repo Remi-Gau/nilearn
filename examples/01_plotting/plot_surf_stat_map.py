@@ -46,6 +46,7 @@ URL http://dx.doi.org/10.1016/j.neuroimage.2010.06.010.
 
 """
 
+
 ###############################################################################
 # Retrieving the data
 # -------------------
@@ -57,9 +58,9 @@ nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=1)
 
 # The nki dictionary contains file names for the data
 # of all downloaded subjects.
-print(('Resting state data of the first subjects on the '
-       'fsaverag5 surface left hemisphere is at: %s' %
-      nki_dataset['func_left'][0]))
+print(
+    f"Resting state data of the first subjects on the fsaverag5 surface left hemisphere is at: {nki_dataset['func_left'][0]}"
+)
 
 # Destrieux parcellation for left hemisphere in fsaverage5 space
 destrieux_atlas = datasets.fetch_atlas_surf_destrieux()
@@ -91,11 +92,9 @@ from nilearn import surface
 
 timeseries = surface.load_surf_data(nki_dataset['func_left'][0])
 
-# Extract seed region via label
-pcc_region = b'G_cingul-Post-dorsal'
-
 import numpy as np
 
+pcc_region = b'G_cingul-Post-dorsal'
 pcc_labels = np.where(parcellation == labels.index(pcc_region))[0]
 
 # Extract time series from seed region

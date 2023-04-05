@@ -70,9 +70,7 @@ def _threshold_maps_ratio(maps_img, threshold):
     )
     maps_data[abs_maps < cutoff_threshold] = 0.0
 
-    threshold_maps_img = new_img_like(maps, maps_data)
-
-    return threshold_maps_img
+    return new_img_like(maps, maps_data)
 
 
 def _remove_small_regions(input_data, index, affine, min_size):

@@ -7,66 +7,65 @@ source: Eric Larson and MNE-python team.
 https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 """
 
+
 import sys
 
-
-###################################
-# Standard documentation entries
-#
-docdict = dict()
 
 # Verbose
 verbose = """
 verbose : :obj:`int`, optional
     Verbosity level (0 means no message).
     Default={}."""
-docdict['verbose'] = verbose.format(1)
-docdict['verbose0'] = verbose.format(0)
-
-# ax
-docdict['ax'] = """
+# Standardize
+standardize = """
+standardize : :obj:`bool`, optional.
+    If ``standardize`` is True, the data are centered and normed:
+    their mean is put to 0 and their variance is put to 1 in the
+    time dimension.
+    Default={}."""
+# Memory_level
+memory_level = """
+memory_level : :obj:`int`, optional.
+    Rough estimator of the amount of memory used by caching. Higher value
+    means more memory for caching. Zero means no caching.
+    Default={}."""
+# n_jobs
+n_jobs = """
+n_jobs : :obj:`int`, optional.
+    The number of CPUs to use to do the computation. -1 means 'all CPUs'.
+    Default={}."""
+docdict = {
+    'verbose': verbose.format(1),
+    'verbose0': verbose.format(0),
+    'ax': """
 ax : :class:`~matplotlib.axes.Axes`
-    The matplotlib axes in which the plots will be drawn."""
-
-# Legacy_format
-docdict['legacy_format'] = """
+    The matplotlib axes in which the plots will be drawn.""",
+    'legacy_format': """
 legacy_format : :obj:`bool`, optional
     If set to ``True``, the fetcher will return recarrays. Otherwise,
     it will return pandas dataframes.
-    Default=True."""
-
-# Resume
-docdict['resume'] = """
+    Default=True.""",
+    'resume': """
 resume : :obj:`bool`, optional
     Whether to resume download of a partly-downloaded file.
-    Default=True."""
-
-# Data_dir
-docdict['data_dir'] = """
+    Default=True.""",
+    'data_dir': """
 data_dir : :obj:`pathlib.Path` or :obj:`str`, optional
     Path where data should be downloaded. By default,
-    files are downloaded in home directory."""
-
-# URL
-docdict['url'] = """
+    files are downloaded in home directory.""",
+    'url': """
 url : :obj:`str`, optional
     URL of file to download.
     Override download URL. Used for test only (or if you
     setup a mirror of the data).
-    Default=None."""
-
-# Smoothing_fwhm
-docdict['smoothing_fwhm'] = """
+    Default=None.""",
+    'smoothing_fwhm': """
 smoothing_fwhm : :obj:`float`, optional.
     If ``smoothing_fwhm`` is not ``None``, it gives
     the :term:`full-width at half maximum<FWHM>` in millimeters
-    of the spatial smoothing to apply to the signal."""
-
-# Second_level_input
-docdict['second_level_input'] = """
-second_level_input : :obj:`list` of \
-:class:`~nilearn.glm.first_level.FirstLevelModel` objects \
-or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
+    of the spatial smoothing to apply to the signal.""",
+    'second_level_input': """
+second_level_input : :obj:`list` of \\n#:class:`~nilearn.glm.first_level.FirstLevelModel` objects \\n#or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
 
     - Giving :class:`~nilearn.glm.first_level.FirstLevelModel` objects
       will allow to easily compute the second level contrast of arbitrary first
@@ -88,12 +87,9 @@ or :class:`pandas.DataFrame` or :obj:`list` of Niimg-like objects.
       literally as Y for the model fit and ``design_matrix`` must be
       provided.
 
-"""
-
-# Second_level_contrast
-docdict['second_level_contrast'] = """
-second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
-(n_col), optional
+""",
+    'second_level_contrast': """
+second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\\n#(n_col), optional
     Where ``n_col`` is the number of columns of the design matrix.
     The string can be a formula compatible with :meth:`pandas.DataFrame.eval`.
     Basically one can use the name of the conditions as they appear in the
@@ -101,12 +97,9 @@ second_level_contrast : :obj:`str` or :class:`numpy.ndarray` of shape\
     with numbers with operators +-`*`/. The default (None) is accepted if the
     design matrix has a single column, in which case the only possible
     contrast array((1)) is applied; when the design matrix has multiple
-    columns, an error is raised."""
-
-# fwhm
-docdict['fwhm'] = """
-fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\
-or 'fast' or None, optional
+    columns, an error is raised.""",
+    'fwhm': """
+fwhm : scalar, :class:`numpy.ndarray`, or :obj:`tuple`, or :obj:`list`,\\n#or 'fast' or None, optional
     Smoothing strength, as a :term:`full-width at half maximum<FWHM>`,
     in millimeters:
 
@@ -126,45 +119,27 @@ or 'fast' or None, optional
         In corner case situations, `fwhm` is simply kept to None when `fwhm`
         is specified as `fwhm=0`.
 
-"""
-
-# Standardize
-standardize = """
-standardize : :obj:`bool`, optional.
-    If ``standardize`` is True, the data are centered and normed:
-    their mean is put to 0 and their variance is put to 1 in the
-    time dimension.
-    Default={}."""
-docdict['standardize'] = standardize.format('True')
-docdict['standardize_false'] = standardize.format('False')
-
-# standardize_confounds
-docdict['standardize_confounds'] = """
+""",
+    'standardize': standardize.format('True'),
+    'standardize_false': standardize.format('False'),
+    'standardize_confounds': """
 standardize_confounds : :obj:`bool`, optional
     If set to True, the confounds are z-scored: their mean is put
     to 0 and their variance to 1 in the time dimension.
-    Default=True."""
-
-# ensure_finite
-docdict['ensure_finite'] = """
+    Default=True.""",
+    'ensure_finite': """
 ensure_finite : :obj:`bool`, optional
     If True, the non-finite values (NANs and infs) found in the data
-    will be replaced by zeros."""
-
-# detrend
-docdict['detrend'] = """
+    will be replaced by zeros.""",
+    'detrend': """
 detrend : :obj:`bool`, optional
-    Whether to detrend signals or not."""
-
-# Target_affine
-docdict['target_affine'] = """
+    Whether to detrend signals or not.""",
+    'target_affine': """
 target_affine : :class:`numpy.ndarray`, optional.
     If specified, the image is resampled corresponding to this new affine.
     ``target_affine`` can be a 3x3 or a 4x4 matrix.
-    Default=None."""
-
-# Target_shape
-docdict['target_shape'] = """
+    Default=None.""",
+    'target_shape': """
 target_shape : :obj:`tuple` or :obj:`list`, optional.
     If specified, the image will be resized to match this new shape.
     ``len(target_shape)`` must be equal to 3.
@@ -173,38 +148,26 @@ target_shape : :obj:`tuple` or :obj:`list`, optional.
         If ``target_shape`` is specified, a ``target_affine`` of shape
         ``(4, 4)`` must also be given.
 
-    Default=None."""
-
-# Low_pass
-docdict['low_pass'] = """
+    Default=None.""",
+    'low_pass': """
 low_pass : :obj:`float` or None, optional
     Low cutoff frequency in Hertz. If specified, signals above this
     frequency will be filtered out. If None, no low-pass filtering
-    will be performed. Default=None."""
-
-# lower_cutoff
-docdict['lower_cutoff'] = """
+    will be performed. Default=None.""",
+    'lower_cutoff': """
 lower_cutoff : :obj:`float`, optional
-    Lower fraction of the histogram to be discarded."""
-
-# upper_cutoff
-docdict['upper_cutoff'] = """
+    Lower fraction of the histogram to be discarded.""",
+    'upper_cutoff': """
 upper_cutoff : :obj:`float`, optional
-    Upper fraction of the histogram to be discarded."""
-
-# connected
-docdict['connected'] = """
+    Upper fraction of the histogram to be discarded.""",
+    'connected': """
 connected : :obj:`bool`, optional
-    If connected is True, only the largest connect component is kept."""
-
-# border_size
-docdict['border_size'] = """
+    If connected is True, only the largest connect component is kept.""",
+    'border_size': """
 border_size : :obj:`int`, optional
     The size, in :term:`voxel` of the border used on the side of
-    the image to determine the value of the background."""
-
-# opening
-docdict['opening'] = """
+    the image to determine the value of the background.""",
+    'opening': """
 opening : :obj:`bool` or :obj:`int`, optional
     This parameter determines whether a morphological
     :term:`opening<Opening>` is performed, to keep only large structures.
@@ -227,10 +190,8 @@ opening : :obj:`bool` or :obj:`int`, optional
         Turning off :term:`opening<Opening>` (``opening=False``) will also
         prevent any smoothing applied to the image during the mask computation.
 
-"""
-
-# mask_type
-docdict['mask_type'] = """
+""",
+    'mask_type': """
 mask_type : {'whole-brain', 'gm', 'wm'}, optional
     Type of mask to be computed:
 
@@ -240,93 +201,57 @@ mask_type : {'whole-brain', 'gm', 'wm'}, optional
 
     Default = 'whole-brain'.
 
-"""
-
-# High pass
-docdict['high_pass'] = """
+""",
+    'high_pass': """
 high_pass : :obj:`float`, optional
     High cutoff frequency in Hertz. If specified, signals below this
-    frequency will be filtered out. Default=None."""
-
-# t_r
-docdict['t_r'] = """
+    frequency will be filtered out. Default=None.""",
+    't_r': """
 t_r : :obj:`float` or None, optional
     Repetition time, in seconds (sampling period).
     Set to ``None`` if not provided.
-    Default=None."""
-
-# mask_img
-docdict['mask_img'] = """
+    Default=None.""",
+    'mask_img': """
 mask_img : Niimg-like object
-    Object used for masking the data."""
-
-# Memory
-docdict['memory'] = """
-memory : instance of :class:`joblib.Memory`, :obj:`str`, or \
-:class:`pathlib.Path`
+    Object used for masking the data.""",
+    'memory': """
+memory : instance of :class:`joblib.Memory`, :obj:`str`, or \\n#:class:`pathlib.Path`
     Used to cache the masking process.
     By default, no caching is done. If a :obj:`str` is given, it is the
-    path to the caching directory."""
-
-# n_parcels
-docdict['n_parcels'] = """
+    path to the caching directory.""",
+    'n_parcels': """
 n_parcels : :obj:`int`, optional
     Number of parcels to divide the data into.
-    Default=50."""
-
-# random_state
-docdict['random_state'] = """
+    Default=50.""",
+    'random_state': """
 random_state : :obj:`int` or RandomState, optional
-    Pseudo-random number generator state used for random sampling."""
-
-# Memory_level
-memory_level = """
-memory_level : :obj:`int`, optional.
-    Rough estimator of the amount of memory used by caching. Higher value
-    means more memory for caching. Zero means no caching.
-    Default={}."""
-docdict['memory_level'] = memory_level.format(0)
-docdict['memory_level1'] = memory_level.format(1)
-
-# n_jobs
-n_jobs = """
-n_jobs : :obj:`int`, optional.
-    The number of CPUs to use to do the computation. -1 means 'all CPUs'.
-    Default={}."""
-docdict['n_jobs'] = n_jobs.format("1")
-docdict['n_jobs_all'] = n_jobs.format("-1")
-
-# img
-docdict['img'] = """
+    Pseudo-random number generator state used for random sampling.""",
+    'memory_level': memory_level.format(0),
+    'memory_level1': memory_level.format(1),
+    'n_jobs': n_jobs.format("1"),
+    'n_jobs_all': n_jobs.format("-1"),
+    'img': """
 img : Niimg-like object
     See :ref:`extracting_data`.
-"""
-
-# imgs
-docdict['imgs'] = """
+""",
+    'imgs': """
 imgs : :obj:`list` of Niimg-like objects
     See :ref:`extracting_data`.
-"""
-
-# confounds
-docdict['confounds'] = """
+""",
+    'confounds': """
 confounds : CSV file or array-like, optional
     This parameter is passed to :func:`nilearn.signal.clean`.
     Please see the related documentation for details.
     shape: list of (number of scans, number of confounds)
-"""
-
-# sample_mask
-docdict['sample_mask'] = """
+""",
+    'sample_mask': """
 sample_mask : Any type compatible with numpy-array indexing, optional
     shape: (number of scans - number of volumes removed, )
     Masks the niimgs along time/fourth dimension to perform scrubbing
     (remove volumes with high motion) and/or non-steady-state volumes.
     This parameter is passed to :func:`nilearn.signal.clean`.
-"""
-
-# kwargs for Maskers
-docdict['masker_kwargs'] = """
+""",
+    'masker_kwargs': """
 kwargs : dict
     Keyword arguments to be passed to functions called within the masker.
     Kwargs prefixed with ``'clean__'`` will be passed to
@@ -334,10 +259,8 @@ kwargs : dict
     Within :func:`~nilearn.signal.clean`, kwargs prefixed with
     ``'butterworth__'`` will be passed to the Butterworth filter
     (i.e., ``clean__butterworth__``).
-"""
-
-# cut_coords
-docdict['cut_coords'] = """
+""",
+    'cut_coords': """
 cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
     The MNI coordinates of the point where the cut is performed.
 
@@ -357,17 +280,13 @@ cut_coords : None, a :obj:`tuple` of :obj:`float`, or :obj:`int`, optional
             an integer, in which case it specifies the number of
             cuts to perform.
 
-"""
-
-# output_file
-docdict['output_file'] = """
+""",
+    'output_file': """
 output_file : :obj:`str`, or None, optional
     The name of an image file to export the plot to. Valid extensions
     are .png, .pdf, .svg. If ``output_file`` is not None, the plot
-    is saved to a file, and the display is closed."""
-
-# extractor / extract_type
-docdict['extractor'] = """
+    is saved to a file, and the display is closed.""",
+    'extractor': """
 extractor : {'local_regions', 'connected_components'}, optional
     This option can take two values:
 
@@ -380,7 +299,8 @@ extractor : {'local_regions', 'connected_components'}, optional
           random walker segmentation algorithm on these markers for region
           separation.
 
-    Default='local_regions'."""
+    Default='local_regions'.""",
+}
 docdict['extract_type'] = docdict['extractor']
 
 # display_mode
@@ -819,12 +739,9 @@ def _indentcount_lines(lines):
     """
     indentno = sys.maxsize
     for line in lines:
-        stripped = line.lstrip()
-        if stripped:
+        if stripped := line.lstrip():
             indentno = min(indentno, len(line) - len(stripped))
-    if indentno == sys.maxsize:
-        return 0
-    return indentno
+    return 0 if indentno == sys.maxsize else indentno
 
 
 def fill_doc(f):
@@ -846,10 +763,7 @@ def fill_doc(f):
         return f
     lines = docstring.splitlines()
     # Find the minimum indent of the main docstring, after first line
-    if len(lines) < 2:
-        icount = 0
-    else:
-        icount = _indentcount_lines(lines[1:])
+    icount = 0 if len(lines) < 2 else _indentcount_lines(lines[1:])
     # Insert this indent to dictionary docstrings
     try:
         indented = docdict_indented[icount]
@@ -860,8 +774,7 @@ def fill_doc(f):
             lines = dstr.splitlines()
             try:
                 newlines = [lines[0]]
-                for line in lines[1:]:
-                    newlines.append(indent + line)
+                newlines.extend(indent + line for line in lines[1:])
                 indented[name] = '\n'.join(newlines)
             except IndexError:
                 indented[name] = dstr

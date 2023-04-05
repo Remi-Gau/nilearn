@@ -34,6 +34,7 @@ approach for the same dataset.
 
 """
 
+
 ##############################################################################
 # Loading the data
 # ----------------
@@ -67,17 +68,14 @@ fmri_data = masker.transform(fmri_random_runs_filenames)
 # shape of the binary (i.e. black and wihte values) image in pixels
 stimulus_shape = (10, 10)
 
-# We load the visual stimuli from csv files
-stimuli = []
-for stimulus_run in stimuli_random_runs_filenames:
-    stimuli.append(
-        np.reshape(
-            np.loadtxt(stimulus_run, dtype=int, delimiter=","),
-            (-1,) + stimulus_shape,
-            order="F",
-        )
+stimuli = [
+    np.reshape(
+        np.loadtxt(stimulus_run, dtype=int, delimiter=","),
+        (-1,) + stimulus_shape,
+        order="F",
     )
-
+    for stimulus_run in stimuli_random_runs_filenames
+]
 ##############################################################################
 # Let's take a look at some of these binary images:
 
@@ -87,11 +85,11 @@ plt.figure(figsize=(8, 4))
 plt.subplot(1, 2, 1)
 plt.imshow(stimuli[0][124], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {1}, Stimulus {125}")
+plt.title('Run 1, Stimulus 125')
 plt.subplot(1, 2, 2)
 plt.imshow(stimuli[2][101], interpolation="nearest", cmap="gray")
 plt.axis("off")
-plt.title(f"Run {3}, Stimulus {102}")
+plt.title('Run 3, Stimulus 102')
 plt.subplots_adjust(wspace=0.5)
 
 ##############################################################################

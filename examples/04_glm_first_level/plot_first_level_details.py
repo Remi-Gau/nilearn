@@ -137,8 +137,7 @@ def make_localizer_contrasts(design_matrix):
         contrasts["sentence_listening"] + contrasts["sentence_reading"]
     )
 
-    # Short dictionary of more relevant contrasts
-    contrasts = {
+    return {
         "left - right button press": (
             contrasts["audio_left_hand_button_press"]
             - contrasts["audio_right_hand_button_press"]
@@ -154,7 +153,6 @@ def make_localizer_contrasts(design_matrix):
             - contrasts["vertical_checkerboard"]
         ),
     }
-    return contrasts
 
 
 #########################################################################

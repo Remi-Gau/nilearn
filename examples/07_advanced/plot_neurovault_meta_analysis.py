@@ -60,8 +60,7 @@ for im in images_meta:
 def t_to_z(t_scores, deg_of_freedom):
     """Convert t-scores to z-scores."""
     p_values = scipy.stats.t.sf(t_scores, df=deg_of_freedom)
-    z_values = scipy.stats.norm.isf(p_values)
-    return z_values
+    return scipy.stats.norm.isf(p_values)
 
 
 # Compute z values

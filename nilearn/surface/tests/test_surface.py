@@ -272,7 +272,7 @@ def test_load_surf_mesh_list():
     with pytest.raises(ValueError, match='input type is not recognized'):
         load_surf_mesh(mesh[0])
     with pytest.raises(ValueError, match='input type is not recognized'):
-        load_surf_mesh(dict())
+        load_surf_mesh({})
     del mesh
 
 
@@ -409,9 +409,9 @@ def test_load_surf_data_file_glob(tmp_path):
     data2D = np.ones((20, 3))
     fnames = []
     for f in range(3):
-        fd, filename = tempfile.mkstemp(prefix='glob_%s_' % f,
-                                        suffix='.gii',
-                                        dir=str(tmp_path))
+        fd, filename = tempfile.mkstemp(
+            prefix=f'glob_{f}_', suffix='.gii', dir=str(tmp_path)
+        )
         os.close(fd)
         fnames.append(filename)
         data2D[:, f] *= f
@@ -469,8 +469,7 @@ def _flat_mesh(x_s, y_s, z=0):
     z = np.ones(len(x)) * z
     vertices = np.asarray([x, y, z]).T
     triangulation = Delaunay(vertices[:, :2]).simplices
-    mesh = [vertices, triangulation]
-    return mesh
+    return [vertices, triangulation]
 
 
 @pytest.mark.parametrize("xy", [(10, 7), (5, 5), (3, 2)])

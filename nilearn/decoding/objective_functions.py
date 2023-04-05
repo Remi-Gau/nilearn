@@ -222,8 +222,7 @@ def _sigmoid(t, copy=True):
     t *= -1.0
     t = np.exp(t, t)
     t += 1.0
-    t = np.reciprocal(t, t)
-    return t
+    return np.reciprocal(t, t)
 
 
 def _logistic(X, y, w):

@@ -96,7 +96,7 @@ def test_parcellations_no_warnings(empty_image):
     parcellator = Parcellations(method="kmeans", n_parcels=1, verbose=0)
     with warnings.catch_warnings(record=True) as record:
         parcellator.fit(empty_image)
-    assert all([r.category is not UserWarning for r in record])
+    assert all(r.category is not UserWarning for r in record)
 
 
 @pytest.mark.parametrize("method", METHODS)

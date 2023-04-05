@@ -1,6 +1,7 @@
 """
 Test the datasets module
 """
+
 # Author: Alexandre Abraham
 # License: simplified BSD
 
@@ -28,17 +29,40 @@ from nilearn.image import load_img
 currdir = os.path.dirname(os.path.abspath(__file__))
 datadir = os.path.join(currdir, 'data')
 
-DATASET_NAMES = set([
-    "aal_SPM12", "ABIDE_pcp", "adhd", "allen_rsn_2011",
-    "basc_multiscale_2015", "brainomics_localizer", "cobre", "craddock_2012",
-    "destrieux_surface", "development_fmri", "difumo_atlases",
-    "dosenbach_2010", "fsaverage3", "fsaverage4", "fsaverage5",
-    "fsaverage6", "fsaverage", "haxby2001",
-    "icbm152_2009", "Megatrawls", "miyawaki2008", "msdl_atlas",
-    "neurovault", "nki_enhanced_surface", "nyu_rest", "oasis1",
-    "pauli_2017", "power_2011", "schaefer_2018", "smith_2009",
-    "talairach_atlas", "yeo_2011"
-])
+DATASET_NAMES = {
+    "aal_SPM12",
+    "ABIDE_pcp",
+    "adhd",
+    "allen_rsn_2011",
+    "basc_multiscale_2015",
+    "brainomics_localizer",
+    "cobre",
+    "craddock_2012",
+    "destrieux_surface",
+    "development_fmri",
+    "difumo_atlases",
+    "dosenbach_2010",
+    "fsaverage3",
+    "fsaverage4",
+    "fsaverage5",
+    "fsaverage6",
+    "fsaverage",
+    "haxby2001",
+    "icbm152_2009",
+    "Megatrawls",
+    "miyawaki2008",
+    "msdl_atlas",
+    "neurovault",
+    "nki_enhanced_surface",
+    "nyu_rest",
+    "oasis1",
+    "pauli_2017",
+    "power_2011",
+    "schaefer_2018",
+    "smith_2009",
+    "talairach_atlas",
+    "yeo_2011",
+}
 
 
 def test_get_dataset_descr_warning():
@@ -141,7 +165,7 @@ def test_read_md5_sum_file():
     os.close(out)
     h = datasets.utils._read_md5_sum_file(f)
     assert '/tmp/test' in h
-    assert not '/etc/test' in h
+    assert '/etc/test' not in h
     assert h['test/some_image.nii'] == '70886dcabe7bf5c5a1c24ca24e4cbd94'
     assert h['/tmp/test'] == '20861c8c3fe177da19a7e9539a5dbac'
     os.remove(f)

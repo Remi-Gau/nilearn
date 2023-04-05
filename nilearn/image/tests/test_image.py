@@ -99,13 +99,7 @@ def _images_to_mean():
     img2 = Nifti1Image(data2, affine=affine)
     img3 = Nifti1Image(data3, affine=affine)
 
-    imgs = (
-        [img1],
-        [img1, img2],
-        [img2, img1, img2],
-        [img3, img1, img2],
-    )
-    return imgs
+    return [img1], [img1, img2], [img2, img1, img2], [img3, img1, img2]
 
 
 def _check_fwhm(data, affine, fwhm):
@@ -167,9 +161,7 @@ def stat_img_test_data():
     data[:6, 4:10, :6] = 1  # 216-voxel positive cluster with low value
     data[13:19, 4:10, :6] = -1  # 216-voxel negative cluster with low value
 
-    stat_img = Nifti1Image(data, affine)
-
-    return stat_img
+    return Nifti1Image(data, affine)
 
 
 def test_get_data():

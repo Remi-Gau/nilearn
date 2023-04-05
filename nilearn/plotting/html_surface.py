@@ -50,7 +50,7 @@ def _mix_colormaps(fg, bg):
 
     mix[:, 3] = 1 - (1 - fg[:, 3]) * (1 - bg[:, 3])
 
-    for color_index in range(0, 3):
+    for color_index in range(3):
         mix[:, color_index] = (
             fg[:, color_index] * fg[:, 3]
             + bg[:, color_index] * bg[:, 3] * (1 - fg[:, 3])
@@ -109,11 +109,10 @@ def one_mesh_info(surf_map, surf_mesh, threshold=None, cmap=cm.cold_hot,
     background color.
 
     """
-    info = {}
     colors = colorscale(
         cmap, surf_map, threshold, symmetric_cmap=symmetric_cmap,
         vmax=vmax, vmin=vmin)
-    info['inflated_left'] = mesh_to_plotly(surf_mesh)
+    info = {'inflated_left': mesh_to_plotly(surf_mesh)}
     info['vertexcolor_left'] = _get_vertexcolor(
         surf_map, colors['cmap'], colors['norm'],
         absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
@@ -130,14 +129,20 @@ def _check_mesh(mesh):
     if isinstance(mesh, str):
         return datasets.fetch_surf_fsaverage(mesh)
     if not isinstance(mesh, collections.abc.Mapping):
-        raise TypeError("The mesh should be a str or a dictionary, "
-                        "you provided: {}.".format(type(mesh).__name__))
-    missing = {'pial_left', 'pial_right', 'sulc_left', 'sulc_right',
-               'infl_left', 'infl_right'}.difference(mesh.keys())
-    if missing:
+        raise TypeError(
+            f"The mesh should be a str or a dictionary, you provided: {type(mesh).__name__}."
+        )
+    if missing := {
+        'pial_left',
+        'pial_right',
+        'sulc_left',
+        'sulc_right',
+        'infl_left',
+        'infl_right',
+    }.difference(mesh.keys()):
         raise ValueError(
-            "{} {} missing from the provided mesh dictionary".format(
-                missing, ('are' if len(missing) > 1 else 'is')))
+            f"{missing} {'are' if len(missing) > 1 else 'is'} missing from the provided mesh dictionary"
+        )
     return mesh
 
 
@@ -155,9 +160,12 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
     info = {}
     mesh = surface.surface._check_mesh(mesh)
     surface_maps = {
-        h: surface.vol_to_surf(volume_img, mesh['pial_{}'.format(h)],
-                               inner_mesh=mesh.get('white_{}'.format(h), None),
-                               **vol_to_surf_kwargs)
+        h: surface.vol_to_surf(
+            volume_img,
+            mesh[f'pial_{h}'],
+            inner_mesh=mesh.get(f'white_{h}', None),
+            **vol_to_surf_kwargs,
+        )
         for h in ['left', 'right']
     }
     colors = colorscale(
@@ -165,18 +173,20 @@ def full_brain_info(volume_img, mesh='fsaverage5', threshold=None,
         symmetric_cmap=symmetric_cmap, vmax=vmax, vmin=vmin)
 
     for hemi, surf_map in surface_maps.items():
-        curv_map = surface.load_surf_data(mesh["curv_{}".format(hemi)])
+        curv_map = surface.load_surf_data(mesh[f"curv_{hemi}"])
         bg_map = np.sign(curv_map)
 
-        info['pial_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['pial_{}'.format(hemi)])
-        info['inflated_{}'.format(hemi)] = mesh_to_plotly(
-            mesh['infl_{}'.format(hemi)])
+        info[f'pial_{hemi}'] = mesh_to_plotly(mesh[f'pial_{hemi}'])
+        info[f'inflated_{hemi}'] = mesh_to_plotly(mesh[f'infl_{hemi}'])
 
-        info['vertexcolor_{}'.format(hemi)] = _get_vertexcolor(
-            surf_map, colors['cmap'], colors['norm'],
-            absolute_threshold=colors['abs_threshold'], bg_map=bg_map,
-            bg_on_data=bg_on_data, darkness=darkness,
+        info[f'vertexcolor_{hemi}'] = _get_vertexcolor(
+            surf_map,
+            colors['cmap'],
+            colors['norm'],
+            absolute_threshold=colors['abs_threshold'],
+            bg_map=bg_map,
+            bg_on_data=bg_on_data,
+            darkness=darkness,
         )
     info["cmin"], info["cmax"] = float(colors['vmin']), float(colors['vmax'])
     info['black_bg'] = black_bg

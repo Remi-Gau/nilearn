@@ -132,7 +132,7 @@ def _configure_title_plotly(title, font_size, color="black"):
     This function configures the title if provided.
     """
     if title is None:
-        return dict()
+        return {}
     return {"text": title,
             "font": {"size": font_size,
                      "color": color,
@@ -152,7 +152,7 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
     the generation of the colorbar. This dummy plot has then to
     be added to the figure.
     """
-    dummy = {
+    return {
         "opacity": 0,
         "colorbar": {
             "tickfont": {"size": fontsize, "color": color},
@@ -171,7 +171,6 @@ def _get_cbar_plotly(colorscale, vmin, vmax, cbar_tick_format,
         "cmin": vmin,
         "cmax": vmax,
     }
-    return dummy
 
 
 def _plot_surf_plotly(coords, faces, surf_map=None, bg_map=None,
@@ -357,14 +356,11 @@ def _get_ticks_matplotlib(vmin, vmax, cbar_tick_format):
     """
     # Default number of ticks is 5...
     n_ticks = 5
-    # ...unless we are dealing with integers with a small range
-    # in this case, we reduce the number of ticks
-    if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1:
-        ticks = np.arange(vmin, vmax + 1)
-    else:
-        # remove duplicate ticks when vmin == vmax, or almost
-        ticks = np.unique(np.linspace(vmin, vmax, n_ticks))
-    return ticks
+    return (
+        np.arange(vmin, vmax + 1)
+        if cbar_tick_format == "%i" and vmax - vmin < n_ticks - 1
+        else np.unique(np.linspace(vmin, vmax, n_ticks))
+    )
 
 
 def _get_cmap_matplotlib(cmap, vmin, vmax, threshold=None):
@@ -489,9 +485,8 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
         if figure is None:
             figure = plt.figure(figsize=figsize)
         axes = figure.add_axes((0, 0, 1, 1), projection="3d")
-    else:
-        if figure is None:
-            figure = axes.get_figure()
+    elif figure is None:
+        figure = axes.get_figure()
     axes.set_xlim(*limits)
     axes.set_ylim(*limits)
     axes.view_init(elev=elev, azim=azim)
@@ -552,12 +547,10 @@ def _plot_surf_matplotlib(coords, faces, surf_map=None, bg_map=None,
 
     if title is not None:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close()
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close()
 
 
 @fill_doc
@@ -909,12 +902,10 @@ def plot_surf_contours(surf_mesh, roi_map, axes=None, figure=None, levels=None,
         title = figure._suptitle._text
     if title:
         axes.set_title(title)
-    # save figure if output file is given
-    if output_file is not None:
-        figure.savefig(output_file)
-        plt.close(figure)
-    else:
+    if output_file is None:
         return figure
+    figure.savefig(output_file)
+    plt.close(figure)
 
 
 @fill_doc
@@ -1067,19 +1058,33 @@ def plot_surf_stat_map(surf_mesh, stat_map, bg_map=None,
     cbar_vmin, cbar_vmax, vmin, vmax = _get_colorbar_and_data_ranges(
         loaded_stat_map, vmax, symmetric_cbar, kwargs)
 
-    display = plot_surf(
-        surf_mesh, surf_map=loaded_stat_map,
-        bg_map=bg_map, hemi=hemi,
-        view=view, engine=engine, avg_method='mean', threshold=threshold,
-        cmap=cmap, symmetric_cmap=True, colorbar=colorbar,
-        cbar_tick_format=cbar_tick_format, alpha=alpha,
-        bg_on_data=bg_on_data, darkness=darkness,
-        vmax=vmax, vmin=vmin,
-        title=title, title_font_size=title_font_size, output_file=output_file,
-        axes=axes, figure=figure, cbar_vmin=cbar_vmin,
-        cbar_vmax=cbar_vmax, **kwargs
+    return plot_surf(
+        surf_mesh,
+        surf_map=loaded_stat_map,
+        bg_map=bg_map,
+        hemi=hemi,
+        view=view,
+        engine=engine,
+        avg_method='mean',
+        threshold=threshold,
+        cmap=cmap,
+        symmetric_cmap=True,
+        colorbar=colorbar,
+        cbar_tick_format=cbar_tick_format,
+        alpha=alpha,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+        vmax=vmax,
+        vmin=vmin,
+        title=title,
+        title_font_size=title_font_size,
+        output_file=output_file,
+        axes=axes,
+        figure=figure,
+        cbar_vmin=cbar_vmin,
+        cbar_vmax=cbar_vmax,
+        **kwargs
     )
-    return display
 
 
 def _check_hemispheres(hemispheres):
@@ -1090,7 +1095,7 @@ def _check_hemispheres(hemispheres):
         Any combination of 'left' and 'right'.
 
     """
-    invalid_hemi = any([hemi not in VALID_HEMISPHERES for hemi in hemispheres])
+    invalid_hemi = any(hemi not in VALID_HEMISPHERES for hemi in hemispheres)
     if invalid_hemi:
         supported = "Supported hemispheres:\n" + str(VALID_HEMISPHERES)
         raise ValueError("Invalid hemispheres definition!\n" + supported)
@@ -1106,7 +1111,7 @@ def _check_views(views) -> list:
         "dorsal", "ventral".
 
     """
-    invalid_view = any([view not in VALID_VIEWS for view in views])
+    invalid_view = any(view not in VALID_VIEWS for view in views)
     if invalid_view:
         supported = "Supported views:\n" + str(VALID_VIEWS)
         raise ValueError("Invalid view definition!\n" + supported)
@@ -1241,8 +1246,7 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     """
     for arg in ('figure', 'axes'):
         if arg in kwargs:
-            raise ValueError(('plot_img_on_surf does not'
-                              ' accept %s as an argument' % arg))
+            raise ValueError(f'plot_img_on_surf does not accept {arg} as an argument')
 
     stat_map = check_niimg_3d(stat_map, dtype='auto')
     modes = _check_views(views)
@@ -1251,8 +1255,8 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
 
     mesh_prefix = "infl" if inflate else "pial"
     surf = {
-        'left': surf_mesh[mesh_prefix + '_left'],
-        'right': surf_mesh[mesh_prefix + '_right'],
+        'left': surf_mesh[f'{mesh_prefix}_left'],
+        'right': surf_mesh[f'{mesh_prefix}_right'],
     }
 
     texture = {
@@ -1278,13 +1282,11 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
         # By default, add curv sign background map if mesh is inflated,
         # sulc depth background map otherwise
         if inflate:
-            curv_map = surface.load_surf_data(
-                surf_mesh["curv_{}".format(hemi)]
-            )
+            curv_map = surface.load_surf_data(surf_mesh[f"curv_{hemi}"])
             curv_sign_map = (np.sign(curv_map) + 1) / 4 + 0.25
             bg_map = curv_sign_map
         else:
-            sulc_map = surf_mesh['sulc_%s' % hemi]
+            sulc_map = surf_mesh[f'sulc_{hemi}']
             bg_map = sulc_map
 
         ax = fig.add_subplot(grid[i + len(hemis)], projection="3d")
@@ -1317,11 +1319,10 @@ def plot_img_on_surf(stat_map, surf_mesh='fsaverage5', mask_img=None,
     if title is not None:
         fig.suptitle(title, y=1. - title_h / sum(height_ratios), va="bottom")
 
-    if output_file is not None:
-        fig.savefig(output_file, bbox_inches="tight")
-        plt.close(fig)
-    else:
+    if output_file is None:
         return fig, axes
+    fig.savefig(output_file, bbox_inches="tight")
+    plt.close(fig)
 
 
 @fill_doc
@@ -1480,15 +1481,27 @@ def plot_surf_roi(surf_mesh, roi_map, bg_map=None,
 
     if cbar_tick_format == "auto":
         cbar_tick_format = "." if engine == "plotly" else "%i"
-    display = plot_surf(mesh, surf_map=roi, bg_map=bg_map,
-                        hemi=hemi, view=view, engine=engine,
-                        avg_method='median', threshold=threshold,
-                        cmap=cmap, symmetric_cmap=False,
-                        cbar_tick_format=cbar_tick_format,
-                        alpha=alpha, bg_on_data=bg_on_data,
-                        darkness=darkness, vmin=vmin, vmax=vmax,
-                        title=title, title_font_size=title_font_size,
-                        output_file=output_file, axes=axes,
-                        figure=figure, **kwargs)
-
-    return display
+    return plot_surf(
+        mesh,
+        surf_map=roi,
+        bg_map=bg_map,
+        hemi=hemi,
+        view=view,
+        engine=engine,
+        avg_method='median',
+        threshold=threshold,
+        cmap=cmap,
+        symmetric_cmap=False,
+        cbar_tick_format=cbar_tick_format,
+        alpha=alpha,
+        bg_on_data=bg_on_data,
+        darkness=darkness,
+        vmin=vmin,
+        vmax=vmax,
+        title=title,
+        title_font_size=title_font_size,
+        output_file=output_file,
+        axes=axes,
+        figure=figure,
+        **kwargs
+    )

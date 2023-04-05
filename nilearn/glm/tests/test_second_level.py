@@ -345,15 +345,13 @@ def test_high_level_non_parametric_inference_with_paths():
                 n_perm=N_PERM, verbose=1
             ) for second_level_input in [Y, df_input]
         ]
-        assert all(
-            [isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs]
-        )
+        assert all(isinstance(img, Nifti1Image) for img in neg_log_pvals_imgs)
         for img in neg_log_pvals_imgs:
             assert_array_equal(img.affine, load(mask).affine)
         neg_log_pvals_list = [get_data(i) for i in neg_log_pvals_imgs]
         for neg_log_pvals in neg_log_pvals_list:
             assert np.all(neg_log_pvals <= - np.log10(1.0 / (N_PERM + 1)))
-            assert np.all(0 <= neg_log_pvals)
+            assert np.all(neg_log_pvals >= 0)
 
         masker = NiftiMasker(mask, smoothing_fwhm=2.0)
         with pytest.warns(UserWarning,

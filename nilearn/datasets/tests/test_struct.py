@@ -230,10 +230,17 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     # (each attribute should eventually map to a _.gii.gz file
     # named after the attribute)
     mesh_attributes = {
-        "{}_{}".format(part, side)
+        f"{part}_{side}"
         for part in [
-            "area", "curv", "flat", "infl", "pial",
-            "sphere", "sulc", "thick", "white"
+            "area",
+            "curv",
+            "flat",
+            "infl",
+            "pial",
+            "sphere",
+            "sulc",
+            "thick",
+            "white",
         ]
         for side in ["left", "right"]
     }
@@ -247,7 +254,7 @@ def test_fetch_surf_fsaverage(mesh, tmp_path, request_mocker):
     ]
     for fs_url in fs_urls:
         request_mocker.url_mapping[fs_url] = list_to_archive(
-            ["{}.gii.gz".format(name) for name in mesh_attributes]
+            [f"{name}.gii.gz" for name in mesh_attributes]
         )
 
     dataset = struct.fetch_surf_fsaverage(mesh, data_dir=str(tmp_path))

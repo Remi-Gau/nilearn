@@ -162,11 +162,14 @@ def spm_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
     """
     do = .1
-    dhrf = 1. / do * (
-        spm_hrf(tr, oversampling, time_length, onset)
-        - spm_hrf(tr, oversampling, time_length, onset + do)
+    return (
+        1.0
+        / do
+        * (
+            spm_hrf(tr, oversampling, time_length, onset)
+            - spm_hrf(tr, oversampling, time_length, onset + do)
+        )
     )
-    return dhrf
 
 
 def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
@@ -193,11 +196,14 @@ def glover_time_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
     """
     do = .1
-    dhrf = 1. / do * (
-        glover_hrf(tr, oversampling, time_length, onset)
-        - glover_hrf(tr, oversampling, time_length, onset + do)
+    return (
+        1.0
+        / do
+        * (
+            glover_hrf(tr, oversampling, time_length, onset)
+            - glover_hrf(tr, oversampling, time_length, onset + do)
+        )
     )
-    return dhrf
 
 
 def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
@@ -224,11 +230,16 @@ def spm_dispersion_derivative(tr, oversampling=50, time_length=32., onset=0.):
 
     """
     dd = .01
-    dhrf = 1. / dd * (
-        - _gamma_difference_hrf(tr, oversampling, time_length,
-                                onset, dispersion=1. + dd)
-        + _gamma_difference_hrf(tr, oversampling, time_length, onset))
-    return dhrf
+    return (
+        1.0
+        / dd
+        * (
+            -_gamma_difference_hrf(
+                tr, oversampling, time_length, onset, dispersion=1.0 + dd
+            )
+            + _gamma_difference_hrf(tr, oversampling, time_length, onset)
+        )
+    )
 
 
 def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
@@ -256,13 +267,32 @@ def glover_dispersion_derivative(tr, oversampling=50, time_length=32.,
 
     """
     dd = .01
-    dhrf = 1. / dd * (
-        - _gamma_difference_hrf(tr, oversampling, time_length, onset, delay=6,
-                                undershoot=12., dispersion=.9 + dd, ratio=.35)
-        + _gamma_difference_hrf(tr, oversampling, time_length, onset, delay=6,
-                                undershoot=12., dispersion=.9, ratio=.35)
+    return (
+        1.0
+        / dd
+        * (
+            -_gamma_difference_hrf(
+                tr,
+                oversampling,
+                time_length,
+                onset,
+                delay=6,
+                undershoot=12.0,
+                dispersion=0.9 + dd,
+                ratio=0.35,
+            )
+            + _gamma_difference_hrf(
+                tr,
+                oversampling,
+                time_length,
+                onset,
+                delay=6,
+                undershoot=12.0,
+                dispersion=0.9,
+                ratio=0.35,
+            )
+        )
     )
-    return dhrf
 
 
 def _sample_condition(exp_condition, frame_times, oversampling=50,
@@ -414,22 +444,18 @@ def _regressor_names(con_name, hrf_model, fir_delays=None):
     if hrf_model in ['glover', 'spm']:
         names = [con_name]
     elif hrf_model in ["glover + derivative", 'spm + derivative']:
-        names = [con_name, con_name + "_derivative"]
+        names = [con_name, f"{con_name}_derivative"]
     elif hrf_model in ['spm + derivative + dispersion',
                        'glover + derivative + dispersion']:
-        names = [con_name, con_name + "_derivative", con_name + "_dispersion"]
+        names = [con_name, f"{con_name}_derivative", f"{con_name}_dispersion"]
     elif hrf_model == 'fir':
         names = [con_name + "_delay_%d" % i for i in fir_delays]
-    # Handle callables
     elif callable(hrf_model):
         names = [f"{con_name}_{hrf_model.__name__}"]
-    elif (isinstance(hrf_model, Iterable)
-          and all([callable(_) for _ in hrf_model])):
+    elif isinstance(hrf_model, Iterable) and all(callable(_) for _ in hrf_model):
         names = [f"{con_name}_{model.__name__}" for model in hrf_model]
-    # Handle some default cases
-    else:
-        if isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
-            names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
+    elif isinstance(hrf_model, Iterable) and not isinstance(hrf_model, str):
+        names = [f"{con_name}_{i}" for i in range(len(hrf_model))]
 
     # Check that all names within the list are different
     if len(np.unique(names)) != len(names):
@@ -497,8 +523,7 @@ def _hrf_kernel(hrf_model, tr, oversampling=50, fir_delays=None):
             hkernel = [hrf_model(tr, oversampling)]
         except TypeError:
             raise ValueError(error_msg)
-    elif(isinstance(hrf_model, Iterable)
-         and all([callable(_) for _ in hrf_model])):
+    elif isinstance(hrf_model, Iterable) and all(callable(_) for _ in hrf_model):
         try:
             hkernel = [model(tr, oversampling) for model in hrf_model]
         except TypeError:

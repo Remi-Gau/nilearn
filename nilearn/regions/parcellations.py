@@ -111,8 +111,7 @@ def _labels_masker_extraction(img, masker, confound):
 
     """
     masker = clone(masker)
-    signals = masker.fit_transform(img, confounds=confound)
-    return signals
+    return masker.fit_transform(img, confounds=confound)
 
 
 @fill_doc

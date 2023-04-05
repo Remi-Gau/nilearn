@@ -1,5 +1,6 @@
 """nilearn version, required package versions, and utilities for checking."""
 
+
 # Author: Loic Esteve, Ben Cipollini
 # License: simplified BSD
 
@@ -21,9 +22,7 @@
 #
 __version__ = "0.10.1.dev"
 
-_NILEARN_INSTALL_MSG = "See %s for installation information." % (
-    "https://nilearn.github.io/stable/introduction.html#installation"
-)
+_NILEARN_INSTALL_MSG = 'See https://nilearn.github.io/stable/introduction.html#installation for installation information.'
 
 import operator
 
@@ -84,15 +83,12 @@ def _import_module_with_version_check(
     try:
         module = __import__(module_name)
     except ImportError as exc:
-        user_friendly_info = ('Module "{}" could not be found. {}').format(
-            module_name,
-            install_info or "Please install it properly to use nilearn.",
-        )
+        user_friendly_info = f'Module "{module_name}" could not be found. {install_info or "Please install it properly to use nilearn."}'
         exc.args += (user_friendly_info,)
         # Necessary for Python 3 because the repr/str of ImportError
         # objects was changed in Python 3
         if hasattr(exc, "msg"):
-            exc.msg += ". " + user_friendly_info
+            exc.msg += f". {user_friendly_info}"
         raise
 
     # Avoid choking on modules with no __version__ attribute

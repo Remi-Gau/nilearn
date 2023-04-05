@@ -58,9 +58,7 @@ def _compute_weights(X, mask_img):
     weights_right = np.sum(np.diff(data, axis=1) ** 2, axis=-1).ravel()
     weights_down = np.sum(np.diff(data, axis=0) ** 2, axis=-1).ravel()
 
-    weights = np.hstack([weights_deep, weights_right, weights_down])
-
-    return weights
+    return np.hstack([weights_deep, weights_right, weights_down])
 
 
 def _make_3d_edges(vertices, is_mask):
@@ -102,9 +100,7 @@ def _make_3d_edges(vertices, is_mask):
         )
         edges_down = np.vstack([vertices[:-1].ravel(), vertices[1:].ravel()])
 
-    edges = np.hstack([edges_deep, edges_right, edges_down])
-
-    return edges
+    return np.hstack([edges_deep, edges_right, edges_down])
 
 
 def _make_edges_and_weights(X, mask_img):
@@ -227,9 +223,7 @@ def _nn_connectivity(connectivity, threshold=1e-7):
     weight = np.ones_like(j_idx)
     edges = np.array([i_idx, j_idx])
 
-    nn_connectivity = coo_matrix((weight, edges), (n_features, n_features))
-
-    return nn_connectivity
+    return coo_matrix((weight, edges), (n_features, n_features))
 
 
 def _reduce_data_and_connectivity(
@@ -623,6 +617,4 @@ class ReNA(BaseEstimator, ClusterMixin, TransformerMixin):
 
         if self.scaling:
             X_red = X_red / np.sqrt(self.sizes_)
-        X_inv = X_red[..., inverse]
-
-        return X_inv
+        return X_red[..., inverse]

@@ -155,31 +155,35 @@ def _check_confounds(confounds):
                              ' one called "subject_label" and the other'
                              ' with a given confound')
         # Make sure subject_label contain strings
-        if not all([isinstance(_, str) for _ in
-                    confounds['subject_label'].tolist()]):
+        if not all(
+            isinstance(_, str) for _ in confounds['subject_label'].tolist()
+        ):
             raise ValueError('subject_label column must contain only strings')
 
 
 def _check_first_level_contrast(second_level_input, first_level_contrast):
-    if isinstance(second_level_input[0], FirstLevelModel):
-        if first_level_contrast is None:
-            raise ValueError('If second_level_input was a list of '
-                             'FirstLevelModel, then first_level_contrast '
-                             'is mandatory. It corresponds to the '
-                             'second_level_contrast argument of the '
-                             'compute_contrast method of FirstLevelModel')
+    if (
+        isinstance(second_level_input[0], FirstLevelModel)
+        and first_level_contrast is None
+    ):
+        raise ValueError('If second_level_input was a list of '
+                         'FirstLevelModel, then first_level_contrast '
+                         'is mandatory. It corresponds to the '
+                         'second_level_contrast argument of the '
+                         'compute_contrast method of FirstLevelModel')
 
 
 def _check_output_type(output_type, valid_types):
     if output_type not in valid_types:
-        raise ValueError('output_type must be one of {}'.format(valid_types))
+        raise ValueError(f'output_type must be one of {valid_types}')
 
 
 def _check_design_matrix(design_matrix):
     """Checking design_matrix type"""
-    if design_matrix is not None:
-        if not isinstance(design_matrix, pd.DataFrame):
-            raise ValueError('design matrix must be a pandas DataFrame')
+    if design_matrix is not None and not isinstance(
+        design_matrix, pd.DataFrame
+    ):
+        raise ValueError('design matrix must be a pandas DataFrame')
 
 
 def _check_effect_maps(effect_maps, design_matrix):
@@ -215,9 +219,7 @@ def _get_contrast(second_level_contrast, design_matrix):
         if second_level_contrast in design_matrix.columns.tolist():
             contrast = second_level_contrast
         else:
-            raise ValueError('"{}" is not a valid contrast name'.format(
-                second_level_contrast)
-            )
+            raise ValueError(f'"{second_level_contrast}" is not a valid contrast name')
     else:
         # Check contrast definition
         if second_level_contrast is None:
@@ -359,10 +361,7 @@ class SecondLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.verbose = verbose
         self.n_jobs = n_jobs
@@ -447,7 +446,7 @@ class SecondLevelModel(BaseGLM):
                 if our_param is None:
                     continue
                 if getattr(self.masker_, param_name) is not None:
-                    warn('Parameter %s of the masker overridden' % param_name)
+                    warn(f'Parameter {param_name} of the masker overridden')
                 setattr(self.masker_, param_name, our_param)
         self.masker_.fit(sample_map)
 
@@ -545,7 +544,7 @@ class SecondLevelModel(BaseGLM):
                                 second_level_stat_type)
 
         output_types = \
-            valid_types[:-1] if output_type == 'all' else [output_type]
+                valid_types[:-1] if output_type == 'all' else [output_type]
 
         outputs = {}
         for output_type_ in output_types:
@@ -554,8 +553,7 @@ class SecondLevelModel(BaseGLM):
             # Prepare the returned images
             output = self.masker_.inverse_transform(estimate_)
             contrast_name = str(con_val)
-            output.header['descrip'] = (
-                '%s of contrast %s' % (output_type, contrast_name))
+            output.header['descrip'] = f'{output_type} of contrast {contrast_name}'
             outputs[output_type_] = output
 
         return outputs if output_type == 'all' else output
@@ -847,10 +845,12 @@ def non_parametric_inference(
 
     else:
         masker = clone(mask)
-        if smoothing_fwhm is not None:
-            if getattr(masker, 'smoothing_fwhm') is not None:
-                warn('Parameter smoothing_fwhm of the masker overridden')
-                setattr(masker, 'smoothing_fwhm', smoothing_fwhm)
+        if (
+            smoothing_fwhm is not None
+            and getattr(masker, 'smoothing_fwhm') is not None
+        ):
+            warn('Parameter smoothing_fwhm of the masker overridden')
+            setattr(masker, 'smoothing_fwhm', smoothing_fwhm)
 
     masker.fit(sample_map)
 

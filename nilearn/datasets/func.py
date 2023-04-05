@@ -135,13 +135,17 @@ def fetch_haxby(data_dir=None, subjects=(2,),
         subject_mask = np.array(subjects)
 
     files = [
-            (os.path.join('subj%d' % i, sub_file),
-             url + 'subj%d-2010.01.14.tar.gz' % i,
-             {'uncompress': True,
-              'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None)})
-            for i in subject_mask
-            for sub_file in sub_files
-            if not (sub_file == 'anat.nii.gz' and i == 6)  # no anat for sub. 6
+        (
+            os.path.join('subj%d' % i, sub_file),
+            url + 'subj%d-2010.01.14.tar.gz' % i,
+            {
+                'uncompress': True,
+                'md5sum': md5sums.get('subj%d-2010.01.14.tar.gz' % i, None),
+            },
+        )
+        for i in subject_mask
+        for sub_file in sub_files
+        if sub_file != 'anat.nii.gz' or i != 6
     ]
 
     files = _fetch_files(data_dir, files, resume=resume, verbose=verbose)
@@ -258,9 +262,8 @@ def fetch_adhd(n_subjects=30, data_dir=None, url=None, resume=True,
 
     archives = [url + '%i/adhd40_%s.tgz' % (ni, ii)
                 for ni, ii in zip(nitrc_ids, ids)]
-    functionals = ['data/%s/%s_rest_tshift_RPI_voreg_mni.nii.gz' % (i, i)
-                   for i in ids]
-    confounds = ['data/%s/%s_regressors.csv' % (i, i) for i in ids]
+    functionals = [f'data/{i}/{i}_rest_tshift_RPI_voreg_mni.nii.gz' for i in ids]
+    confounds = [f'data/{i}/{i}_regressors.csv' for i in ids]
 
     functionals = _fetch_files(
         data_dir, zip(functionals, archives, (opts,) * n_subjects),
@@ -680,13 +683,16 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             for contrast_id, contrast in enumerate(contrasts_wrapped):
                 name_aux = str.replace(
                     str.join('_', [data_type, contrast]), ' ', '_')
-                file_path = os.path.join(
-                    "brainomics_data", subject_id, "%s.nii.gz" % name_aux)
-                path = "/".join([
-                    "/localizer", "derivatives", "spm_1st_level",
-                    "sub-%s" % subject_id,
-                    "sub-%s_task-localizer_acq-%s_%s.nii.gz" % (
-                        subject_id, contrast, data_type)])
+                file_path = os.path.join("brainomics_data", subject_id, f"{name_aux}.nii.gz")
+                path = "/".join(
+                    [
+                        "/localizer",
+                        "derivatives",
+                        "spm_1st_level",
+                        f"sub-{subject_id}",
+                        f"sub-{subject_id}_task-localizer_acq-{contrast}_{data_type}.nii.gz",
+                    ]
+                )
                 if _is_valid_path(path, index, verbose=verbose):
                     file_url = root_url.format(index[path][1:])
                     opts = {"move": file_path}
@@ -698,9 +704,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
         for subject_id in subject_ids:
             file_path = os.path.join(
                 "brainomics_data", subject_id, "boolean_mask_mask.nii.gz")
-            path = "/".join([
-                "/localizer", "derivatives", "spm_1st_level",
-                "sub-%s" % subject_id, "sub-%s_mask.nii.gz" % subject_id])
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_1st_level",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_mask.nii.gz",
+                ]
+            )
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
@@ -713,9 +725,15 @@ def fetch_localizer_contrasts(contrasts, n_subjects=None, get_tmaps=False,
             file_path = os.path.join(
                 "brainomics_data", subject_id,
                 "normalized_T1_anat_defaced.nii.gz")
-            path = "/".join([
-                "/localizer", "derivatives", "spm_preprocessing",
-                "sub-%s" % subject_id, "sub-%s_T1w.nii.gz" % subject_id])
+            path = "/".join(
+                [
+                    "/localizer",
+                    "derivatives",
+                    "spm_preprocessing",
+                    f"sub-{subject_id}",
+                    f"sub-{subject_id}_T1w.nii.gz",
+                ]
+            )
             if _is_valid_path(path, index, verbose=verbose):
                 file_url = root_url.format(index[path][1:])
                 opts = {"move": file_path}
@@ -798,13 +816,18 @@ def fetch_localizer_calculation_task(n_subjects=1, data_dir=None, url=None,
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    data = fetch_localizer_contrasts(["calculation (auditory and visual cue)"],
-                                     n_subjects=n_subjects,
-                                     get_tmaps=False, get_masks=False,
-                                     get_anats=False, data_dir=data_dir,
-                                     url=url, resume=True, verbose=verbose,
-                                     legacy_format=legacy_format)
-    return data
+    return fetch_localizer_contrasts(
+        ["calculation (auditory and visual cue)"],
+        n_subjects=n_subjects,
+        get_tmaps=False,
+        get_masks=False,
+        get_anats=False,
+        data_dir=data_dir,
+        url=url,
+        resume=True,
+        verbose=verbose,
+        legacy_format=legacy_format,
+    )
 
 
 @fill_doc
@@ -951,7 +974,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
                 'func_preproc', 'lfcd', 'reho', 'rois_aal', 'rois_cc200',
                 'rois_cc400', 'rois_dosenbach160', 'rois_ez', 'rois_ho',
                 'rois_tt', 'vmhc']:
-            raise KeyError('%s is not a valid derivative' % derivative)
+            raise KeyError(f'{derivative} is not a valid derivative')
 
     strategy = ''
     if not band_pass_filtering:
@@ -990,9 +1013,10 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         pheno = ['i' + pheno_f.readline()]
 
         # This regexp replaces commas between double quotes
-        for line in pheno_f:
-            pheno.append(re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line))
-
+        pheno.extend(
+            re.sub(r',(?=[^"]*"(?:[^"]*"[^"]*")*[^"]*$)', ";", line)
+            for line in pheno_f
+        )
     # bytes (encode()) needed for python 2/3 compat with numpy
     pheno = '\n'.join(pheno).encode()
     pheno = BytesIO(pheno)
@@ -1008,8 +1032,6 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
     data_dir = os.path.join(data_dir, pipeline, strategy)
     url = '/'.join([url, 'Outputs', pipeline, strategy])
 
-    # Get the files
-    results = {}
     file_ids = pheno['FILE_ID'].tolist()
     if n_subjects is not None:
         file_ids = file_ids[:n_subjects]
@@ -1019,7 +1041,7 @@ def fetch_abide_pcp(data_dir=None, n_subjects=None, pipeline='cpac',
         warnings.warn(_LEGACY_FORMAT_MSG)
         pheno = pheno.to_records(index=False)
 
-    results['description'] = _get_dataset_descr(dataset_name)
+    results = {'description': _get_dataset_descr(dataset_name)}
     results['phenotypic'] = pheno
     for derivative in derivatives:
         ext = '.1D' if derivative.startswith('rois') else '.nii.gz'
@@ -1428,9 +1450,9 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
              ('Child_Adult', 'U5'), ('Gender', 'U4'), ('Handedness', 'U4')]
     names = ['participant_id', 'Age', 'AgeGroup', 'Child_Adult', 'Gender',
              'Handedness']
-    participants = csv_to_array(path_to_participants, skip_header=True,
-                                dtype=dtype, names=names)
-    return participants
+    return csv_to_array(
+        path_to_participants, skip_header=True, dtype=dtype, names=names
+    )
 
 
 @fill_doc
@@ -1645,15 +1667,8 @@ def _filter_func_regressors_by_participants(participants, age_group):
 
     child_adult = participants['Child_Adult'].tolist()
 
-    if age_group != 'adult':
-        child_count = child_adult.count('child')
-    else:
-        child_count = 0
-
-    if age_group != 'child':
-        adult_count = child_adult.count('adult')
-    else:
-        adult_count = 0
+    child_count = child_adult.count('child') if age_group != 'adult' else 0
+    adult_count = child_adult.count('adult') if age_group != 'child' else 0
     return adult_count, child_count
 
 
@@ -1730,7 +1745,7 @@ def fetch_language_localizer_demo_dataset(data_dir=None, verbose=1):
     data_dir = _get_dataset_dir(main_folder, data_dir=data_dir,
                                 verbose=verbose)
     # The files_spec needed for _fetch_files
-    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
+    files_spec = [(f'{main_folder}.zip', url, {'move': f'{main_folder}.zip'})]
     # Only download if directory is empty
     # Directory will have been created by the call to _get_dataset_dir above
     if not os.listdir(data_dir):
@@ -1767,7 +1782,7 @@ def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     data_dir = _get_dataset_dir(dataset_name, data_dir=data_dir,
                                 verbose=verbose)
     # The files_spec needed for _fetch_files
-    files_spec = [(main_folder + '.zip', url, {'move': main_folder + '.zip'})]
+    files_spec = [(f'{main_folder}.zip', url, {'move': f'{main_folder}.zip'})]
     if not os.path.exists(os.path.join(data_dir, main_folder)):
         downloaded_files = _fetch_files(data_dir, files_spec, resume=True,
                                         verbose=verbose)
@@ -1944,16 +1959,17 @@ def select_from_index(urls, inclusion_filters=None, exclusion_filters=None,
         subjects = set()
         for url in urls:
             if 'sub-' in url:
-                subjects.add(re.search(subject_regex, url).group(0)[:-1])
+                subjects.add(re.search(subject_regex, url)[0][:-1])
         return sorted(subjects)
 
     # We get a list of subjects (for the moment the first n subjects)
     selected_subjects = set(infer_subjects(urls)[:n_subjects])
     # We exclude urls of subjects not selected
     urls = [
-        url for url in urls
-        if 'sub-' not in url or re.search(subject_regex, url).group(0)[:-1]
-           in selected_subjects
+        url
+        for url in urls
+        if 'sub-' not in url
+        or re.search(subject_regex, url)[0][:-1] in selected_subjects
     ]
     return urls
 
@@ -2059,10 +2075,7 @@ def fetch_openneuro_dataset(
                 '`urls` must be specified. Downloading "ds000030_R1.0.4".'
             )
 
-        data_prefix = '{}/{}/uncompressed'.format(
-            DATASET_VERSION.split('_')[0],
-            DATASET_VERSION,
-        )
+        data_prefix = f"{DATASET_VERSION.split('_')[0]}/{DATASET_VERSION}/uncompressed"
         orig_data_dir = data_dir
         data_dir = _get_dataset_dir(
             data_prefix,
@@ -2075,10 +2088,7 @@ def fetch_openneuro_dataset(
             verbose=verbose,
         )
     else:
-        data_prefix = '{}/{}/uncompressed'.format(
-            dataset_version.split('_')[0],
-            dataset_version,
-        )
+        data_prefix = f"{dataset_version.split('_')[0]}/{dataset_version}/uncompressed"
         data_dir = _get_dataset_dir(
             data_prefix,
             data_dir=data_dir,
@@ -2089,9 +2099,7 @@ def fetch_openneuro_dataset(
     files_spec = []
     files_dir = []
 
-    # Check that data prefix is found in each URL
-    bad_urls = [url for url in urls if data_prefix not in url]
-    if bad_urls:
+    if bad_urls := [url for url in urls if data_prefix not in url]:
         raise ValueError(
             f'data_prefix ({data_prefix}) is not found in at least one URL. '
             'This indicates that the URLs do not correspond to the '
@@ -2208,15 +2216,18 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
         if os.path.exists(file_path):
             subject_data[file_name] = file_path
         else:
-            print('%s missing from filelist!' % file_name)
+            print(f'{file_name} missing from filelist!')
             return None
 
-    _subject_data = {}
-    _subject_data['func'] = sorted(
-        [subject_data[x] for x in subject_data.keys()
-         if re.match(r'^fM00223_0\d\d\.img$',
-                     os.path.basename(x))])
-
+    _subject_data = {
+        'func': sorted(
+            [
+                subject_data[x]
+                for x in subject_data
+                if re.match(r'^fM00223_0\d\d\.img$', os.path.basename(x))
+            ]
+        )
+    }
     # volumes for this dataset of shape (64, 64, 64, 1); let's fix this
     for x in _subject_data['func']:
         vol = nib.load(x)
@@ -2225,9 +2236,11 @@ def _prepare_downloaded_spm_auditory_data(subject_dir):
                                   vol.affine)
             nib.save(vol, x)
 
-    _subject_data['anat'] = [subject_data[x] for x in subject_data.keys()
-                             if re.match(r'^sM00223_002\.img$',
-                                         os.path.basename(x))][0]
+    _subject_data['anat'] = [
+        subject_data[x]
+        for x in subject_data
+        if re.match(r'^sM00223_002\.img$', os.path.basename(x))
+    ][0]
 
     # ... same thing for anat
     vol = nib.load(_subject_data['anat'])
@@ -2255,8 +2268,7 @@ def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     """
     events_file_location = os.path.dirname(spm_auditory_data['func'][0])
     events_filename = os.path.basename(events_file_location) + '_events.tsv'
-    events_filepath = os.path.join(events_file_location, events_filename)
-    return events_filepath
+    return os.path.join(events_file_location, events_filename)
 
 
 def _make_events_file_spm_auditory_data(events_filepath):
@@ -2355,7 +2367,7 @@ def _get_session_trials_spm_multimodal(subject_dir, session, _subject_data):
         subject_dir,
         'fMRI/trials_ses%i.mat' % (session))
     if not os.path.isfile(sess_trials):
-        print('Missing session file: %s' % sess_trials)
+        print(f'Missing session file: {sess_trials}')
         return None
 
     _subject_data['trials_ses%i' % (session)] = sess_trials
@@ -2393,22 +2405,17 @@ def _glob_spm_multimodal_fmri_data(subject_dir):
             events = _make_events_file_spm_multimodal_fmri(_subject_data,
                                                            session)
         except MatReadError as mat_err:
-            warnings.warn(
-                '{}. An events.tsv file '
-                'cannot be generated'.format(str(mat_err)))
+            warnings.warn(f'{str(mat_err)}. An events.tsv file cannot be generated')
         else:
             events_filepath = _make_events_filepath_spm_multimodal_fmri(
                 _subject_data, session)
             events.to_csv(events_filepath, sep='\t', index=False)
-            _subject_data['events{}'.format(session)] = events_filepath
+            _subject_data[f'events{session}'] = events_filepath
 
     # glob for anat data
     _subject_data = _get_anatomical_data_spm_multimodal(subject_dir,
                                                         _subject_data)
-    if not _subject_data:
-        return None
-
-    return Bunch(**_subject_data)
+    return Bunch(**_subject_data) if _subject_data else None
 
 
 def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
@@ -2437,11 +2444,10 @@ def _download_data_spm_multimodal(data_dir, subject_dir, subject_id):
 
 
 def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
-    key = 'trials_ses{}'.format(session)
+    key = f'trials_ses{session}'
     events_file_location = os.path.dirname(_subject_data[key])
-    events_filename = 'session{}_events.tsv'.format(session)
-    events_filepath = os.path.join(events_file_location, events_filename)
-    return events_filepath
+    events_filename = f'session{session}_events.tsv'
+    return os.path.join(events_file_location, events_filename)
 
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
@@ -2456,9 +2462,9 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
         ['faces'] * len(faces_onsets) + ['scrambled'] * len(scrambled_onsets)
     )
     duration = np.ones_like(onsets)
-    events = pd.DataFrame({'trial_type': conditions, 'onset': onsets,
-                           'duration': duration})
-    return events
+    return pd.DataFrame(
+        {'trial_type': conditions, 'onset': onsets, 'duration': duration}
+    )
 
 
 @fill_doc
@@ -2535,7 +2541,7 @@ def fetch_fiac_first_level(data_dir=None, verbose=1):
             sess_dmtx = os.path.join(subject_dir,
                                      'run%i_design.npz' % session)
             if not os.path.isfile(sess_dmtx):
-                print('Missing session file: %s' % sess_dmtx)
+                print(f'Missing session file: {sess_dmtx}')
                 return None
 
             _subject_data['design_matrix%i' % session] = sess_dmtx

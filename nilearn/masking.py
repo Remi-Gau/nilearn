@@ -420,8 +420,7 @@ def compute_multi_epi_mask(
         for epi_img in epi_imgs
     )
 
-    mask = intersect_masks(masks, connected=connected, threshold=threshold)
-    return mask
+    return intersect_masks(masks, connected=connected, threshold=threshold)
 
 
 @_utils.fill_doc
@@ -584,8 +583,7 @@ def compute_multi_background_mask(
         for img in data_imgs
     )
 
-    mask = intersect_masks(masks, connected=connected, threshold=threshold)
-    return mask
+    return intersect_masks(masks, connected=connected, threshold=threshold)
 
 
 @_utils.fill_doc
@@ -735,10 +733,7 @@ def compute_multi_brain_mask(
 
     # Check images in the list have the same FOV without loading them in memory
     imgs_generator = _utils.check_niimg(target_imgs, return_iterator=True)
-    for _ in imgs_generator:
-        pass
-
-    mask = compute_brain_mask(
+    return compute_brain_mask(
         target_imgs[0],
         threshold=threshold,
         connected=connected,
@@ -747,7 +742,6 @@ def compute_multi_brain_mask(
         verbose=verbose,
         mask_type=mask_type,
     )
-    return mask
 
 
 #
@@ -954,9 +948,7 @@ def unmask(X, mask_img, order="F"):
     # Handle lists. This can be a list of other lists / arrays, or a list or
     # numbers. In the latter case skip.
     if isinstance(X, list) and not isinstance(X[0], numbers.Number):
-        ret = [unmask(x, mask_img, order=order) for x in X]
-        return ret
-
+        return [unmask(x, mask_img, order=order) for x in X]
     # The code after this block assumes that X is an ndarray; ensure this
     X = np.asanyarray(X)
 
