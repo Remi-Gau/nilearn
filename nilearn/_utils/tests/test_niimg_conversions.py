@@ -376,7 +376,7 @@ def test_iter_check_niimgs(tmp_path):
     img_4d = Nifti1Image(np.ones((10, 10, 10, 4)), affine)
     img_2_4d = [[img_4d, img_4d]]
 
-    for empty in ((), [], (i for i in ()), [i for i in ()]):
+    for empty in ((), [], iter(()), []):
         with pytest.raises(ValueError, match="Input niimgs list is empty."):
             list(_iter_check_niimg(empty))
 
@@ -406,11 +406,8 @@ def test_iter_check_niimgs(tmp_path):
 
 
 def _check_memory(list_img_3d):
-    # We intentionally add an offset of memory usage to avoid non trustable
-    # measures with memory_profiler.
-    mem_offset = b"a" * 100 * 1024**2
     list(_iter_check_niimg(list_img_3d))
-    return mem_offset
+    return b"a" * 100 * 1024**2
 
 
 @with_memory_profiler
@@ -421,7 +418,7 @@ def test_iter_check_niimgs_memory():
         100,
         0.1,
         _check_memory,
-        [Nifti1Image(np.ones((100, 100, 200)), np.eye(4)) for i in range(10)],
+        [Nifti1Image(np.ones((100, 100, 200)), np.eye(4)) for _ in range(10)],
     )
 
 
@@ -681,7 +678,7 @@ def test_concat_niimg_dtype():
 
 def nifti_generator(buffer):
     rng = np.random.RandomState(42)
-    for i in range(10):
+    for _ in range(10):
         buffer.append(Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4)))
         yield buffer[-1]
 
@@ -691,7 +688,7 @@ def test_iterator_generator():
     rng = np.random.RandomState(42)
     list_images = [
         Nifti1Image(rng.random_sample((10, 10, 10)), np.eye(4))
-        for i in range(10)
+        for _ in range(10)
     ]
     cc = _utils.concat_niimgs(list_images)
     assert cc.shape[-1] == 10

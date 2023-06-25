@@ -161,16 +161,14 @@ def write_tmp_imgs(*imgs, **kwargs):
     invalid_keys = input_keys - valid_keys
     if len(invalid_keys) > 0:
         raise TypeError(
-            "%s: unexpected keyword argument(s): %s"
-            % (sys._getframe().f_code.co_name, " ".join(invalid_keys))
+            f'{sys._getframe().f_code.co_name}: unexpected keyword argument(s): {" ".join(invalid_keys)}'
         )
     create_files = kwargs.get("create_files", True)
     use_wildcards = kwargs.get("use_wildcards", False)
 
-    prefix = "nilearn_"
-    suffix = ".nii"
-
     if create_files:
+        prefix = "nilearn_"
+        suffix = ".nii"
         filenames = []
         try:
             with warnings.catch_warnings():
@@ -185,12 +183,11 @@ def write_tmp_imgs(*imgs, **kwargs):
                     del img
 
                 if use_wildcards:
-                    yield prefix + "*" + suffix
+                    yield f"{prefix}*{suffix}"
+                elif len(imgs) == 1:
+                    yield filenames[0]
                 else:
-                    if len(imgs) == 1:
-                        yield filenames[0]
-                    else:
-                        yield filenames
+                    yield filenames
         finally:
             failures = []
             # Ensure all created files are removed
@@ -210,11 +207,10 @@ def write_tmp_imgs(*imgs, **kwargs):
                     f"{failed_lines}"
                 )
 
-    else:  # No-op
-        if len(imgs) == 1:
-            yield imgs[0]
-        else:
-            yield imgs
+    elif len(imgs) == 1:
+        yield imgs[0]
+    else:
+        yield imgs
 
 
 def are_tests_running():

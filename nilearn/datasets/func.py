@@ -931,7 +931,7 @@ def fetch_localizer_calculation_task(
     nilearn.datasets.fetch_localizer_contrasts
 
     """
-    data = fetch_localizer_contrasts(
+    return fetch_localizer_contrasts(
         ["calculation (auditory and visual cue)"],
         n_subjects=n_subjects,
         get_tmaps=False,
@@ -943,7 +943,6 @@ def fetch_localizer_calculation_task(
         verbose=verbose,
         legacy_format=legacy_format,
     )
-    return data
 
 
 @fill_doc
@@ -1766,10 +1765,9 @@ def _fetch_development_fmri_participants(data_dir, url, verbose):
         "Gender",
         "Handedness",
     ]
-    participants = csv_to_array(
+    return csv_to_array(
         path_to_participants, skip_header=True, dtype=dtype, names=names
     )
-    return participants
 
 
 @fill_doc
@@ -2476,9 +2474,7 @@ def fetch_openneuro_dataset(
     files_spec = []
     files_dir = []
 
-    # Check that data prefix is found in each URL
-    bad_urls = [url for url in urls if data_prefix not in url]
-    if bad_urls:
+    if bad_urls := [url for url in urls if data_prefix not in url]:
         raise ValueError(
             f"data_prefix ({data_prefix}) is not found in at least one URL. "
             "This indicates that the URLs do not correspond to the "
@@ -2651,8 +2647,7 @@ def _make_path_events_file_spm_auditory_data(spm_auditory_data):
     """
     events_file_location = os.path.dirname(spm_auditory_data["func"][0])
     events_filename = os.path.basename(events_file_location) + "_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
-    return events_filepath
+    return os.path.join(events_file_location, events_filename)
 
 
 def _make_events_file_spm_auditory_data(events_filepath):
@@ -2848,8 +2843,7 @@ def _make_events_filepath_spm_multimodal_fmri(_subject_data, session):
     key = f"trials_ses{session}"
     events_file_location = os.path.dirname(_subject_data[key])
     events_filename = f"session{session}_events.tsv"
-    events_filepath = os.path.join(events_file_location, events_filename)
-    return events_filepath
+    return os.path.join(events_file_location, events_filename)
 
 
 def _make_events_file_spm_multimodal_fmri(_subject_data, session):
@@ -2867,10 +2861,9 @@ def _make_events_file_spm_multimodal_fmri(_subject_data, session):
         scrambled_onsets
     )
     duration = np.ones_like(onsets)
-    events = pd.DataFrame(
+    return pd.DataFrame(
         {"trial_type": conditions, "onset": onsets, "duration": duration}
     )
-    return events
 
 
 @fill_doc

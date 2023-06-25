@@ -533,10 +533,9 @@ class NiftiLabelsMasker(BaseMasker, _utils.CacheMixin):
                         )
                     )
                 )
-                labels_diff = labels_before_resampling.difference(
+                if labels_diff := labels_before_resampling.difference(
                     labels_after_resampling
-                )
-                if len(labels_diff) > 0:
+                ):
                     warnings.warn("After resampling the label image to the "
                                   "data image, the following labels were "
                                   f"removed: {labels_diff}. "
