@@ -58,8 +58,7 @@ def _simu_img():
 def _cov_conf(tseries, conf):
     conf_n = StandardScaler().fit_transform(conf)
     _ = StandardScaler().fit_transform(tseries)
-    cov_mat = np.dot(tseries.T, conf_n)
-    return cov_mat
+    return np.dot(tseries.T, conf_n)
 
 
 def _confounds_regression(standardize_signal=True, standardize_confounds=True):
