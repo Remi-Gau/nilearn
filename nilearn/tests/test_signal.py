@@ -524,7 +524,7 @@ def test_clean_runs():
     x_orig = x.copy()
     # Create run info
     runs = np.ones(n_samples)
-    runs[:n_samples // 2] = 0
+    runs[: n_samples // 2] = 0
     x_detrended = nisignal.clean(
         x,
         confounds=confounds,
