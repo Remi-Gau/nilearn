@@ -288,4 +288,6 @@ def img_data_dtype(niimg):
         return np.float_
 
     # ArrayProxy gained the dtype attribute in nibabel 2.2
-    return dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
+    return (
+        dataobj.dtype if hasattr(dataobj, "dtype") else niimg.get_data_dtype()
+    )
