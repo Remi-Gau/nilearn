@@ -28,13 +28,7 @@ exclude: |
         | nilearn/glm/first_level/first_level.py
         | nilearn/glm/tests/test_second_level.py
         | nilearn/glm/tests/test_first_level.py
-        | nilearn/interfaces/fmriprep/load_confounds.py
         | nilearn/interfaces/fmriprep/load_confounds_compcor.py
-        | nilearn/interfaces/fmriprep/load_confounds_components.py
-        | nilearn/interfaces/fmriprep/load_confounds_scrub.py
-        | nilearn/interfaces/fmriprep/load_confounds_strategy.py
-        | nilearn/interfaces/fmriprep/load_confounds_utils.py
-        | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
         | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
         | nilearn/interfaces/fmriprep/tests/utils.py
