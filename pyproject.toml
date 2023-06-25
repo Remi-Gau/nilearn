@@ -103,13 +103,6 @@ version-file = "nilearn/_version.py"
 
 [tool.black]
 line-length = 79
-include = """
-(
-  examples/.*py
-  | maint_tools/.*py
-  | nilearn/.*py
-)
-"""
 # 'extend-exclude' excludes files or directories in addition to the defaults
 extend-exclude =  """
 (
