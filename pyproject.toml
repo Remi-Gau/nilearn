@@ -110,7 +110,7 @@ include = """
   | nilearn/connectome/.*py
   | nilearn/datasets/.*py
   | nilearn/dec.*
-  | nilearn/_utils/.*py$
+  | nilearn/_utils/.*py
   | nilearn/glm/.*py
   | nilearn/image/.*py
   | nilearn/input_data/.*py
@@ -126,29 +126,10 @@ include = """
 extend-exclude =  """
 (
   nilearn/externals
-  | nilearn/_utils/__init__.py
   | nilearn/_utils/data_gen.py
   | nilearn/_utils/docs.py
   | nilearn/_utils/helpers.py
   | nilearn/_utils/tests/test_data_gen.py
-  | examples/.*/.*3d_map_to_surface_projection.py
-  | examples/.*/.*demo_glass_brain.py
-  | examples/.*/.*demo_glass_brain_extensive.py
-  | examples/.*/.*demo_more_plotting.py
-  | examples/.*/.*demo_plotting.py
-  | examples/.*/.*fiac_analysis.py
-  | examples/.*/.*fixed_effects.py
-  | examples/.*/.*frem.py
-  | examples/.*/.*group_level_connectivity.py
-  | examples/.*/.*negate_image.py
-  | examples/.*/.*localizer_surface_analysis.py
-  | examples/.*/.*searchlight_surface.py
-  | examples/.*/.*resample_to_template.py
-  | examples/.*/.*surf_atlas.py
-  | examples/.*/.*surf_stat_map.py
-  | examples/.*/.*surface_bids_analysis.py
-  | examples/.*/.*surface_projection_strategies.py
-  | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
   | nilearn/reporting/html_report.py
   | nilearn/reporting/tests/test_html_report.py
   | nilearn/glm/contrasts.py
@@ -156,6 +137,45 @@ extend-exclude =  """
   | nilearn/glm/tests/test_contrasts.py
   | nilearn/glm/tests/test_first_level.py
   | nilearn/glm/tests/test_second_level.py
+  | nilearn/glm/contrasts.py
+  | nilearn/glm/first_level/first_level.py
+  | nilearn/glm/tests/test_contrasts.py
+  | nilearn/glm/tests/test_first_level.py
+  | nilearn/glm/tests/test_second_level.py
+  | examples/01_plotting/plot_demo_glass_brain.py
+  | examples/01_plotting/plot_demo_plotting.py
+  | examples/01_plotting/plot_surface_projection_strategies.py
+  | examples/01_plotting/plot_3d_map_to_surface_projection.py
+  | examples/01_plotting/plot_surf_atlas.py
+  | examples/01_plotting/plot_demo_more_plotting.py
+  | examples/01_plotting/plot_surf_stat_map.py
+  | examples/01_plotting/plot_demo_glass_brain_extensive.py
+  | examples/04_glm_first_level/plot_fixed_effects.py
+  | examples/04_glm_first_level/plot_fiac_analysis.py
+  | examples/04_glm_first_level/plot_localizer_surface_analysis.py
+  | examples/07_advanced/plot_surface_bids_analysis.py
+  | nilearn/interfaces/__init__.py
+  | nilearn/interfaces/fmriprep/__init__.py
+  | nilearn/interfaces/bids/__init__.py
+  | nilearn/interfaces/fmriprep/load_confounds_components.py
+  | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+  | nilearn/interfaces/fmriprep/load_confounds_scrub.py
+  | nilearn/interfaces/bids/_utils.py
+  | nilearn/interfaces/fsl.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+  | nilearn/interfaces/fmriprep/load_confounds_strategy.py
+  | nilearn/interfaces/bids/query.py
+  | nilearn/interfaces/tests/test_fsl.py
+  | nilearn/interfaces/bids/glm.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+  | nilearn/interfaces/fmriprep/load_confounds.py
+  | nilearn/interfaces/fmriprep/tests/utils.py
+  | nilearn/interfaces/fmriprep/load_confounds_utils.py
+  | nilearn/interfaces/tests/test_bids.py
+  | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
+  | nilearn/plotting/.*
+  | nilearn/maskers/.*
 )
 """
 

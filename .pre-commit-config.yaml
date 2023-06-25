@@ -22,55 +22,58 @@ files: |
         | maint_tools/.*
         | setup.*
         | nilearn/__init__.py
+        | nilearn/masking.py
+        | nilearn/signal.py
         | nilearn/datasets/.*
         | nilearn/_utils/.*
         | nilearn/de.*
-        | nilearn/connectome/.*py
-        | nilearn/glm/.*py
-        | nilearn/image/.*py
-        | nilearn/input_data/.*py
-        | nilearn/regions.*py
-        | nilearn/reporting/.*py
-        | nilearn/mass_univariate/.*py
-        | nilearn/signal.py
-        | nilearn/masking.py
-        | nilearn/conftest.py
+        | nilearn/connectome/.*
+        | nilearn/glm/.*
+        | nilearn/image/.*
+        | nilearn/input_data/.*
+        | nilearn/interfaces/.*
+        | nilearn/regions/.*
+        | nilearn/reporting/.*
+        | nilearn/surfaces/.*
+        | nilearn/mass_univariate/.*
     )$
 
 exclude: |
     (?x)^(
-        | doc/glm/first_level_model\\.rst
-        | introduction\\.rst
-        | maintenance\\.rst
-        | manipulating_images/input_output\\.rst
-        | modules/datasets\\.rst
-        | references\\.bib
-        | examples/.*/.*3d_map_to_surface_projection.py
-        | examples/.*/.*demo_plotting.py
-        | examples/.*/.*fiac_analysis.py
-        | examples/.*/.*fixed_effects.py
-        | examples/.*/.*group_level_connectivity.py
-        | examples/.*/.*localizer_surface_analysis.py
-        | examples/.*/.*searchlight_surface.py
-        | examples/.*/.*surf_atlas.py
-        | examples/.*/.*surf_stat_map.py
-        | examples/.*/.*surface_bids_analysis.py
-        | examples/.*/.*surface_projection_strategies.py
-        | nilearn/reporting/data/html/report_body_template_niftispheresmasker.html
+        nilearn/datasets/tests/data/localizer_behavioural.tsv
+        | nilearn/externals/tempita/.*
+        | nilearn/_version.py
+        | nilearn/_utils/helpers.py
+        | nilearn/_utils/docs.py
+        | nilearn/_utils/tests/test_data_gen.py
+        | nilearn/_utils/data_gen.py
         | nilearn/reporting/html_report.py
         | nilearn/reporting/tests/test_html_report.py
-        | nilearn/datasets/tests/data/localizer_behavioural.tsv
-        | nilearn/externals/tempita
-        | nilearn/_utils/__init__.py
-        | nilearn/_utils/data_gen.py
-        | nilearn/_utils/docs.py
-        | nilearn/_utils/helpers.py
-        | nilearn/_utils/tests/test_data_gen.py
+        | nilearn/glm/tests/test_contrasts.py
         | nilearn/glm/contrasts.py
         | nilearn/glm/first_level/first_level.py
-        | nilearn/glm/tests/test_contrasts.py
-        | nilearn/glm/tests/test_first_level.py
         | nilearn/glm/tests/test_second_level.py
+        | nilearn/glm/tests/test_first_level.py
+        | nilearn/interfaces/__init__.py
+        | nilearn/interfaces/fmriprep/__init__.py
+        | nilearn/interfaces/bids/__init__.py
+        | nilearn/interfaces/fmriprep/load_confounds_components.py
+        | nilearn/interfaces/fmriprep/load_confounds_compcor.py
+        | nilearn/interfaces/fmriprep/load_confounds_scrub.py
+        | nilearn/interfaces/bids/_utils.py
+        | nilearn/interfaces/fsl.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_scrub.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_utils.py
+        | nilearn/interfaces/fmriprep/load_confounds_strategy.py
+        | nilearn/interfaces/bids/query.py
+        | nilearn/interfaces/tests/test_fsl.py
+        | nilearn/interfaces/bids/glm.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds_strategy.py
+        | nilearn/interfaces/fmriprep/load_confounds.py
+        | nilearn/interfaces/fmriprep/tests/utils.py
+        | nilearn/interfaces/fmriprep/load_confounds_utils.py
+        | nilearn/interfaces/tests/test_bids.py
+        | nilearn/interfaces/fmriprep/tests/test_load_confounds.py
     )$
 
 repos:
@@ -107,7 +110,7 @@ repos:
     rev: 23.3.0
     hooks:
       - id: black
-        args: [--config=pyproject.toml, --verbose]
+        args: [--config=pyproject.toml]
 
   - repo: https://github.com/codespell-project/codespell
     rev: v2.2.5
