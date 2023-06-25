@@ -51,8 +51,7 @@ def _load_uniform_ball_cloud(n_points=20):
         )
     )
     if os.path.isfile(stored_points):
-        points = np.loadtxt(stored_points)
-        return points
+        return np.loadtxt(stored_points)
     warnings.warn(
         "Cached sample positions are provided for "
         "n_samples = 10, 20, 40, 80, 160. Since the number of samples does "
@@ -128,12 +127,11 @@ def _sample_locations_between_surfaces(
         inner_vertices - outer_vertices
     )
     sample_locations = np.rollaxis(sample_locations, 1)
-    sample_locations_voxel_space = np.asarray(
+    return np.asarray(
         resampling.coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
-    return sample_locations_voxel_space
 
 
 def _ball_sample_locations(
@@ -195,10 +193,9 @@ def _ball_sample_locations(
             *offsets_world_space.T, affine=np.linalg.inv(linear_map)
         )
     ).T
-    sample_locations_voxel_space = (
+    return (
         mesh_voxel_space[:, np.newaxis, :] + offsets_voxel_space[np.newaxis, :]
     )
-    return sample_locations_voxel_space
 
 
 def _line_sample_locations(
@@ -255,12 +252,11 @@ def _line_sample_locations(
         + normals * offsets[:, np.newaxis, np.newaxis]
     )
     sample_locations = np.rollaxis(sample_locations, 1)
-    sample_locations_voxel_space = np.asarray(
+    return np.asarray(
         resampling.coord_transform(
             *np.vstack(sample_locations).T, affine=np.linalg.inv(affine)
         )
     ).T.reshape(sample_locations.shape)
-    return sample_locations_voxel_space
 
 
 def _choose_kind(kind, inner_mesh):
@@ -297,12 +293,9 @@ def _sample_locations(
     if kind not in projectors:
         raise ValueError(f'"kind" must be one of {tuple(projectors.keys())}')
     projector, extra_kwargs = projectors[kind]
-    # let the projector choose the default for n_points
-    # (for example a ball probably needs more than a line)
-    sample_locations = projector(
+    return projector(
         mesh=mesh, affine=affine, depth=depth, **kwargs, **extra_kwargs
     )
-    return sample_locations
 
 
 def _masked_indices(sample_locations, img_shape, mask=None):
@@ -542,8 +535,7 @@ def _interpolation_sampling(
         all_samples.append(samples)
     all_samples = np.asarray(all_samples)
     all_samples = all_samples.reshape((len(images), n_vertices, n_points))
-    texture = np.nanmean(all_samples, axis=2)
-    return texture
+    return np.nanmean(all_samples, axis=2)
 
 
 def vol_to_surf(
@@ -1107,15 +1099,14 @@ def _check_mesh(mesh):
             "The mesh should be a str or a dictionary, "
             f"you provided: {type(mesh).__name__}."
         )
-    missing = {
+    if missing := {
         "pial_left",
         "pial_right",
         "sulc_left",
         "sulc_right",
         "infl_left",
         "infl_right",
-    }.difference(mesh.keys())
-    if missing:
+    }.difference(mesh.keys()):
         raise ValueError(
             f"{missing} {'are' if len(missing) > 1 else 'is'} "
             "missing from the provided mesh dictionary"
