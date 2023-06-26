@@ -35,10 +35,9 @@ img_file_error = {
 
 def _check_params(confounds_raw, params):
     """Check that specified parameters can be found in the confounds."""
-    not_found_params = [
+    if not_found_params := [
         par for par in params if par not in confounds_raw.columns
-    ]
-    if not_found_params:
+    ]:
         raise MissingConfound(params=not_found_params)
     return None
 
@@ -47,8 +46,7 @@ def _find_confounds(confounds_raw, keywords):
     """Find confounds that contain certain keywords."""
     list_confounds, missing_keys = [], []
     for key in keywords:
-        key_found = [col for col in confounds_raw.columns if key in col]
-        if key_found:
+        if key_found := [col for col in confounds_raw.columns if key in col]:
             list_confounds.extend(key_found)
         elif key != "non_steady_state":
             missing_keys.append(key)
@@ -134,8 +132,7 @@ def _get_file_name(nii_file):
 
 def _get_confounds_file(image_file, flag_full_aroma):
     _check_images(image_file, flag_full_aroma)
-    confounds_raw_path = _get_file_name(image_file)
-    return confounds_raw_path
+    return _get_file_name(image_file)
 
 
 def _get_json(confounds_raw_path):

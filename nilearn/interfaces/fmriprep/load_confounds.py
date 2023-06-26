@@ -377,8 +377,7 @@ def _load_single_confounds_file(
 def _load_noise_component(confounds_raw, component, missing, **kargs):
     """Load confound of a single noise component."""
     try:
-        need_params = component_parameters.get(component)
-        if need_params:
+        if need_params := component_parameters.get(component):
             params = {param: kargs.get(param) for param in need_params}
             loaded_confounds = getattr(components, f"_load_{component}")(
                 confounds_raw, **params

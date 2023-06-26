@@ -91,8 +91,7 @@ def _load_scrub(confounds_raw, scrub, fd_threshold, std_dvars_threshold):
 
 def _load_non_steady_state(confounds_raw):
     """Find non steady state regressors."""
-    nss_outliers = _find_confounds(confounds_raw, ["non_steady_state"])
-    if nss_outliers:
+    if nss_outliers := _find_confounds(confounds_raw, ["non_steady_state"]):
         return confounds_raw[nss_outliers]
     else:
         return pd.DataFrame()
