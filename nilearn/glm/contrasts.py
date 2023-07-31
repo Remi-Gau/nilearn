@@ -72,10 +72,7 @@ def compute_contrast(labels, regression_result, con_val, contrast_type=None):
 
     """
     con_val = np.asarray(con_val)
-    dim = 1
-    if con_val.ndim > 1:
-        dim = con_val.shape[0]
-
+    dim = con_val.shape[0] if con_val.ndim > 1 else 1
     if contrast_type is None:
         contrast_type = "t" if dim == 1 else "F"
 
@@ -136,10 +133,7 @@ def _compute_fixed_effect_contrast(
             warn(f"Contrast for session {int(i)} is null")
             continue
         contrast_ = compute_contrast(lab, res, con_val, contrast_type)
-        if contrast is None:
-            contrast = contrast_
-        else:
-            contrast = contrast + contrast_
+        contrast = contrast_ if contrast is None else contrast + contrast_
         n_contrasts += 1
     if contrast is None:
         raise ValueError("all contrasts provided were null contrasts")
@@ -206,10 +200,7 @@ class Contrast:
         self.effect = effect
         self.variance = variance
         self.dof = float(dof)
-        if dim is None:
-            self.dim = effect.shape[0]
-        else:
-            self.dim = dim
+        self.dim = effect.shape[0] if dim is None else dim
         if self.dim > 1 and contrast_type == "t":
             print("Automatically converted multi-dimensional t to F contrast")
             contrast_type = "F"
@@ -283,7 +274,7 @@ class Contrast:
             p-values, one per voxel
 
         """
-        if self.stat_ is None or not self.baseline == baseline:
+        if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == "t":
@@ -315,7 +306,7 @@ class Contrast:
             one_minus_pvalues, one per voxel
 
         """
-        if self.stat_ is None or not self.baseline == baseline:
+        if self.stat_ is None or self.baseline != baseline:
             self.stat_ = self.stat(baseline)
         # Valid conjunction as in Nichols et al, Neuroimage 25, 2005.
         if self.contrast_type == "t":
@@ -346,7 +337,7 @@ class Contrast:
             statistical values, one per voxel
 
         """
-        if self.p_value_ is None or not self.baseline == baseline:
+        if self.p_value_ is None or self.baseline != baseline:
             self.p_value_ = self.p_value(baseline)
         if self.one_minus_pvalue_ is None:
             self.one_minus_pvalue_ = self.one_minus_pvalue(baseline)
@@ -464,15 +455,14 @@ def compute_fixed_effects(
         [masker.transform(contrast_img) for contrast_img in contrast_imgs]
     )
 
-    if dofs is not None:
-        if len(dofs) != n_runs:
-            raise ValueError(
-                f"The number of degrees of freedom ({len(dofs)}) "
-                f"differs from the number of contrast images ({n_runs})."
-            )
-    else:
+    if dofs is None:
         dofs = [100] * n_runs
 
+    elif len(dofs) != n_runs:
+        raise ValueError(
+            f"The number of degrees of freedom ({len(dofs)}) "
+            f"differs from the number of contrast images ({n_runs})."
+        )
     (
         fixed_fx_contrast,
         fixed_fx_variance,
