@@ -222,8 +222,6 @@ def run_glm(
             labels = np.array([cluster_labels[i] for i in kmeans.labels_])
 
         unique_labels = np.unique(labels)
-        results = {}
-
         # Fit the AR model according to current AR(N) estimates
         ar_result = Parallel(n_jobs=n_jobs, verbose=verbose)(
             delayed(_ar_model_fit)(
@@ -232,9 +230,7 @@ def run_glm(
             for val in unique_labels
         )
 
-        # Converting the key to a string is required for AR(N>1) cases
-        for val, result in zip(unique_labels, ar_result):
-            results[val] = result
+        results = dict(zip(unique_labels, ar_result))
         del unique_labels
         del ar_result
 
@@ -413,10 +409,7 @@ class FirstLevelModel(BaseGLM):
         self.target_shape = target_shape
         self.smoothing_fwhm = smoothing_fwhm
         memory = stringify_path(memory)
-        if isinstance(memory, str):
-            self.memory = Memory(memory)
-        else:
-            self.memory = memory
+        self.memory = Memory(memory) if isinstance(memory, str) else memory
         self.memory_level = memory_level
         self.standardize = standardize
         if signal_scaling is False:
@@ -767,7 +760,7 @@ class FirstLevelModel(BaseGLM):
         n_runs = len(self.labels_)
         n_contrasts = len(con_vals)
         if n_contrasts == 1 and n_runs > 1:
-            warn(f"One contrast given, assuming it for all {int(n_runs)} runs")
+            warn(f"One contrast given, assuming it for all {n_runs} runs")
             con_vals = con_vals * n_runs
         elif n_contrasts != n_runs:
             raise ValueError(
@@ -791,8 +784,8 @@ class FirstLevelModel(BaseGLM):
             "p_value",
             "effect_size",
             "effect_variance",
+            "all",
         ]
-        valid_types.append("all")  # ensuring 'all' is the final entry.
         if output_type not in valid_types:
             raise ValueError(f"output_type must be one of {valid_types}")
         contrast = _compute_fixed_effect_contrast(
