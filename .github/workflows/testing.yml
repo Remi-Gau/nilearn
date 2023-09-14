@@ -37,7 +37,7 @@ jobs:
         -   shell: bash -l {0}
             run: ./build_tools/github/test.sh
             name: Run tests
-        -   uses: codecov/codecov-action@v3
+        -   uses: codecov/codecov-action@v4
             if: success()
             name: Upload coverage to CodeCov
 
@@ -103,7 +103,7 @@ jobs:
         -   shell: bash {0}
             run: ./build_tools/github/test.sh
             name: Run tests
-        -   uses: codecov/codecov-action@v3
+        -   uses: codecov/codecov-action@v4
             with:
                 flags: ${{ matrix.os }}_${{ matrix.python-version }}
             if: success()
@@ -144,6 +144,6 @@ jobs:
         -   shell: bash {0}
             run: ./build_tools/github/test.sh
             name: Run tests
-        -   uses: codecov/codecov-action@v3
+        -   uses: codecov/codecov-action@v4
             if: success()
             name: Upload coverage to CodeCov
