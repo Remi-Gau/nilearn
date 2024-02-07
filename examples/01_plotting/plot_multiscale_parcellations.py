@@ -34,13 +34,18 @@ networks_444 = parcellations[2]["maps"]
 # Visualizing brain parcellations
 # -------------------------------
 
+from matplotlib import colormaps
+
 # import plotting module and use `plot_roi` function, since the maps are in 3D
 from nilearn import plotting
 
 # The coordinates of all plots are selected automatically by itself
 # We manually change the colormap of our choice
 plotting.plot_roi(
-    networks_64, cmap=plotting.cm.bwr, title="64 regions of brain clusters"
+    networks_64,
+    cmap=colormaps["tab20b"],
+    title="64 regions of brain clusters",
+    colorbar=True,
 )
 
 plotting.plot_roi(
