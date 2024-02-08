@@ -52,6 +52,9 @@ img = surface.fetch_nki()[0]
 print(f"NKI image: {img}")
 
 labels_img, label_names = surface.fetch_destrieux()
+label_names = {
+    i: label.decode("utf-8") for (i, label) in enumerate(label_names)
+}
 print(f"Destrieux image: {labels_img}")
 plotting.plot_surf(
     labels_img,

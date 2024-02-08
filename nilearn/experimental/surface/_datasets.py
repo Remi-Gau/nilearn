@@ -54,9 +54,7 @@ def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
     """Load Destrieux surface atlas into a surface object."""
     fsaverage = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux()
-    label_names = {
-        i: label.decode("utf-8") for (i, label) in enumerate(destrieux.labels)
-    }
+    # TODO fetchers usually return Bunch
     return (
         SurfaceImage(
             mesh=fsaverage["pial"],
@@ -65,5 +63,5 @@ def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
                 "right": destrieux["map_right"],
             },
         ),
-        label_names,
+        destrieux.labels,
     )
