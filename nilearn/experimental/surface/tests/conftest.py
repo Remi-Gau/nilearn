@@ -103,9 +103,9 @@ def assert_img_equal():
 @pytest.fixture
 def drop_img_part():
     def f(img, part_name="right_hemisphere"):
-        mesh = img.mesh.parts.copy()
+        mesh = img.mesh.copy()
         mesh.pop(part_name)
-        data = img.data.parts.copy()
+        data = img.data.copy()
         data.pop(part_name)
         return SurfaceImage(mesh, data)
 

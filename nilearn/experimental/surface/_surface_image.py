@@ -1,48 +1,17 @@
 """Surface API."""
+
 from __future__ import annotations
 
 import abc
+import dataclasses
 import pathlib
+from typing import Dict
 
 import numpy as np
 
 from nilearn.experimental.surface import _io
 
-
-class PolyData:
-    """A collection of data arrays.
-
-    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
-    empty and whose keys must be a subset of {"left", "right"}.
-    """
-
-    def __init__(
-        self, left: np.ndarray | None = None, right: np.ndarray | None = None
-    ) -> None:
-        if left is None and right is None:
-            raise ValueError(
-                "Cannot create an empty PolyData. "
-                "Either left or right (or both) must be provided."
-            )
-        parts = {}
-        if left is not None:
-            parts["left"] = left
-        if right is not None:
-            parts["right"] = right
-        if len(parts) == 1:
-            self.parts = parts
-            self.shape = next(iter(self.parts.values())).shape
-            return
-        if parts["left"].shape[:-1] != parts["right"].shape[:-1]:
-            raise ValueError(
-                f"Data arrays for keys 'left' and 'right' "
-                "have incompatible shapes: "
-                f"{parts['left'].shape} and {parts['right'].shape}"
-            )
-        self.parts = parts
-        first_shape = next(iter(parts.values())).shape
-        concat_dim = sum(p.shape[-1] for p in parts.values())
-        self.shape = (*first_shape[:-1], concat_dim)
+PolyData = Dict[str, np.ndarray]
 
 
 class Mesh(abc.ABC):
@@ -118,30 +87,27 @@ class FileMesh(Mesh):
         )
 
 
-class PolyMesh:
-    """A collection of meshes.
+PolyMesh = Dict[str, Mesh]
 
-    It is a shallow wrapper around the ``parts`` dictionary, which cannot be
-    empty and whose keys must be a subset of {"left", "right"}.
+
+def _check_data_consistent_shape(data: PolyData):
+    """Check that shapes of PolyData parts match.
+
+    They must match in all but the last dimension (which is the number of
+    vertices, and can be different for each part).
+
     """
-
-    n_vertices: int
-
-    def __init__(
-        self, left: Mesh | None = None, right: Mesh | None = None
-    ) -> None:
-        if left is None and right is None:
+    if len(data) == 0:
+        raise ValueError("Surface image data must have at least one item.")
+    first_name = next(iter(data.keys()))
+    first_shape = data[first_name].shape
+    for part_name, part_data in data.items():
+        if part_data.shape[:-1] != first_shape[:-1]:
             raise ValueError(
-                "Cannot create an empty PolyMesh. "
-                "Either left or right (or both) must be provided."
+                f"Data arrays for keys '{first_name}' and '{part_name}' "
+                "have incompatible shapes: "
+                f"{first_shape} and {part_data.shape}"
             )
-        self.parts = {}
-        if left is not None:
-            self.parts["left"] = left
-        if right is not None:
-            self.parts["right"] = right
-
-        self.n_vertices = sum(p.n_vertices for p in self.parts.values())
 
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
@@ -163,24 +129,22 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             )
 
 
+@dataclasses.dataclass
 class SurfaceImage:
     """Surface image, usually containing meshes & data for both hemispheres."""
 
-    def __init__(
-        self,
-        mesh: PolyMesh | dict[str, Mesh],
-        data: PolyData | dict[str, Mesh],
-    ) -> None:
-        if isinstance(mesh, PolyMesh):
-            self.mesh = mesh
-        else:
-            self.mesh = PolyMesh(**mesh)
-        if isinstance(data, PolyData):
-            self.data = data
-        else:
-            self.data = PolyData(**data)
+    mesh: PolyMesh
+    data: PolyData
+    shape: tuple[int, ...] = dataclasses.field(init=False)
+
+    def __post_init__(self) -> None:
+        _check_data_consistent_shape(self.data)
         _check_data_and_mesh_compat(self.mesh, self.data)
-        self.shape = self.data.shape
+        total_n_vertices = sum(
+            mesh_part.n_vertices for mesh_part in self.mesh.values()
+        )
+        first_data_shape = list(self.data.values())[0].shape
+        self.shape = (*first_data_shape[:-1], total_n_vertices)
 
     def __repr__(self) -> str:
         return f"<{self.__class__.__name__} {getattr(self, 'shape', '')}>"

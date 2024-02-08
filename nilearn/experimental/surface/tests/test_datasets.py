@@ -7,9 +7,7 @@ def test_load_fsaverage():
     """Call default function smoke test and assert return."""
     result = load_fsaverage()
     assert isinstance(result, dict)
-    assert (
-        result["pial"].parts["left_hemisphere"].n_vertices == 10242
-    )  # fsaverage5
+    assert result["pial"]["left_hemisphere"].n_vertices == 10242  # fsaverage5
 
 
 def test_load_fsaverage_wrong_mesh_name():
