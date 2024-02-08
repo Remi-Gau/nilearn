@@ -1,146 +1,117 @@
-import numpy as np
-from matplotlib import pyplot as plt
-
 from nilearn import plotting as old_plotting
+from nilearn.experimental.surface import PolyMesh, SurfaceImage
 
 
-def plot_surf(img, hemi=None, mesh=None, views=["lateral"], **kwargs):
+def plot_surf(
+    img: SurfaceImage,
+    hemi: str | None = None,
+    surf_mesh: PolyMesh | None = None,
+    **kwargs,
+):
     """Plot a SurfaceImage.
 
     TODO: docstring.
     """
-    if mesh is None:
-        mesh = img.mesh
+    # TODO deal with surf_mesh, surf_map, hemi in kwargs
+    if surf_mesh is None:
+        surf_mesh = img.mesh
 
     if hemi is None:
-        hemi = list(img.data.keys())
-    if isinstance(hemi, str):
-        hemi = [hemi]
+        hemi = "left"
 
-    fig, axes = plt.subplots(
-        len(views),
-        len(hemi),
-        subplot_kw={"projection": "3d"},
-        figsize=(4 * len(hemi), 4),
+    _check_hemi_present(surf_mesh, img, hemi)
+
+    fig = old_plotting.plot_surf(
+        surf_mesh=surf_mesh[hemi],
+        surf_map=img.data[hemi],
+        hemi=hemi,
+        **kwargs,
     )
-    axes = np.atleast_2d(axes)
-
-    title = ""
-    if "title" in kwargs:
-        title = f"{kwargs.pop('title')} - "
-
-    for view, ax_row in zip(views, axes):
-        for ax, mesh_part in zip(ax_row, hemi):
-            # TODO
-            # handle passing in kwargs:
-            # - axes
-            # - view
-            old_plotting.plot_surf(
-                mesh[mesh_part],
-                img.data[mesh_part],
-                hemi=mesh_part,
-                view=view,
-                axes=ax,
-                title=title + mesh_part,
-                **kwargs,
-            )
     return fig
 
 
-def plot_surf_stat_map(img, hemi=None, mesh=None, views=["lateral"], **kwargs):
+def plot_surf_stat_map(
+    img: SurfaceImage,
+    hemi: str | None = None,
+    surf_mesh: PolyMesh | None = None,
+    **kwargs,
+):
     """Plot a stats map on a SurfaceImage.
 
     TODO: docstring.
     """
-    if mesh is None:
-        mesh = img.mesh
+    # TODO deal with stat_map in kwargs
+    if surf_mesh is None:
+        surf_mesh = img.mesh
 
     if hemi is None:
-        hemi = list(img.data.keys())
-    if isinstance(hemi, str):
-        hemi = [hemi]
+        hemi = "left"
 
-    fig, axes = plt.subplots(
-        len(views),
-        len(hemi),
-        subplot_kw={"projection": "3d"},
-        figsize=(4 * len(hemi), 4),
+    _check_hemi_present(surf_mesh, img, hemi)
+
+    fig = old_plotting.plot_surf_stat_map(
+        surf_mesh=surf_mesh[hemi],
+        stat_map=img.data[hemi],
+        hemi=hemi,
+        **kwargs,
     )
-    axes = np.atleast_2d(axes)
-
-    title = ""
-    if "title" in kwargs:
-        title = f"{kwargs.pop('title')} - "
-
-    for view, ax_row in zip(views, axes):
-        for ax, mesh_part in zip(ax_row, hemi):
-            # TODO
-            # handle passing in kwargs:
-            # - axes
-            # - view
-
-            fig = old_plotting.plot_surf_stat_map(
-                mesh[mesh_part],
-                img.data[mesh_part],
-                hemi=mesh_part,
-                view=view,
-                axes=ax,
-                title=title + mesh_part,
-                **kwargs,
-            )
     return fig
 
 
-def plot_surf_contours(img, hemi=None, mesh=None, views=["lateral"], **kwargs):
+def plot_surf_contours(
+    img: SurfaceImage,
+    hemi: str | None = None,
+    surf_mesh: PolyMesh | None = None,
+    **kwargs,
+):
     """Plot a contours on a SurfaceImage.
 
     TODO: docstring.
     """
-    if mesh is None:
-        mesh = img.mesh
+    # TODO deal with roi_map in kwargs
+    if surf_mesh is None:
+        surf_mesh = img.mesh
 
     if hemi is None:
-        hemi = list(img.data.keys())
-    if isinstance(hemi, str):
-        hemi = [hemi]
+        hemi = "left"
 
-    fig, axes = plt.subplots(
-        len(views),
-        len(hemi),
-        subplot_kw={"projection": "3d"},
-        figsize=(4 * len(hemi), 4),
+    _check_hemi_present(surf_mesh, img, hemi)
+
+    fig = old_plotting.plot_surf_contours(
+        surf_mesh=surf_mesh[hemi],
+        roi_map=img.data[hemi],
+        hemi=hemi,
+        **kwargs,
     )
-    axes = np.atleast_2d(axes)
-
-    title = ""
-    if "title" in kwargs:
-        title = f"{kwargs.pop('title')} - "
-
-    for view, ax_row in zip(views, axes):
-        for ax, mesh_part in zip(ax_row, hemi):
-            # TODO
-            # handle passing in kwargs:
-            # - axes
-            # - view
-
-            fig = old_plotting.plot_surf_contours(
-                mesh[mesh_part],
-                img.data[mesh_part],
-                hemi=mesh_part,
-                view=view,
-                axes=ax,
-                title=title + mesh_part,
-                **kwargs,
-            )
     return fig
 
 
-def view_surf(img, surf_mesh, hemi, **kwargs):
+def view_surf(
+    img: SurfaceImage,
+    hemi: str | None = None,
+    surf_mesh: PolyMesh | None = None,
+    **kwargs,
+):
     """View SurfaceImage in browser.
 
     TODO: docstring.
     """
+    if surf_mesh is None:
+        surf_mesh = img.mesh
+
+    if hemi is None:
+        hemi = "left"
+
+    _check_hemi_present(surf_mesh, img, hemi)
+
     fig = old_plotting.view_surf(
         surf_mesh=surf_mesh[hemi], surf_map=img.data[hemi], **kwargs
     )
     return fig
+
+
+def _check_hemi_present(mesh: PolyMesh, img: SurfaceImage, hemi: str):
+    if hemi not in mesh or hemi not in img.data:
+        raise ValueError(
+            f"{hemi} must be present in mesh and SurfaceImage data"
+        )

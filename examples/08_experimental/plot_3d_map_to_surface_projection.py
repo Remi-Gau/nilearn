@@ -188,7 +188,7 @@ from nilearn.experimental.plotting import plot_surf_contours
 
 figure = plot_surf_stat_map(
     img,
-    mesh=fsaverage_meshes["inflated"],
+    surf_mesh=fsaverage_meshes["inflated"],
     hemi="right",
     title="ROI outlines on surface",
     colorbar=True,

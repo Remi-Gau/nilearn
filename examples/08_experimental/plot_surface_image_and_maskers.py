@@ -21,6 +21,8 @@ except ImportError:
 
 # %%
 
+import numpy as np
+
 from nilearn.experimental import plotting, surface
 from nilearn.plotting import plot_matrix
 
@@ -35,11 +37,29 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
-fig = plotting.plot_surf(
-    mean_img,
-    views=["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"],
-    title="mean image",
+# let's create a figure with all the views for both hemispheres
+views = ["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"]
+hemispheres = ["left", "right"]
+
+fig, axes = plt.subplots(
+    len(views),
+    len(hemispheres),
+    subplot_kw={"projection": "3d"},
+    figsize=(4 * len(hemispheres), 4),
 )
+axes = np.atleast_2d(axes)
+
+for view, ax_row in zip(views, axes):
+    for ax, hemi in zip(ax_row, hemispheres):
+        plotting.plot_surf(
+            mean_img,
+            hemi=hemi,
+            view=view,
+            figure=fig,
+            axes=ax,
+            title=f"mean image - {hemi} - {view}",
+        )
+
 fig.set_size_inches(6, 8)
 plt.show()
 
@@ -138,7 +158,7 @@ decoder.fit(img, y)
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
 
-vmax = max([np.absolute(dp).max() for dp in coef_img.data.values()])
+vmax = max(np.absolute(dp).max() for dp in coef_img.data.values())
 plotting.plot_surf(
     coef_img,
     cmap="cold_hot",

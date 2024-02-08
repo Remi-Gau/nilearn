@@ -21,22 +21,22 @@ def test_compare_file_and_inmemory_mesh(mini_mesh, tmp_path):
     assert np.array_equal(left.faces, left_loaded.faces)
 
 
-def test_surface_image_shape(make_mini_img):
-    img = make_mini_img()
+def test_surface_image_shape(make_mini_surface_img):
+    img = make_mini_surface_img()
     assert img.shape == (9,)
-    img = make_mini_img((3,))
+    img = make_mini_surface_img((3,))
     assert img.shape == (3, 9)
-    img = make_mini_img((7, 3))
+    img = make_mini_surface_img((7, 3))
     assert img.shape == (7, 3, 9)
 
 
-def test_data_shape_not_matching_mesh(mini_img, flip):
+def test_data_shape_not_matching_mesh(mini_surface_img, flip):
     with pytest.raises(ValueError, match="shape.*vertices"):
-        SurfaceImage(mini_img.mesh, flip(mini_img.data))
+        SurfaceImage(mini_surface_img.mesh, flip(mini_surface_img.data))
 
 
-def test_data_shape_inconsistent(make_mini_img):
-    img = make_mini_img((7,))
+def test_data_shape_inconsistent(make_mini_surface_img):
+    img = make_mini_surface_img((7,))
     bad_data = {
         "left": img.data["left"],
         "right": img.data["right"][:4],
@@ -45,9 +45,9 @@ def test_data_shape_inconsistent(make_mini_img):
         SurfaceImage(img.mesh, bad_data)
 
 
-def test_data_keys_not_matching_mesh(mini_img):
+def test_data_keys_not_matching_mesh(mini_surface_img):
     with pytest.raises(ValueError, match="same keys"):
         SurfaceImage(
-            {"left": mini_img.mesh["left"]},
-            mini_img.data,
+            {"left": mini_surface_img.mesh["left"]},
+            mini_surface_img.data,
         )
