@@ -2,12 +2,14 @@
 
 eventually nilearn.datasets would be updated
 """
+
 from typing import Dict, Sequence, Tuple
 
 from nilearn import datasets
 from nilearn.experimental.surface import _io
 from nilearn.experimental.surface._surface_image import (
     FileMesh,
+    Mesh,
     PolyMesh,
     SurfaceImage,
 )
@@ -16,15 +18,14 @@ from nilearn.experimental.surface._surface_image import (
 def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
     """Load several fsaverage mesh types for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-    meshes: Dict[str, PolyMesh] = {}
+    meshes: Dict[str, Dict[str, Mesh]] = {}
     renaming = {"pial": "pial", "white": "white_matter", "infl": "inflated"}
     for mesh_type, mesh_name in renaming.items():
-        parts = {}
+        meshes[mesh_name] = {}
         for hemisphere in "left", "right":
-            parts[hemisphere] = FileMesh(
+            meshes[mesh_name][f"{hemisphere}_hemisphere"] = FileMesh(
                 fsaverage[f"{mesh_type}_{hemisphere}"]
             )
-        meshes[mesh_name] = PolyMesh(**parts)
     return meshes
 
 
@@ -41,8 +42,8 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
         img = SurfaceImage(
             mesh=fsaverage["pial"],
             data={
-                "left": left_data,
-                "right": right_data,
+                "left_hemisphere": left_data,
+                "right_hemisphere": right_data,
             },
         )
         images.append(img)
@@ -60,8 +61,8 @@ def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
         SurfaceImage(
             mesh=fsaverage["pial"],
             data={
-                "left": destrieux["map_left"],
-                "right": destrieux["map_right"],
+                "left_hemisphere": destrieux["map_left"],
+                "right_hemisphere": destrieux["map_right"],
             },
         ),
         label_names,

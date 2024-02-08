@@ -146,7 +146,7 @@ class PolyMesh:
 
 def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
     """Check that mesh and data have the same keys and that shapes match."""
-    data_keys, mesh_keys = set(data.parts.keys()), set(mesh.parts.keys())
+    data_keys, mesh_keys = set(data.keys()), set(mesh.keys())
     if data_keys != mesh_keys:
         diff = data_keys.symmetric_difference(mesh_keys)
         raise ValueError(
@@ -154,12 +154,12 @@ def _check_data_and_mesh_compat(mesh: PolyMesh, data: PolyData):
             f"Offending keys: {diff}"
         )
     for key in mesh_keys:
-        if data.parts[key].shape[-1] != mesh.parts[key].n_vertices:
+        if data[key].shape[-1] != mesh[key].n_vertices:
             raise ValueError(
                 "Data shape does not match number of vertices"
                 f" for '{key}':"
-                f"\ndata shape: {data.parts[key].shape}",
-                f"\nn vertices: {mesh.parts[key].n_vertices}",
+                f"\ndata shape: {data[key].shape}",
+                f"\nn vertices: {mesh[key].n_vertices}",
             )
 
 
