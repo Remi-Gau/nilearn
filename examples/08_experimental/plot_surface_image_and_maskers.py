@@ -35,7 +35,12 @@ mean_data = masked_data.mean(axis=0)
 mean_img = masker.inverse_transform(mean_data)
 print(f"Image mean: {mean_img}")
 
-plotting.plot_surf(mean_img)
+fig = plotting.plot_surf(
+    mean_img,
+    views=["lateral", "medial", "dorsal", "ventral", "anterior", "posterior"],
+    title="mean image",
+)
+fig.set_size_inches(6, 8)
 plt.show()
 
 # %%
