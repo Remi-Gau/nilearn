@@ -1,13 +1,13 @@
 import pytest
 
-from nilearn.experimental.surface import load_fsaverage
+from nilearn.experimental.datasets import load_fsaverage
 
 
 def test_load_fsaverage():
     """Call default function smoke test and assert return."""
-    result = load_fsaverage()
-    assert isinstance(result, dict)
-    assert result["pial"]["left"].n_vertices == 10242  # fsaverage5
+    meshes, _ = load_fsaverage()
+    assert isinstance(meshes, dict)
+    assert meshes["pial"]["left"].n_vertices == 10242  # fsaverage5
 
 
 def test_load_fsaverage_wrong_mesh_name():
@@ -18,12 +18,12 @@ def test_load_fsaverage_wrong_mesh_name():
 
 def test_load_fsaverage_hemispheres_have_file():
     """Make sure file paths are present."""
-    result = load_fsaverage()
+    meshes, _ = load_fsaverage()
     left_hemisphere_meshes = [
-        mesh for mesh in result.values() if "left" in mesh
+        mesh for mesh in meshes.values() if "left" in mesh
     ]
     assert left_hemisphere_meshes
     right_hemisphere_meshes = [
-        mesh for mesh in result.values() if "right" in mesh
+        mesh for mesh in meshes.values() if "right" in mesh
     ]
     assert right_hemisphere_meshes

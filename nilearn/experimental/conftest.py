@@ -3,12 +3,8 @@ from typing import Callable
 import numpy as np
 import pytest
 
-from nilearn.experimental.surface import (
-    InMemoryMesh,
-    PolyMesh,
-    SurfaceImage,
-    load_fsaverage,
-)
+from nilearn.experimental.datasets import load_fsaverage
+from nilearn.experimental.surface import InMemoryMesh, PolyMesh, SurfaceImage
 
 
 @pytest.fixture
