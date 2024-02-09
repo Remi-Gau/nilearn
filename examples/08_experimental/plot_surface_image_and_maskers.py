@@ -24,13 +24,13 @@ except ImportError:
 
 import numpy as np
 
-from nilearn.experimental import datasets, plotting, surface
+from nilearn.experimental import datasets, maskers, plotting
 from nilearn.plotting import plot_matrix
 
 img = datasets.fetch_nki()[0]
 print(f"NKI image: {img}")
 
-masker = surface.SurfaceMasker()
+masker = maskers.SurfaceMasker()
 masked_data = masker.fit_transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -84,7 +84,7 @@ plotting.plot_surf(
     avg_method="median",
 )
 
-labels_masker = surface.SurfaceLabelsMasker(labels_img, label_names).fit()
+labels_masker = maskers.SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -126,7 +126,7 @@ img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
-    mask=surface.SurfaceMasker(),
+    mask=maskers.SurfaceMasker(),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
@@ -147,7 +147,7 @@ img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
-    surface.SurfaceMasker(),
+    maskers.SurfaceMasker(),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500

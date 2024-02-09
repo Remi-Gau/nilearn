@@ -3,7 +3,7 @@ from string import Template
 
 import numpy as np
 
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.maskers import SurfaceMasker
 from nilearn.maskers import MultiNiftiMasker, NiftiMasker
 
 from .cache_mixin import _check_memory

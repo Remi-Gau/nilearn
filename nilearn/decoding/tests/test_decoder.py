@@ -60,7 +60,7 @@ from nilearn.decoding.decoder import (
     _wrap_param_grid,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
-from nilearn.experimental.surface import SurfaceMasker
+from nilearn.experimental.maskers import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 
 N_SAMPLES = 100

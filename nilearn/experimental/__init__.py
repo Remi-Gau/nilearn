@@ -16,4 +16,4 @@ enable the use of experimental features.
     Use those features at your own risks!
 """
 
-__all__ = ["datasets", "plotting", "surface"]
+__all__ = ["datasets", "maskers", "plotting", "surface"]
