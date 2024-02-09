@@ -165,7 +165,7 @@ def view_surf(
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.view_surf(
             surf_mesh=surf_mesh,
-            roi_map=surf_map,
+            surf_map=surf_map,
             hemi=hemi,
             **kwargs,
         )
