@@ -1,5 +1,6 @@
 """Downloading NeuroImaging datasets: \
 functional datasets (task + resting-state)."""
+
 import fnmatch
 import glob
 import json
@@ -2179,8 +2180,8 @@ def fetch_language_localizer_demo_dataset(
     %(verbose)s
     legacy_output: bool, default=True
 
-        .. versionadded:: 0.11.0
-        .. deprecated:: 0.11.0
+        .. versionadded:: 0.10.3
+        .. deprecated::0.10.3
 
             Starting from version 0.13.0
             the ``legacy_ouput`` argument will be removed
@@ -2250,7 +2251,7 @@ def fetch_language_localizer_demo_dataset(
 def fetch_bids_langloc_dataset(data_dir=None, verbose=1):
     """Download language localizer example :term:`bids<BIDS>` dataset.
 
-    .. deprecated:: 0.11.0
+    .. deprecated:: 0.10.3
 
         This fetcher function will be removed as it returns the same data
         as :func:`nilearn.datasets.fetch_language_localizer_demo_dataset`.
