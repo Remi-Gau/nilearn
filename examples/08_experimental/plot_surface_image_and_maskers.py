@@ -24,10 +24,10 @@ except ImportError:
 
 import numpy as np
 
-from nilearn.experimental import plotting, surface
+from nilearn.experimental import datasets, plotting, surface
 from nilearn.plotting import plot_matrix
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 print(f"NKI image: {img}")
 
 masker = surface.SurfaceMasker()
@@ -69,10 +69,10 @@ plt.show()
 # -----------------------------------------------------------
 from nilearn import connectome
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = surface.fetch_destrieux()
+labels_img, label_names = datasets.fetch_destrieux()
 label_names = {
     i: label.decode("utf-8") for (i, label) in enumerate(label_names)
 }
@@ -122,7 +122,7 @@ monkeypatch_masker_checks()
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
@@ -143,7 +143,7 @@ plt.show()
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-img = surface.fetch_nki()[0]
+img = datasets.fetch_nki()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(

@@ -1,10 +1,5 @@
 """The :mod:`nilearn.experimental.surface` module."""
 
-from nilearn.experimental.surface._datasets import (
-    fetch_destrieux,
-    fetch_nki,
-    load_fsaverage,
-)
 from nilearn.experimental.surface._maskers import (
     SurfaceLabelsMasker,
     SurfaceMasker,
@@ -25,7 +20,4 @@ __all__ = [
     "SurfaceImage",
     "SurfaceLabelsMasker",
     "SurfaceMasker",
-    "fetch_destrieux",
-    "fetch_nki",
-    "load_fsaverage",
 ]

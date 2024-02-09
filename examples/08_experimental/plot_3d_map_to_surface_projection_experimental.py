@@ -31,10 +31,9 @@ stat_img = datasets.load_sample_motor_activation_image()
 # Get a cortical mesh
 # -------------------
 
-from nilearn.experimental.surface import load_fsaverage
+from nilearn.experimental.datasets import load_fsaverage
 
-fsaverage_meshes = load_fsaverage()
-fsaverage = datasets.fetch_surf_fsaverage()
+fsaverage_meshes, fsaverage_data = load_fsaverage()
 
 # %%
 # Use :term:`mesh` curvature to display useful anatomical information
@@ -49,7 +48,7 @@ import numpy as np
 
 from nilearn import surface
 
-curv_right = surface.load_surf_data(fsaverage.curv_right)
+curv_right = surface.load_surf_data(fsaverage_data["curvature"]["right"])
 curv_right_sign = np.sign(curv_right)
 
 # %%
@@ -162,7 +161,7 @@ plotting.plot_stat_map(
 # Use an atlas and choose regions to outline
 # ------------------------------------------
 
-from nilearn.experimental.surface import fetch_destrieux
+from nilearn.experimental.datasets import fetch_destrieux
 
 destrieux_atlas, label_names = fetch_destrieux()
 parcellation = destrieux_atlas.data["right"]
@@ -193,7 +192,7 @@ figure = plot_surf_stat_map(
     title="ROI outlines on surface",
     colorbar=True,
     threshold=1.0,
-    bg_map=fsaverage.sulc_right,
+    bg_map=fsaverage_data["sulcal"]["right"],
 )
 
 img_parcelation = SurfaceImage(
@@ -225,8 +224,7 @@ plotting.show()
 # Using ``mesh="fsaverage"`` will result
 # in more memory usage and computation time, but finer visualizations.
 
-big_fsaverage_meshes = load_fsaverage("fsaverage")
-big_fsaverage = datasets.fetch_surf_fsaverage("fsaverage")
+big_fsaverage_meshes, big_fsaverage_data = load_fsaverage("fsaverage")
 
 big_img = SurfaceImage(
     mesh=big_fsaverage_meshes["pial"],
@@ -246,7 +244,7 @@ plot_surf_stat_map(
     colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
-    bg_map=big_fsaverage.sulc_right,
+    bg_map=big_fsaverage_data["sulcal"]["right"],
 )
 
 
@@ -287,7 +285,7 @@ view = view_surf(
     img,
     surf_mesh=fsaverage_meshes["inflated"],
     threshold="90%",
-    bg_map=fsaverage.sulc_right,
+    bg_map=fsaverage_data["sulcal"]["right"],
     hemi="right",
     title="3D visualization in a web browser",
 )

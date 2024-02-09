@@ -23,8 +23,7 @@ See :ref:`plotting` for more details.
 # ------------
 
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
-from nilearn import datasets
-from nilearn.experimental.surface import fetch_destrieux, load_fsaverage
+from nilearn.experimental.datasets import fetch_destrieux, load_fsaverage
 
 destrieux_atlas, labels = fetch_destrieux()
 
@@ -34,8 +33,7 @@ parcellation = destrieux_atlas.data["left"]
 # Retrieve fsaverage5 surface dataset for the plotting background.
 # It contains the surface template as pial
 # and inflated version and a sulcal depth maps which is used for shading.
-fsaverage = datasets.fetch_surf_fsaverage()
-fsaverage_meshes = load_fsaverage()
+fsaverage_meshes, fsaverage_data = load_fsaverage()
 
 
 # %%
@@ -50,7 +48,7 @@ plotting.plot_surf_roi(
     roi_map=destrieux_atlas,
     hemi="left",
     view="lateral",
-    bg_map=fsaverage["sulc_left"],
+    bg_map=fsaverage_data["sulcal"]["left"],
     bg_on_data=True,
     darkness=0.5,
     title="Destrieux parcellation on pial surface",
@@ -63,7 +61,7 @@ plotting.plot_surf_roi(
     roi_map=parcellation,
     hemi="left",
     view="lateral",
-    bg_map=fsaverage["sulc_left"],
+    bg_map=fsaverage_data["sulcal"]["left"],
     bg_on_data=True,
     darkness=0.5,
     title="Destrieux parcellation on inflated surface",
@@ -76,7 +74,7 @@ plotting.plot_surf_roi(
     roi_map=parcellation,
     hemi="left",
     view="posterior",
-    bg_map=fsaverage["sulc_left"],
+    bg_map=fsaverage_data["sulcal"]["left"],
     bg_on_data=True,
     darkness=0.5,
     title="Posterior view of Destrieux parcellation",
@@ -89,7 +87,7 @@ plotting.plot_surf_roi(
     roi_map=parcellation,
     hemi="left",
     view="ventral",
-    bg_map=fsaverage["sulc_left"],
+    bg_map=fsaverage_data["sulcal"]["left"],
     bg_on_data=True,
     darkness=0.5,
     title="Ventral view of Destrieux parcellation",
@@ -104,7 +102,7 @@ plotting.plot_surf_roi(
     roi_map=parcellation,
     hemi="left",
     view=(elev, azim),
-    bg_map=fsaverage["sulc_left"],
+    bg_map=fsaverage_data["sulcal"]["left"],
     bg_on_data=True,
     darkness=0.5,
     title="Arbitrary view of Destrieux parcellation",
@@ -157,7 +155,7 @@ show()
 # See :ref:`interactive-surface-plotting` for more details.
 
 view = plotting.view_surf(
-    surf_mesh=fsaverage.infl_left,
+    surf_mesh=fsaverage_meshes["inflated"]["left"],
     surf_map=parcellation,
     cmap="gist_ncar",
     symmetric_cmap=False,
