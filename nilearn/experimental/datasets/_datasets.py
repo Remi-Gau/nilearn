@@ -3,7 +3,9 @@
 eventually nilearn.datasets would be updated
 """
 
-from typing import Dict, Sequence, Tuple
+from __future__ import annotations
+
+from typing import Sequence
 
 from nilearn import datasets
 from nilearn.experimental.surface import _io
@@ -15,10 +17,12 @@ from nilearn.experimental.surface._surface_image import (
 )
 
 
-def load_fsaverage(mesh_name: str = "fsaverage5") -> Dict[str, PolyMesh]:
+def load_fsaverage(
+    mesh_name: str = "fsaverage5",
+) -> tuple[dict[str, PolyMesh], dict[str, str]]:
     """Load fsaverage for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-    meshes: Dict[str, Dict[str, Mesh]] = {}
+    meshes: dict[str, dict[str, Mesh]] = {}
     renaming = {
         "pial": "pial",
         "white": "white_matter",
@@ -65,7 +69,7 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
     return images
 
 
-def fetch_destrieux() -> Tuple[SurfaceImage, Dict[int, str]]:
+def fetch_destrieux() -> tuple[SurfaceImage, dict[int, str]]:
     """Load Destrieux surface atlas into a surface object."""
     fsaverage, _ = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux()
