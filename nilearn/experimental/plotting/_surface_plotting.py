@@ -13,11 +13,9 @@ from nilearn.experimental.surface import Mesh, PolyMesh, SurfaceImage
 def plot_surf(
     surf_map: SurfaceImage | str | numpy.array | None = None,
     hemi: str = "left",
-    surf_mesh: str
-    | list[numpy.array, numpy.array]
-    | Mesh
-    | PolyMesh
-    | None = None,
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
     **kwargs,
 ):
     """Plot a SurfaceImage.
@@ -56,11 +54,9 @@ def plot_surf(
 def plot_surf_stat_map(
     stat_map: SurfaceImage | str | numpy.array | None = None,
     hemi: str = "left",
-    surf_mesh: str
-    | list[numpy.array, numpy.array]
-    | Mesh
-    | PolyMesh
-    | None = None,
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
     **kwargs,
 ):
     """Plot a stats map on a SurfaceImage.
@@ -100,18 +96,17 @@ def plot_surf_stat_map(
 def plot_surf_contours(
     roi_map: SurfaceImage | str | numpy.array | list[numpy.ndarray],
     hemi: str = "left",
-    surf_mesh: str
-    | list[numpy.array, numpy.array]
-    | Mesh
-    | PolyMesh
-    | None = None,
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
     **kwargs,
 ):
     """Plot a contours on a SurfaceImage.
 
     Parameters
     ----------
-    roi_map : SurfaceImage or str or numpy.ndarray or list of numpy.ndarray
+    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
+              or :obj:`list` of numpy.ndarray
 
     surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
                 or Mesh or PolyMesh, optional
@@ -141,21 +136,62 @@ def plot_surf_contours(
 
 
 @fill_doc
+def plot_surf_roi(
+    roi_map: SurfaceImage | str | numpy.array | list[numpy.ndarray],
+    hemi: str = "left",
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
+    **kwargs,
+):
+    """Plot a contours on a SurfaceImage.
+
+    Parameters
+    ----------
+    roi_map : SurfaceImage or :obj:`str` or numpy.ndarray \
+              or :obj:`list` of numpy.ndarray
+
+    surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
+                or Mesh or PolyMesh, optional
+
+    %(hemi)s
+    """
+    if not isinstance(roi_map, SurfaceImage):
+        return old_plotting.plot_surf_roi(
+            surf_mesh=surf_mesh,
+            roi_map=roi_map,
+            hemi=hemi,
+            **kwargs,
+        )
+
+    if surf_mesh is None:
+        surf_mesh = roi_map.mesh
+
+    _check_hemi_present(surf_mesh, roi_map, hemi)
+
+    fig = old_plotting.plot_surf_roi(
+        surf_mesh=surf_mesh[hemi],
+        roi_map=roi_map.data[hemi],
+        hemi=hemi,
+        **kwargs,
+    )
+    return fig
+
+
+@fill_doc
 def view_surf(
     surf_map: SurfaceImage | str | numpy.array | None = None,
     hemi: str = "left",
-    surf_mesh: str
-    | list[numpy.array, numpy.array]
-    | Mesh
-    | PolyMesh
-    | None = None,
+    surf_mesh: (
+        str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
+    ) = None,
     **kwargs,
 ):
     """View SurfaceImage in browser.
 
     Parameters
     ----------
-    surf_map : SurfaceImage or str or numpy.ndarray, optional
+    surf_map : SurfaceImage or :obj:`str` or numpy.ndarray, optional
 
     surf_mesh : :obj:`str` or :obj:`list` of two numpy.ndarray \
                 or Mesh or PolyMesh, optional
