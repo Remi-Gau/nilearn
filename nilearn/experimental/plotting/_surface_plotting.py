@@ -166,7 +166,6 @@ def view_surf(
         return old_plotting.view_surf(
             surf_mesh=surf_mesh,
             surf_map=surf_map,
-            hemi=hemi,
             **kwargs,
         )
 

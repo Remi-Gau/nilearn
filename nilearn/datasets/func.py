@@ -2199,7 +2199,7 @@ def fetch_language_localizer_demo_dataset(
         - 'description' : :obj:`str`, dataset description
 
     Legacy output
-    ^^^^^^^^^^^^^
+
     data_dir : :obj:`str`
         Path to downloaded dataset.
 
