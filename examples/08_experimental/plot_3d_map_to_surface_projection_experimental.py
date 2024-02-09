@@ -284,7 +284,7 @@ plotting.show()
 from nilearn.experimental.plotting import view_surf
 
 view = view_surf(
-    img=img,
+    img,
     surf_mesh=fsaverage_meshes["inflated"],
     threshold="90%",
     bg_map=fsaverage.sulc_right,
