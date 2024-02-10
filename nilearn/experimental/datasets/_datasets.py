@@ -47,10 +47,27 @@ def load_fsaverage(
     return meshes, data
 
 
-def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
+ALLOWED_MESH_TYPES = (
+    "pial",
+    "white_matter",
+    "inflated",
+    "sphere",
+    "flat",
+)
+
+
+def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
     """Load NKI enhanced surface data into a surface object."""
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type}."
+        )
+
     fsaverage, _ = load_fsaverage("fsaverage5")
-    nki_dataset = datasets.fetch_surf_nki_enhanced(n_subjects=n_subjects)
+
+    nki_dataset = datasets.fetch_surf_nki_enhanced(**kwargs)
+
     images = []
     for left, right in zip(
         nki_dataset["func_left"], nki_dataset["func_right"]
@@ -58,24 +75,33 @@ def fetch_nki(n_subjects=1) -> Sequence[SurfaceImage]:
         left_data = _io.read_array(left).T
         right_data = _io.read_array(right).T
         img = SurfaceImage(
-            mesh=fsaverage["pial"],
+            mesh=fsaverage[mesh_type],
             data={
                 "left": left_data,
                 "right": right_data,
             },
         )
         images.append(img)
+
     return images
 
 
-def fetch_destrieux() -> tuple[SurfaceImage, dict[int, str]]:
+def fetch_destrieux(
+    mesh_type: str = "pial",
+) -> tuple[SurfaceImage, dict[int, str]]:
     """Load Destrieux surface atlas into a surface object."""
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type}."
+        )
+
     fsaverage, _ = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux()
     # TODO fetchers usually return Bunch
     return (
         SurfaceImage(
-            mesh=fsaverage["pial"],
+            mesh=fsaverage[mesh_type],
             data={
                 "left": destrieux["map_left"],
                 "right": destrieux["map_right"],

@@ -25,7 +25,7 @@ See :ref:`plotting` for more details.
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
 from nilearn.experimental.datasets import fetch_destrieux, load_fsaverage
 
-destrieux_atlas, labels = fetch_destrieux()
+destrieux_atlas, labels = fetch_destrieux(mesh_type="pial")
 
 # The parcellation is already loaded into memory.
 parcellation = destrieux_atlas.data["left"]

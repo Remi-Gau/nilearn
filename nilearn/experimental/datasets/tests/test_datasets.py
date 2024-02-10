@@ -1,6 +1,10 @@
 import pytest
 
-from nilearn.experimental.datasets import load_fsaverage
+from nilearn.experimental.datasets import (
+    fetch_destrieux,
+    fetch_nki,
+    load_fsaverage,
+)
 
 
 def test_load_fsaverage():
@@ -27,3 +31,11 @@ def test_load_fsaverage_hemispheres_have_file():
         mesh for mesh in meshes.values() if "right" in mesh
     ]
     assert right_hemisphere_meshes
+
+
+def test_destrieux_nki_wrong_mesh_type():
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        fetch_nki(mesh_type="foo")
+
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        fetch_destrieux(mesh_type="foo")

@@ -78,7 +78,7 @@ img = SurfaceImage(
 from nilearn.experimental.plotting import plot_surf_stat_map
 
 fig = plot_surf_stat_map(
-    img,
+    stat_map=img,
     hemi="right",
     title="Surface with matplotlib",
     colorbar=True,
@@ -107,7 +107,7 @@ except ImportError:
 print(f"Using plotting engine {engine}.")
 
 fig = plot_surf_stat_map(
-    img,
+    stat_map=img,
     hemi="right",
     title="Surface with plotly",
     colorbar=True,
@@ -141,7 +141,7 @@ fig.show()
 from nilearn import plotting
 
 plotting.plot_glass_brain(
-    stat_img,
+    stat_map_img=stat_img,
     display_mode="r",
     plot_abs=False,
     title="Glass brain",
@@ -149,7 +149,7 @@ plotting.plot_glass_brain(
 )
 
 plotting.plot_stat_map(
-    stat_img,
+    stat_map_img=stat_img,
     display_mode="x",
     threshold=1.0,
     cut_coords=range(0, 51, 10),
@@ -162,8 +162,7 @@ plotting.plot_stat_map(
 
 from nilearn.experimental.datasets import fetch_destrieux
 
-destrieux_atlas, label_names = fetch_destrieux()
-parcellation = destrieux_atlas.data["right"]
+destrieux_atlas, label_names = fetch_destrieux(mesh_type="inflated")
 
 # these are the regions we want to outline
 regions_dict = {
@@ -185,7 +184,7 @@ labels = list(regions_dict.values())
 from nilearn.experimental.plotting import plot_surf_contours
 
 figure = plot_surf_stat_map(
-    img,
+    stat_map=img,
     surf_mesh=fsaverage_meshes["inflated"],
     hemi="right",
     title="ROI outlines on surface",
@@ -194,17 +193,8 @@ figure = plot_surf_stat_map(
     bg_map=fsaverage_data["sulcal"]["right"],
 )
 
-img_parcelation = SurfaceImage(
-    mesh=fsaverage_meshes["inflated"],
-    data={
-        "left": destrieux_atlas.data["left"],
-        "right": destrieux_atlas.data["right"],
-    },
-)
-
-# TODO deal with passing figure
 plot_surf_contours(
-    img_parcelation,
+    destrieux_atlas,
     labels=labels,
     levels=regions_indices,
     figure=figure,
@@ -264,7 +254,9 @@ plotting.plot_img_on_surf(
     views=["lateral", "medial"],
     hemispheres=["left", "right"],
     colorbar=True,
+    cmap="seismic",
     title="multiple views of the 3D volume",
+    bg_on_data=True,
 )
 plotting.show()
 
