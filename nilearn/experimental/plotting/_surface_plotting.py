@@ -16,6 +16,7 @@ def plot_surf(
     surf_mesh: (
         str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
     ) = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
     """Plot a SurfaceImage.
@@ -29,12 +30,16 @@ def plot_surf(
 
     %(hemi)s
     """
+    if isinstance(bg_map, SurfaceImage):
+        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map = bg_map.data[hemi]
+
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.plot_surf(
             surf_mesh=surf_mesh,
             surf_map=surf_map,
             hemi=hemi,
-            **kwargs,
+            bg_map=bg_map**kwargs,
         )
 
     if surf_mesh is None:
@@ -46,6 +51,7 @@ def plot_surf(
         surf_mesh=surf_mesh[hemi],
         surf_map=surf_map.data[hemi],
         hemi=hemi,
+        bg_map=bg_map,
         **kwargs,
     )
 
@@ -57,6 +63,7 @@ def plot_surf_stat_map(
     surf_mesh: (
         str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
     ) = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
     """Plot a stats map on a SurfaceImage.
@@ -70,11 +77,16 @@ def plot_surf_stat_map(
 
     %(hemi)s
     """
+    if isinstance(bg_map, SurfaceImage):
+        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map = bg_map.data[hemi]
+
     if not isinstance(stat_map, SurfaceImage):
         return old_plotting.plot_surf_stat_map(
             surf_mesh=surf_mesh,
             stat_map=stat_map,
             hemi=hemi,
+            bg_map=bg_map,
             **kwargs,
         )
 
@@ -87,6 +99,7 @@ def plot_surf_stat_map(
         surf_mesh=surf_mesh[hemi],
         stat_map=stat_map.data[hemi],
         hemi=hemi,
+        bg_map=bg_map,
         **kwargs,
     )
     return fig
@@ -142,6 +155,7 @@ def plot_surf_roi(
     surf_mesh: (
         str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
     ) = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
     """Plot a contours on a SurfaceImage.
@@ -156,11 +170,16 @@ def plot_surf_roi(
 
     %(hemi)s
     """
+    if isinstance(bg_map, SurfaceImage):
+        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map = bg_map.data[hemi]
+
     if not isinstance(roi_map, SurfaceImage):
         return old_plotting.plot_surf_roi(
             surf_mesh=surf_mesh,
             roi_map=roi_map,
             hemi=hemi,
+            bg_map=bg_map,
             **kwargs,
         )
 
@@ -173,6 +192,7 @@ def plot_surf_roi(
         surf_mesh=surf_mesh[hemi],
         roi_map=roi_map.data[hemi],
         hemi=hemi,
+        bg_map=bg_map,
         **kwargs,
     )
     return fig
@@ -185,6 +205,7 @@ def view_surf(
     surf_mesh: (
         str | list[numpy.array, numpy.array] | Mesh | PolyMesh | None
     ) = None,
+    bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
     """View SurfaceImage in browser.
@@ -198,10 +219,15 @@ def view_surf(
 
     %(hemi)s
     """
+    if isinstance(bg_map, SurfaceImage):
+        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map = bg_map.data[hemi]
+
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.view_surf(
             surf_mesh=surf_mesh,
             surf_map=surf_map,
+            bg_map=bg_map,
             **kwargs,
         )
 
@@ -211,7 +237,10 @@ def view_surf(
     _check_hemi_present(surf_mesh, surf_map, hemi)
 
     fig = old_plotting.view_surf(
-        surf_mesh=surf_mesh[hemi], surf_map=surf_map.data[hemi], **kwargs
+        surf_mesh=surf_mesh[hemi],
+        surf_map=surf_map.data[hemi],
+        bg_map=bg_map,
+        **kwargs,
     )
     return fig
 
@@ -222,3 +251,9 @@ def _check_hemi_present(mesh: PolyMesh, img: SurfaceImage, hemi: str):
         raise ValueError(
             f"{hemi} must be present in mesh and SurfaceImage data"
         )
+
+
+def _check_hemi_in_surface_image_data(img: SurfaceImage, hemi: str):
+    """Check that a given hemisphere exists both in data and mesh."""
+    if hemi not in img.data:
+        raise ValueError(f"{hemi} must be present in SurfaceImage data")

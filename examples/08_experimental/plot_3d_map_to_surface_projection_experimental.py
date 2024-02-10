@@ -192,7 +192,7 @@ figure = plot_surf_stat_map(
     title="ROI outlines on surface",
     colorbar=True,
     threshold=1.0,
-    bg_map=fsaverage_sulcal.data["right"],
+    bg_map=fsaverage_sulcal,
 )
 
 plot_surf_contours(
@@ -239,7 +239,7 @@ plot_surf_stat_map(
     colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
-    bg_map=big_fsaverage_sulcal.data["right"],
+    bg_map=big_fsaverage_sulcal,
 )
 
 
@@ -282,7 +282,7 @@ view = view_surf(
     img,
     surf_mesh=fsaverage_meshes["inflated"],
     threshold="90%",
-    bg_map=fsaverage_sulcal.data["right"],
+    bg_map=fsaverage_sulcal,
     hemi="right",
     title="3D visualization in a web browser",
 )
