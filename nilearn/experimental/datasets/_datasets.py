@@ -22,7 +22,6 @@ def load_fsaverage(
 ) -> tuple[dict[str, PolyMesh], dict[str, str]]:
     """Load fsaverage for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
-    meshes: dict[str, dict[str, Mesh]] = {}
     renaming = {
         "pial": "pial",
         "white": "white_matter",
@@ -30,21 +29,21 @@ def load_fsaverage(
         "sphere": "sphere",
         "flat": "flat",
     }
-    for mesh_type, mesh_name in renaming.items():
-        meshes[mesh_name] = {}
-        for hemisphere in "left", "right":
-            meshes[mesh_name][f"{hemisphere}"] = FileMesh(
-                fsaverage[f"{mesh_type}_{hemisphere}"]
-            )
-    data = {}
+    meshes: dict[str, dict[str, Mesh]] = {
+        mesh_name: {
+            f"{hemisphere}": FileMesh(fsaverage[f"{mesh_type}_{hemisphere}"])
+            for hemisphere in ("left", "right")
+        }
+        for mesh_type, mesh_name in renaming.items()
+    }
     renaming = {"curv": "curvature", "sulc": "sulcal", "thick": "thickness"}
-    for data_type, data_name in renaming.items():
-        data[data_name] = {}
-        for hemisphere in "left", "right":
-            data[data_name][f"{hemisphere}"] = fsaverage[
-                f"{data_type}_{hemisphere}"
-            ]
-
+    data = {
+        data_name: {
+            f"{hemisphere}": fsaverage[f"{data_type}_{hemisphere}"]
+            for hemisphere in ("left", "right")
+        }
+        for data_type, data_name in renaming.items()
+    }
     return meshes, data
 
 

@@ -73,7 +73,7 @@ def plot_surf_stat_map(
     if not isinstance(stat_map, SurfaceImage):
         return old_plotting.plot_surf_stat_map(
             surf_mesh=surf_mesh,
-            surf_map=stat_map,
+            stat_map=stat_map,
             hemi=hemi,
             **kwargs,
         )

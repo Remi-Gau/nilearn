@@ -35,6 +35,22 @@ parcellation = destrieux_atlas.data["left"]
 # and inflated version and a sulcal depth maps which is used for shading.
 fsaverage_meshes, fsaverage_data = load_fsaverage()
 
+# The fsaverage meshes contains the FileMesh objects:
+print(
+    "Fsaverage5 pial surface of left hemisphere is: "
+    f"{fsaverage_meshes['pial']['left']}"
+)
+print(
+    "Fsaverage5 inflated surface of left hemisphere is: "
+    f"{fsaverage_meshes['inflated']['left']}"
+)
+
+# The fsaverage data contains file names pointing to the file locations
+print(
+    "Fsaverage5 sulcal depth map of left hemisphere is at: "
+    f"{fsaverage_data['sulcal']['left']}"
+)
+
 
 # %%
 # Visualization
