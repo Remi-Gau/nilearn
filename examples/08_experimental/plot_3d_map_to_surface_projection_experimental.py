@@ -15,7 +15,6 @@ using :func:`~nilearn.plotting.plot_surf_stat_map`
 with different plotting engines,
 and add contours of regions of interest using
 :func:`~nilearn.plotting.plot_surf_contours`.
-
 """
 
 # %%
