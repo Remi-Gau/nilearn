@@ -30,9 +30,9 @@ stat_img = datasets.load_sample_motor_activation_image()
 # Get a cortical mesh
 # -------------------
 
-from nilearn.experimental.datasets import load_fsaverage
+from nilearn.experimental.datasets import load_fsaverage, load_fsaverage_data
 
-fsaverage_meshes, fsaverage_data = load_fsaverage()
+fsaverage_meshes = load_fsaverage()
 
 # %%
 # Use :term:`mesh` curvature to display useful anatomical information
@@ -47,8 +47,8 @@ import numpy as np
 
 from nilearn import surface
 
-curv_right = surface.load_surf_data(fsaverage_data["curvature"]["right"])
-curv_right_sign = np.sign(curv_right)
+fsaverage_curvature = load_fsaverage_data(data_type="curvature")
+curv_right_sign = np.sign(fsaverage_curvature.data["right"])
 
 # %%
 # Sample the 3D data around each node of the mesh
@@ -183,6 +183,8 @@ labels = list(regions_dict.values())
 
 from nilearn.experimental.plotting import plot_surf_contours
 
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+
 figure = plot_surf_stat_map(
     stat_map=img,
     surf_mesh=fsaverage_meshes["inflated"],
@@ -190,7 +192,7 @@ figure = plot_surf_stat_map(
     title="ROI outlines on surface",
     colorbar=True,
     threshold=1.0,
-    bg_map=fsaverage_data["sulcal"]["right"],
+    bg_map=fsaverage_sulcal.data["right"],
 )
 
 plot_surf_contours(
@@ -213,7 +215,11 @@ plotting.show()
 # Using ``mesh="fsaverage"`` will result
 # in more memory usage and computation time, but finer visualizations.
 
-big_fsaverage_meshes, big_fsaverage_data = load_fsaverage("fsaverage")
+big_fsaverage_meshes = load_fsaverage("fsaverage")
+
+big_fsaverage_sulcal = load_fsaverage_data(
+    mesh_name="fsaverage", data_type="sulcal"
+)
 
 big_img = SurfaceImage(
     mesh=big_fsaverage_meshes["pial"],
@@ -233,7 +239,7 @@ plot_surf_stat_map(
     colorbar=True,
     title="Surface fine mesh",
     threshold=1.0,
-    bg_map=big_fsaverage_data["sulcal"]["right"],
+    bg_map=big_fsaverage_sulcal.data["right"],
 )
 
 
@@ -276,7 +282,7 @@ view = view_surf(
     img,
     surf_mesh=fsaverage_meshes["inflated"],
     threshold="90%",
-    bg_map=fsaverage_data["sulcal"]["right"],
+    bg_map=fsaverage_sulcal.data["right"],
     hemi="right",
     title="3D visualization in a web browser",
 )

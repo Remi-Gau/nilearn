@@ -19,7 +19,7 @@ from nilearn.experimental.surface._surface_image import (
 
 def load_fsaverage(
     mesh_name: str = "fsaverage5",
-) -> tuple[dict[str, PolyMesh], dict[str, str]]:
+) -> dict[str, PolyMesh]:
     """Load fsaverage for both hemispheres."""
     fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
     renaming = {
@@ -37,14 +37,50 @@ def load_fsaverage(
         for mesh_type, mesh_name in renaming.items()
     }
     renaming = {"curv": "curvature", "sulc": "sulcal", "thick": "thickness"}
-    data = {
-        data_name: {
-            f"{hemisphere}": fsaverage[f"{data_type}_{hemisphere}"]
-            for hemisphere in ("left", "right")
-        }
-        for data_type, data_name in renaming.items()
-    }
-    return meshes, data
+    return meshes
+
+
+ALLOWED_DATA_TYPES = (
+    "curvature",
+    "sulcal",
+    "thickness",
+)
+
+
+def load_fsaverage_data(
+    mesh_name: str = "fsaverage5",
+    mesh_type: str = "pial",
+    data_type: str = "sulcal",
+) -> SurfaceImage:
+    """Return freesurfer data on an fsaverage mesh."""
+    if mesh_type not in ALLOWED_MESH_TYPES:
+        raise ValueError(
+            f"'mesh_type' must be one of {ALLOWED_MESH_TYPES}.\n"
+            f"Got: {mesh_type}."
+        )
+    if data_type not in ALLOWED_DATA_TYPES:
+        raise ValueError(
+            f"'data_type' must be one of {ALLOWED_DATA_TYPES}.\n"
+            f"Got: {data_type}."
+        )
+
+    fsaverage = load_fsaverage(mesh_name)
+    old_fsaverage = datasets.fetch_surf_fsaverage(mesh_name)
+
+    renaming = {"curvature": "curv", "sulcal": "sulc", "thickness": "thick"}
+    img = SurfaceImage(
+        mesh=fsaverage[mesh_type],
+        data={
+            "left": _io.read_array(
+                old_fsaverage[f"{renaming[data_type]}_left"]
+            ),
+            "right": _io.read_array(
+                old_fsaverage[f"{renaming[data_type]}_right"]
+            ),
+        },
+    )
+
+    return img
 
 
 ALLOWED_MESH_TYPES = (
@@ -64,7 +100,7 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
             f"Got: {mesh_type}."
         )
 
-    fsaverage, _ = load_fsaverage("fsaverage5")
+    fsaverage = load_fsaverage("fsaverage5")
 
     nki_dataset = datasets.fetch_surf_nki_enhanced(**kwargs)
 
@@ -96,7 +132,7 @@ def fetch_destrieux(
             f"Got: {mesh_type}."
         )
 
-    fsaverage, _ = load_fsaverage("fsaverage5")
+    fsaverage = load_fsaverage("fsaverage5")
     destrieux = datasets.fetch_atlas_surf_destrieux()
     # TODO fetchers usually return Bunch
     return (

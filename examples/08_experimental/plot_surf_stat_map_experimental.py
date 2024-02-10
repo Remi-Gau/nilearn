@@ -44,6 +44,7 @@ from nilearn.experimental.datasets import (
     fetch_destrieux,
     fetch_nki,
     load_fsaverage,
+    load_fsaverage_data,
 )
 
 nki_dataset = fetch_nki(n_subjects=1)
@@ -56,7 +57,7 @@ destrieux_atlas, labels = fetch_destrieux()
 parcellation = destrieux_atlas.data["left"]
 
 # Fsaverage5 surface template
-fsaverage_meshes, fsaverage_data = load_fsaverage()
+fsaverage_meshes = load_fsaverage()
 
 # The fsaverage meshes contains the FileMesh objects:
 print(
@@ -72,15 +73,12 @@ print(
     f"{fsaverage_meshes['inflated']['left']}"
 )
 
-# The fsaverage data contains file names pointing to the file locations
-print(
-    "Fsaverage5 sulcal depth map of left hemisphere is at: "
-    f"{fsaverage_data['sulcal']['left']}"
-)
-print(
-    "Fsaverage5 sulcal depth map of left hemisphere is at: "
-    f"{fsaverage_data['curvature']['left']}"
-)
+# The fsaverage data contains SurfaceImage instances with meshes and data
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
+print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
+
+fsaverage_curvature = load_fsaverage_data(data_type="curvature")
+print(f"Fsaverage5 sulcal curvature map: {fsaverage_curvature}")
 
 # %%
 # Extracting the seed time series
@@ -129,7 +127,7 @@ plotting.plot_surf_roi(
     roi_map=pcc_map,
     hemi="left",
     view="medial",
-    bg_map=fsaverage_data["sulcal"]["left"],
+    bg_map=fsaverage_sulcal.data["left"],
     bg_on_data=True,
     title="PCC Seed",
 )
@@ -138,12 +136,11 @@ show()
 
 # %%
 # Using a flat :term:`mesh` can be useful in order to easily locate the area
-# of interest on the cortex. To make this plot easier to read,
+# of interest on the cortex.
+# To make this plot easier to read,
 # we use the :term:`mesh` curvature as a background map.
 
-from nilearn import surface
-
-bg_map = np.sign(surface.load_surf_data(fsaverage_data["curvature"]["left"]))
+bg_map = np.sign(fsaverage_curvature.data["left"])
 # np.sign yields values in [-1, 1]. We rescale the background map
 # such that values are in [0.25, 0.75], resulting in a nicer looking plot.
 bg_map_rescaled = (bg_map + 1) / 4 + 0.25
@@ -153,7 +150,7 @@ plotting.plot_surf_roi(
     roi_map=pcc_map,
     hemi="left",
     view="dorsal",
-    bg_map=fsaverage_data["sulcal"]["left"],
+    bg_map=fsaverage_sulcal.data["left"],
     bg_on_data=True,
     title="PCC Seed",
 )
@@ -166,7 +163,7 @@ plotting.plot_surf_stat_map(
     hemi="left",
     view="medial",
     colorbar=True,
-    bg_map=fsaverage_data["sulcal"]["left"],
+    bg_map=fsaverage_sulcal.data["left"],
     bg_on_data=True,
     darkness=0.3,
     title="Correlation map",
@@ -183,7 +180,7 @@ plotting.plot_surf_stat_map(
     hemi="left",
     view="medial",
     colorbar=True,
-    bg_map=fsaverage_data["sulcal"]["left"],
+    bg_map=fsaverage_sulcal.data["left"],
     bg_on_data=True,
     cmap="Spectral",
     threshold=0.5,
@@ -224,7 +221,7 @@ plotting.plot_surf_stat_map(
     surf_mesh=fsaverage_meshes["inflated"]["left"],
     stat_map=stat_map,
     hemi="left",
-    bg_map=fsaverage_data["sulcal"]["left"],
+    bg_map=fsaverage_sulcal.data["left"],
     bg_on_data=True,
     threshold=0.5,
     colorbar=True,

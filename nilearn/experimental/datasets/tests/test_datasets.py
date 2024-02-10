@@ -9,7 +9,7 @@ from nilearn.experimental.datasets import (
 
 def test_load_fsaverage():
     """Call default function smoke test and assert return."""
-    meshes, _ = load_fsaverage()
+    meshes = load_fsaverage()
     assert isinstance(meshes, dict)
     assert meshes["pial"]["left"].n_vertices == 10242  # fsaverage5
 
@@ -22,7 +22,7 @@ def test_load_fsaverage_wrong_mesh_name():
 
 def test_load_fsaverage_hemispheres_have_file():
     """Make sure file paths are present."""
-    meshes, _ = load_fsaverage()
+    meshes = load_fsaverage()
     left_hemisphere_meshes = [
         mesh for mesh in meshes.values() if "left" in mesh
     ]
