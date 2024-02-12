@@ -19,7 +19,7 @@ def plot_surf(
     bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
-    """Plot a SurfaceImage.
+    """Plot surfaces with optional background and data.
 
     Parameters
     ----------
@@ -29,10 +29,10 @@ def plot_surf(
                 or Mesh or PolyMesh, optional
 
     %(hemi)s
+
+    bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    if isinstance(bg_map, SurfaceImage):
-        bg_map._check_hemi(hemi)
-        bg_map = bg_map.data[hemi]
+    bg_map = _check_bg_map(bg_map, hemi)
 
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.plot_surf(
@@ -67,7 +67,7 @@ def plot_surf_stat_map(
     bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
-    """Plot a stats map on a SurfaceImage.
+    """Plot a stats map on a surface :term:`mesh` with optional background.
 
     Parameters
     ----------
@@ -77,10 +77,10 @@ def plot_surf_stat_map(
                 or Mesh or PolyMesh, optional
 
     %(hemi)s
+
+    bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    if isinstance(bg_map, SurfaceImage):
-        bg_map._check_hemi(hemi)
-        bg_map = bg_map.data[hemi]
+    bg_map = _check_bg_map(bg_map, hemi)
 
     if not isinstance(stat_map, SurfaceImage):
         return old_plotting.plot_surf_stat_map(
@@ -116,7 +116,8 @@ def plot_surf_contours(
     ) = None,
     **kwargs,
 ):
-    """Plot a contours on a SurfaceImage.
+    """Plot contours of ROIs on a surface, \
+    optionally over a statistical map.
 
     Parameters
     ----------
@@ -161,7 +162,7 @@ def plot_surf_roi(
     bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
-    """Plot a contours on a SurfaceImage.
+    """Plot ROI on a surface :term:`mesh` with optional background.
 
     Parameters
     ----------
@@ -172,10 +173,10 @@ def plot_surf_roi(
                 or Mesh or PolyMesh, optional
 
     %(hemi)s
+
+    bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    if isinstance(bg_map, SurfaceImage):
-        bg_map._check_hemi(hemi)
-        bg_map = bg_map.data[hemi]
+    bg_map = _check_bg_map(bg_map, hemi)
 
     if not isinstance(roi_map, SurfaceImage):
         return old_plotting.plot_surf_roi(
@@ -212,7 +213,7 @@ def view_surf(
     bg_map: str | numpy.array | SurfaceImage | None = None,
     **kwargs,
 ):
-    """View SurfaceImage in browser.
+    """Insert a surface plot of a surface map into an HTML page.
 
     Parameters
     ----------
@@ -222,10 +223,10 @@ def view_surf(
                 or Mesh or PolyMesh, optional
 
     %(hemi)s
+
+    bg_map : str or numpy.ndarray or SurfaceImage, optional
     """
-    if isinstance(bg_map, SurfaceImage):
-        bg_map._check_hemi(hemi)
-        bg_map = bg_map.data[hemi]
+    bg_map = _check_bg_map(bg_map, hemi)
 
     if not isinstance(surf_map, SurfaceImage):
         return old_plotting.view_surf(
@@ -248,6 +249,17 @@ def view_surf(
         **kwargs,
     )
     return fig
+
+
+def _check_bg_map(bg_map, hemi):
+    """Return proper format of background map to be used.
+
+    TODO refactor when experimental gets integrated as part of stable code.
+    """
+    if isinstance(bg_map, SurfaceImage):
+        bg_map._check_hemi(hemi)
+        bg_map = bg_map.data[hemi]
+    return bg_map
 
 
 def _check_hemi_present(mesh: PolyMesh, hemi: str):
