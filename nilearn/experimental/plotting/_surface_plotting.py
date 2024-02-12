@@ -31,7 +31,7 @@ def plot_surf(
     %(hemi)s
     """
     if isinstance(bg_map, SurfaceImage):
-        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map._check_hemi(hemi)
         bg_map = bg_map.data[hemi]
 
     if not isinstance(surf_map, SurfaceImage):
@@ -45,7 +45,8 @@ def plot_surf(
     if surf_mesh is None:
         surf_mesh = surf_map.mesh
 
-    _check_hemi_present(surf_mesh, surf_map, hemi)
+    surf_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     return old_plotting.plot_surf(
         surf_mesh=surf_mesh[hemi],
@@ -78,7 +79,7 @@ def plot_surf_stat_map(
     %(hemi)s
     """
     if isinstance(bg_map, SurfaceImage):
-        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map._check_hemi(hemi)
         bg_map = bg_map.data[hemi]
 
     if not isinstance(stat_map, SurfaceImage):
@@ -93,7 +94,8 @@ def plot_surf_stat_map(
     if surf_mesh is None:
         surf_mesh = stat_map.mesh
 
-    _check_hemi_present(surf_mesh, stat_map, hemi)
+    stat_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.plot_surf_stat_map(
         surf_mesh=surf_mesh[hemi],
@@ -137,7 +139,8 @@ def plot_surf_contours(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
-    _check_hemi_present(surf_mesh, roi_map, hemi)
+    roi_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.plot_surf_contours(
         surf_mesh=surf_mesh[hemi],
@@ -171,7 +174,7 @@ def plot_surf_roi(
     %(hemi)s
     """
     if isinstance(bg_map, SurfaceImage):
-        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map._check_hemi(hemi)
         bg_map = bg_map.data[hemi]
 
     if not isinstance(roi_map, SurfaceImage):
@@ -186,7 +189,8 @@ def plot_surf_roi(
     if surf_mesh is None:
         surf_mesh = roi_map.mesh
 
-    _check_hemi_present(surf_mesh, roi_map, hemi)
+    roi_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.plot_surf_roi(
         surf_mesh=surf_mesh[hemi],
@@ -220,7 +224,7 @@ def view_surf(
     %(hemi)s
     """
     if isinstance(bg_map, SurfaceImage):
-        _check_hemi_in_surface_image_data(bg_map, hemi)
+        bg_map._check_hemi(hemi)
         bg_map = bg_map.data[hemi]
 
     if not isinstance(surf_map, SurfaceImage):
@@ -234,7 +238,8 @@ def view_surf(
     if surf_mesh is None:
         surf_mesh = surf_map.mesh
 
-    _check_hemi_present(surf_mesh, surf_map, hemi)
+    surf_map._check_hemi(hemi)
+    _check_hemi_present(surf_mesh, hemi)
 
     fig = old_plotting.view_surf(
         surf_mesh=surf_mesh[hemi],
@@ -245,15 +250,7 @@ def view_surf(
     return fig
 
 
-def _check_hemi_present(mesh: PolyMesh, img: SurfaceImage, hemi: str):
+def _check_hemi_present(mesh: PolyMesh, hemi: str):
     """Check that a given hemisphere exists both in data and mesh."""
-    if hemi not in mesh or hemi not in img.data:
-        raise ValueError(
-            f"{hemi} must be present in mesh and SurfaceImage data"
-        )
-
-
-def _check_hemi_in_surface_image_data(img: SurfaceImage, hemi: str):
-    """Check that a given hemisphere exists both in data and mesh."""
-    if hemi not in img.data:
-        raise ValueError(f"{hemi} must be present in SurfaceImage data")
+    if hemi not in mesh:
+        raise ValueError(f"{hemi} must be present in mesh")
