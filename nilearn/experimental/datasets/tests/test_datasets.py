@@ -4,7 +4,9 @@ from nilearn.experimental.datasets import (
     fetch_destrieux,
     fetch_nki,
     load_fsaverage,
+    load_fsaverage_data,
 )
+from nilearn.experimental.surface import SurfaceImage
 
 
 def test_load_fsaverage():
@@ -12,6 +14,20 @@ def test_load_fsaverage():
     meshes = load_fsaverage()
     assert isinstance(meshes, dict)
     assert meshes["pial"]["left"].n_vertices == 10242  # fsaverage5
+
+
+def test_load_load_fsaverage_data():
+    """Call default function smoke test and assert return."""
+    img = load_fsaverage_data()
+    assert isinstance(img, SurfaceImage)
+
+
+def test_load_load_fsaverage_data_errors():
+    """Check wrong parameter values."""
+    with pytest.raises(ValueError, match="'mesh_type' must be one of"):
+        load_fsaverage_data(mesh_type="foo")
+    with pytest.raises(ValueError, match="'data_type' must be one of"):
+        load_fsaverage_data(data_type="foo")
 
 
 def test_load_fsaverage_wrong_mesh_name():
@@ -39,3 +55,8 @@ def test_destrieux_nki_wrong_mesh_type():
 
     with pytest.raises(ValueError, match="'mesh_type' must be one of"):
         fetch_destrieux(mesh_type="foo")
+
+
+def test_smoke_destrieux_nki():
+    fetch_nki()
+    fetch_destrieux()
