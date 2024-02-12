@@ -1,4 +1,9 @@
+from collections import OrderedDict
+
+import numpy as np
+import pandas as pd
 import pytest
+from nibabel import gifti
 
 from nilearn.experimental.datasets import (
     fetch_destrieux,
@@ -57,6 +62,37 @@ def test_destrieux_nki_wrong_mesh_type():
         fetch_destrieux(mesh_type="foo")
 
 
-def test_smoke_destrieux_nki():
-    fetch_nki()
-    fetch_destrieux()
+def test_smoke_nki(request_mocker):
+    # TODO mocking taken from test_fetch_surf_nki_enhanced
+    #  in nilearn/datasets/tests/test_func.py
+    ids = np.asarray(
+        [
+            "A00028185",
+            "A00035827",
+            "A00037511",
+            "A00039431",
+            "A00033747",
+            "A00035840",
+            "A00038998",
+            "A00035072",
+            "A00037112",
+            "A00039391",
+        ],
+        dtype="U9",
+    )
+    age = np.ones(len(ids), dtype="<f8")
+    hand = np.asarray(len(ids) * ["x"], dtype="U1")
+    sex = np.asarray(len(ids) * ["x"], dtype="U1")
+    pheno_data = pd.DataFrame(
+        OrderedDict([("id", ids), ("age", age), ("hand", hand), ("sex", sex)])
+    )
+    request_mocker.url_mapping["*pheno_nki_nilearn.csv"] = pheno_data.to_csv(
+        index=False
+    )
+
+    # added part mocking gifti
+    darray = gifti.GiftiDataArray(
+        data=np.zeros((20,)), datatype="NIFTI_TYPE_FLOAT32"
+    )
+    gii = gifti.GiftiImage(darrays=[darray])
+    request_mocker.url_mapping["*.gii"] = gii

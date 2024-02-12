@@ -5,7 +5,7 @@ Seed-based connectivity on the surface
 .. warning::
 
     This is an adaption of
-    :ref:`sphx_glr_auto_examples_01_plot_surf_stat_map.py`
+    :ref:`sphx_glr_auto_examples_01_plotting_plot_surf_stat_map.py`
     to use make it work with the new experimental surface API.
 
 The dataset that is a subset of the enhanced NKI Rockland sample

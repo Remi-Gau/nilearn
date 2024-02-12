@@ -123,7 +123,7 @@ def fetch_nki(mesh_type: str = "pial", **kwargs) -> Sequence[SurfaceImage]:
 
 
 def fetch_destrieux(
-    mesh_type: str = "pial",
+    mesh_type: str = "pial", **kwargs
 ) -> tuple[SurfaceImage, dict[int, str]]:
     """Load Destrieux surface atlas into a surface object."""
     if mesh_type not in ALLOWED_MESH_TYPES:
@@ -133,7 +133,7 @@ def fetch_destrieux(
         )
 
     fsaverage = load_fsaverage("fsaverage5")
-    destrieux = datasets.fetch_atlas_surf_destrieux()
+    destrieux = datasets.fetch_atlas_surf_destrieux(**kwargs)
     # TODO fetchers usually return Bunch
     return (
         SurfaceImage(
