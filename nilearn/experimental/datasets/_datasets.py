@@ -36,7 +36,6 @@ def load_fsaverage(
         }
         for mesh_type, mesh_name in renaming.items()
     }
-    renaming = {"curv": "curvature", "sulc": "sulcal", "thick": "thickness"}
     return meshes
 
 
