@@ -58,7 +58,7 @@ Classes
 Functions
 ^^^^^^^^^
 
-.. currentmodule:: nilearn.experimental.datasets
+.. currentmodule:: nilearn.experimental.surface
 
 .. autosummary::
    :toctree: generated/
