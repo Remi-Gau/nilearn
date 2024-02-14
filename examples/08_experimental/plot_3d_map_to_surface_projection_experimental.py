@@ -30,7 +30,7 @@ stat_img = datasets.load_sample_motor_activation_image()
 # Get a cortical mesh
 # -------------------
 
-from nilearn.experimental.datasets import load_fsaverage, load_fsaverage_data
+from nilearn.experimental.surface import load_fsaverage, load_fsaverage_data
 
 fsaverage_meshes = load_fsaverage()
 
@@ -160,7 +160,7 @@ plotting.plot_stat_map(
 # Use an atlas and choose regions to outline
 # ------------------------------------------
 
-from nilearn.experimental.datasets import fetch_destrieux
+from nilearn.experimental.surface import fetch_destrieux
 
 destrieux_atlas, label_names = fetch_destrieux(mesh_type="inflated")
 
@@ -290,13 +290,7 @@ view = view_surf(
 # In a Jupyter notebook, if ``view`` is the output of a cell,
 # it will be displayed below the cell
 view
-
-# %%
-
-# uncomment this to open the plot in a web browser:
-view.open_in_browser()
-
-# %%
+datasets
 # We don't need to do the projection ourselves, we can use
 # :func:`~nilearn.plotting.view_img_on_surf`:
 

@@ -23,7 +23,7 @@ See :ref:`plotting` for more details.
 # ------------
 
 # Retrieve destrieux parcellation in fsaverage5 space from nilearn
-from nilearn.experimental.datasets import (
+from nilearn.experimental.surface import (
     fetch_destrieux,
     load_fsaverage,
     load_fsaverage_data,

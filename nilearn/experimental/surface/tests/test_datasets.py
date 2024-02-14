@@ -5,13 +5,13 @@ import pandas as pd
 import pytest
 from nibabel import gifti
 
-from nilearn.experimental.datasets import (
+from nilearn.experimental.surface import (
+    SurfaceImage,
     fetch_destrieux,
     fetch_nki,
     load_fsaverage,
     load_fsaverage_data,
 )
-from nilearn.experimental.surface import SurfaceImage
 
 
 def test_load_fsaverage():

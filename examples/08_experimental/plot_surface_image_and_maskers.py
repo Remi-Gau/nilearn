@@ -24,13 +24,14 @@ except ImportError:
 
 import numpy as np
 
-from nilearn.experimental import datasets, maskers, plotting
+from nilearn.experimental import plotting
+from nilearn.experimental.surface import SurfaceMasker, fetch_nki
 from nilearn.plotting import plot_matrix
 
-img = datasets.fetch_nki()[0]
+img = fetch_nki()[0]
 print(f"NKI image: {img}")
 
-masker = maskers.SurfaceMasker()
+masker = SurfaceMasker()
 masked_data = masker.fit_transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -68,11 +69,12 @@ plt.show()
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn import connectome
+from nilearn.experimental.surface import SurfaceLabelsMasker, fetch_destrieux
 
-img = datasets.fetch_nki()[0]
+img = fetch_nki()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = datasets.fetch_destrieux()
+labels_img, label_names = fetch_destrieux()
 label_names = {
     i: label.decode("utf-8") for (i, label) in enumerate(label_names)
 }
@@ -84,7 +86,7 @@ plotting.plot_surf(
     avg_method="median",
 )
 
-labels_masker = maskers.SurfaceLabelsMasker(labels_img, label_names).fit()
+labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
 
@@ -122,11 +124,11 @@ monkeypatch_masker_checks()
 # Now using the appropriate masker we can use a `Decoder` on surface data just
 # as we do for volume images.
 
-img = datasets.fetch_nki()[0]
+img = fetch_nki()[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
-    mask=maskers.SurfaceMasker(),
+    mask=SurfaceMasker(),
     param_grid={"C": [0.01, 0.1]},
     cv=3,
     screening_percentile=1,
@@ -143,11 +145,11 @@ plt.show()
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-img = datasets.fetch_nki()[0]
+img = fetch_nki()[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
-    maskers.SurfaceMasker(),
+    SurfaceMasker(),
     preprocessing.StandardScaler(),
     feature_selection.SelectKBest(
         score_func=feature_selection.f_regression, k=500

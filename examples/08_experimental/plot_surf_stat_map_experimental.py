@@ -40,7 +40,7 @@ See :ref:`plotting` for more details on plotting tools.
 # -------------------
 
 # NKI resting state data from nilearn
-from nilearn.experimental.datasets import (
+from nilearn.experimental.surface import (
     fetch_destrieux,
     fetch_nki,
     load_fsaverage,
