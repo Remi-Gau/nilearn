@@ -72,24 +72,32 @@ plt.show()
 # Connectivity with a surface atlas and `SurfaceLabelsMasker`
 # -----------------------------------------------------------
 from nilearn import connectome
-from nilearn.experimental.surface import SurfaceLabelsMasker, fetch_destrieux
+from nilearn.experimental.surface import (
+    SurfaceLabelsMasker,
+    fetch_destrieux,
+    load_fsaverage_data,
+)
+
+# for our plots we will be using the fsaverage sulcal data as background map
+fsaverage_sulcal = load_fsaverage_data(data_type="sulcal")
 
 img = fetch_nki()[0]
 print(f"NKI image: {img}")
 
-labels_img, label_names = fetch_destrieux()
-label_names = {
-    i: label.decode("utf-8") for (i, label) in enumerate(label_names)
-}
+labels_img, label_names = fetch_destrieux(mesh_type="inflated")
 print(f"Destrieux image: {labels_img}")
-plotting.plot_surf(
+plotting.plot_surf_roi(
     labels_img,
-    view=["lateral", "medial"],
-    cmap="gist_ncar",
-    avg_method="median",
+    view="lateral",
+    bg_on_data=True,
+    bg_map=fsaverage_sulcal,
+    darkness=0.5,
     title="Destrieux atlas",
 )
 
+label_names = {
+    i: label.decode("utf-8") for (i, label) in enumerate(label_names)
+}
 labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()
 masked_data = labels_masker.transform(img)
 print(f"Masked data shape: {masked_data.shape}")
@@ -125,10 +133,10 @@ def monkeypatch_masker_checks():
 monkeypatch_masker_checks()
 
 # %%
-# Now using the appropriate masker we can use a `Decoder` on surface data just
-# as we do for volume images.
+# Now using the appropriate masker we can use a `Decoder` on surface data
+# just as we do for volume images.
 
-img = fetch_nki()[0]
+img = fetch_nki(mesh_type="inflated")[0]
 y = np.random.RandomState(0).choice([0, 1], replace=True, size=img.shape[0])
 
 decoder = decoding.Decoder(
@@ -140,7 +148,15 @@ decoder = decoding.Decoder(
 decoder.fit(img, y)
 print("CV scores:", decoder.cv_scores_)
 
-plotting.plot_surf(decoder.coef_img_[0], threshold=1e-6)
+plotting.plot_surf(
+    decoder.coef_img_[0],
+    threshold=1e-6,
+    bg_map=fsaverage_sulcal,
+    bg_on_data=True,
+    colorbar=True,
+    cmap="black_red",
+    vmin=0,
+)
 plt.show()
 
 # %%
@@ -149,7 +165,7 @@ plt.show()
 import numpy as np
 from sklearn import feature_selection, linear_model, pipeline, preprocessing
 
-img = fetch_nki()[0]
+img = fetch_nki(mesh_type="inflated")[0]
 y = np.random.RandomState(0).normal(size=img.shape[0])
 
 decoder = pipeline.make_pipeline(
@@ -164,7 +180,6 @@ decoder.fit(img, y)
 
 coef_img = decoder[:-1].inverse_transform(np.atleast_2d(decoder[-1].coef_))
 
-
 vmax = max(np.absolute(dp).max() for dp in coef_img.data.values())
 plotting.plot_surf(
     coef_img,
@@ -172,5 +187,8 @@ plotting.plot_surf(
     vmin=-vmax,
     vmax=vmax,
     threshold=1e-6,
+    bg_map=fsaverage_sulcal,
+    bg_on_data=True,
+    colorbar=True,
 )
 plt.show()

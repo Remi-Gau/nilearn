@@ -58,7 +58,7 @@ print(f"Fsaverage5 sulcal depth map: {fsaverage_sulcal}")
 # Visualization
 # -------------
 
-# Display Destrieux parcellation on fsaverage5 pial surface using nilearn
+# Display Destrieux parcellation on fsaverage5 sulcal surface using nilearn
 from nilearn.experimental import plotting
 from nilearn.plotting import show
 
@@ -69,7 +69,7 @@ plotting.plot_surf_roi(
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     darkness=0.5,
-    title="Destrieux parcellation on pial surface",
+    title="Destrieux parcellation on sulcal surface",
 )
 
 # %%
@@ -78,7 +78,7 @@ plotting.plot_surf_roi(
     surf_mesh=fsaverage_meshes["inflated"]["left"],
     roi_map=parcellation,
     hemi="left",
-    view="lateral",
+    view=["lateral", "medial"],
     bg_map=fsaverage_sulcal,
     bg_on_data=True,
     darkness=0.5,
