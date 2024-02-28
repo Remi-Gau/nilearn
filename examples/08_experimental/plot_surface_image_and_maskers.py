@@ -60,6 +60,9 @@ for view, ax_row in zip(views, axes):
             figure=fig,
             axes=ax,
             title=f"mean image - {hemi} - {view}",
+            colorbar=False,
+            cmap="bwr",
+            symmetric_cmap=True,
         )
 
 fig.set_size_inches(6, 8)
@@ -81,9 +84,10 @@ label_names = {
 print(f"Destrieux image: {labels_img}")
 plotting.plot_surf(
     labels_img,
-    views=["lateral", "medial"],
+    view=["lateral", "medial"],
     cmap="gist_ncar",
     avg_method="median",
+    title="Destrieux atlas",
 )
 
 labels_masker = SurfaceLabelsMasker(labels_img, label_names).fit()

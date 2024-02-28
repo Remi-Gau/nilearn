@@ -39,7 +39,8 @@ def plot_surf(
             surf_mesh=surf_mesh,
             surf_map=surf_map,
             hemi=hemi,
-            bg_map=bg_map**kwargs,
+            bg_map=bg_map,
+            **kwargs,
         )
 
     if surf_mesh is None:
