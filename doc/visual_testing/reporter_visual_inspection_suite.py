@@ -21,7 +21,15 @@ from nilearn.glm.first_level.design_matrix import (
 from nilearn.glm.second_level import SecondLevelModel
 from nilearn.image import mean_img, resample_to_img
 from nilearn.interfaces.fsl import get_design_from_fslmat
-from nilearn.maskers import NiftiSpheresMasker
+from nilearn.maskers import (
+    MultiNiftiLabelsMasker,
+    MultiNiftiMapsMasker,
+    MultiNiftiMasker,
+    NiftiLabelsMasker,
+    NiftiMapsMasker,
+    NiftiMasker,
+    NiftiSpheresMasker,
+)
 from nilearn.reporting import make_glm_report
 
 REPORTS_DIR = Path(__file__).parent.parent / "modules" / "generated_reports"
@@ -35,9 +43,8 @@ def report_flm_adhd_dmn():
     t_r = 2.0
     slice_time_ref = 0.0
     n_scans = 176
-    pcc_coords = (0, -53, 26)
 
-    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
+    pcc_coords = (0, -53, 26)
 
     seed_masker = NiftiSpheresMasker(
         [pcc_coords],
@@ -48,13 +55,13 @@ def report_flm_adhd_dmn():
         high_pass=0.01,
         t_r=t_r,
         memory="nilearn_cache",
-        memory_level=1,
-        verbose=0,
     )
 
+    adhd_dataset = datasets.fetch_adhd(n_subjects=1)
     seed_time_series = seed_masker.fit_transform(adhd_dataset.func[0])
-    report = seed_masker.generate_report()
-    report.save_as_html(REPORTS_DIR / "flm_adhd_dmn_sphere_masker.html")
+
+    masker_report = seed_masker.generate_report()
+    masker_report.save_as_html(REPORTS_DIR / "nifti_sphere_masker.html")
 
     frametimes = np.linspace(0, (n_scans - 1) * t_r, n_scans)
 
@@ -72,19 +79,20 @@ def report_flm_adhd_dmn():
         run_imgs=adhd_dataset.func[0], design_matrices=design_matrix
     )
 
-    report = make_glm_report(
+    glm_report = make_glm_report(
         first_level_model,
         contrasts=contrasts,
         title="ADHD DMN Report",
         cluster_threshold=15,
+        alpha=0.0009,
         height_control="bonferroni",
         min_distance=8.0,
         plot_type="glass",
         report_dims=(1200, "a"),
     )
+    glm_report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
 
-    report.save_as_html(REPORTS_DIR / "flm_adhd_dmn.html")
-    report.get_iframe()
+    return masker_report, glm_report
 
 
 # %%
@@ -176,10 +184,11 @@ def report_flm_bids_features():
         contrasts="StopSuccess - Go",
         title=title,
         cluster_threshold=3,
+        plot_type="glass",
     )
 
     report.save_as_html(REPORTS_DIR / "flm_bids_features.html")
-    report.get_iframe()
+    return report
 
 
 # %%
@@ -214,9 +223,8 @@ def report_flm_fiac():
         bg_img=mean_img_,
         height_control="fdr",
     )
-
     report.save_as_html(REPORTS_DIR / "flm_fiac.html")
-    report.get_iframe()
+    return report
 
 
 # %%
@@ -252,8 +260,12 @@ def report_slm_oasis():
         oasis_dataset.gray_matter_maps, design_matrix=design_matrix
     )
 
-    # TODO The following fails:
+    # TODO the following crashes
+    # contrast = [np.array([1, 0]), np.array([0, 1])]
     # contrast = [[1, 0, 0], [0, 1, 0]]
+
+    # The following are equivalent
+    # contrast = [np.array([1, 0, 0]), np.array([0, 1, 0])]
     contrast = ["age", "sex"]
 
     report = make_glm_report(
@@ -261,17 +273,177 @@ def report_slm_oasis():
         contrasts=contrast,
         bg_img=datasets.fetch_icbm152_2009()["t1"],
         height_control=None,
+        plot_type="glass",
+    )
+    report.save_as_html(REPORTS_DIR / "slm_oasis.html")
+    return report
+
+
+# %%
+# Adapted from examples/03_connectivity/plot_probabilistic_atlas_extraction.py
+def report_nifti_maps_masker():
+
+    atlas = datasets.fetch_atlas_msdl()
+    atlas_filename = atlas["maps"]
+
+    data = datasets.fetch_development_fmri(n_subjects=1)
+
+    masker = NiftiMapsMasker(
+        maps_img=atlas_filename,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
+        memory="nilearn_cache",
+        cmap="gray",
+    )
+    masker.fit(data.func[0])
+
+    report = masker.generate_report(displayed_maps=[2, 6, 7, 16, 21])
+    report.save_as_html(REPORTS_DIR / "nifti_maps_masker.html")
+    return report
+
+
+#  %%
+# Adapted from examples/06_manipulating_images/plot_nifti_labels_simple.py
+def report_nifti_labels_masker():
+
+    atlas = datasets.fetch_atlas_schaefer_2018()
+
+    atlas.labels = np.insert(atlas.labels, 0, "Background")
+
+    masker = NiftiLabelsMasker(
+        atlas.maps,
+        labels=atlas.labels,
+        standardize="zscore_sample",
+    )
+    masker.fit()
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "nifti_labels_masker_atlas.html")
+
+    data = datasets.fetch_development_fmri(n_subjects=1)
+    masker.fit(data.func[0])
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "nifti_labels_masker_fitted.html")
+    return report
+
+
+#  %%
+# Adapted from examples/06_manipulating_images/plot_nifti_simple.py
+def report_nifti_masker():
+
+    masker = NiftiMasker(
+        standardize="zscore_sample",
+        mask_strategy="epi",
+        memory="nilearn_cache",
+        memory_level=2,
+        smoothing_fwhm=8,
+        cmap="gray",
     )
 
-    report.save_as_html(REPORTS_DIR / "slm_oasis.html")
-    report.get_iframe()
+    data = datasets.fetch_development_fmri(n_subjects=1)
+    masker.fit(data.func[0])
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "nifti_masker.html")
+    return report
+
+
+# %%
+# Adapted from examples/02_decoding/plot_miyawaki_encoding.py
+def report_multi_nifti_masker():
+
+    data = datasets.fetch_miyawaki2008()
+
+    masker = MultiNiftiMasker(
+        mask_img=data.mask,
+        detrend=True,
+        standardize="zscore_sample",
+        n_jobs=2,
+        cmap="gray",
+    )
+    masker.fit()
+    empty_report = masker.generate_report()
+    empty_report.save_as_html(REPORTS_DIR / "multi_nifti_masker.html")
+
+    fmri_random_runs_filenames = data.func[12:]
+    masker.fit(fmri_random_runs_filenames)
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "multi_nifti_masker_fitted.html")
+    return empty_report, report
+
+
+#  %%
+#  Adapted from examples/03_connectivity/plot_atlas_comparison.py
+def report_multi_nifti_labels_masker():
+
+    yeo = datasets.fetch_atlas_yeo_2011()
+
+    data = datasets.fetch_development_fmri(n_subjects=2)
+
+    masker = MultiNiftiLabelsMasker(
+        labels_img=yeo["thick_17"],
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
+        memory="nilearn_cache",
+        n_jobs=2,
+    )
+
+    masker.fit()
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "multi_nifti_labels_masker_atlas.html")
+
+    _ = masker.fit_transform(data.func, confounds=data.confounds)
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "multi_nifti_labels_masker_fitted.html")
+    return report
+
+
+#  %%
+#  Adapted from examples/03_connectivity/plot_atlas_comparison.py
+def report_multi_nifti_maps_masker():
+
+    difumo = datasets.fetch_atlas_difumo(
+        dimension=64, resolution_mm=2, legacy_format=False
+    )
+
+    data = datasets.fetch_development_fmri(n_subjects=2)
+
+    masker = MultiNiftiMapsMasker(
+        maps_img=difumo.maps,
+        standardize="zscore_sample",
+        standardize_confounds="zscore_sample",
+        memory="nilearn_cache",
+        n_jobs=2,
+    )
+
+    masker.fit()
+    empty_report = masker.generate_report()
+    empty_report.save_as_html(
+        REPORTS_DIR / "multi_nifti_maps_masker_atlas.html"
+    )
+
+    _ = masker.fit_transform(data.func, confounds=data.confounds)
+    report = masker.generate_report()
+    report.save_as_html(REPORTS_DIR / "multi_nifti_maps_masker_fitted.html")
+
+    return empty_report, report
 
 
 # %%
 if __name__ == "__main__":
 
-    print("\nGenerating GLM reports templates\n")
+    print("\nGenerating masker reports templates\n")
+    t0 = time.time()
 
+    report_nifti_masker()
+    report_nifti_maps_masker()
+    report_nifti_labels_masker()
+    report_multi_nifti_masker()
+    report_multi_nifti_labels_masker()
+    report_multi_nifti_maps_masker()
+
+    t1 = time.time()
+    print(f"\nTook: {(t1 - t0)} seconds\n")
+
+    print("\nGenerating GLM reports templates\n")
     t0 = time.time()
 
     report_flm_adhd_dmn()
@@ -280,5 +452,4 @@ if __name__ == "__main__":
     report_slm_oasis()
 
     t1 = time.time()
-
-    print(f"\nRun took: {(t1 - t0)} seconds\n")
+    print(f"\nTook: {(t1 - t0)} seconds\n")
