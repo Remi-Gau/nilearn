@@ -1,9 +1,9 @@
-{{inherit "base.html"}} {{def report}}
+{{inherit "base.html"}}
+<!--  -->
+{{def report}}
 <div class="pure-g">
   <div class="pure-u-1 pure-u-md-3-3 scrollit">
-    <h2>{{model_type}}</h2>
-
-    <h3>Model details</h3>
+    <h2>Model details</h2>
 
     <details>
       <summary class="pure-button">Parameters</summary>
@@ -30,18 +30,23 @@
       {{endif}}
     </details>
 
-    <h3>Design Matrix</h3>
-    {{if design_matrices_dict}} {{py: design_matrices =
-    design_matrices_dict.items()}} {{for dmtx_title, dmtx in design_matrices}}
+    <h2>Design Matrix</h2>
+    {{if design_matrices_dict}}
+    <!--  -->
+    {{py: design_matrices = design_matrices_dict.items()}}
+    <!--  -->
+    {{for dmtx_title, dmtx in design_matrices}}
     <img
       src="data:image/svg+xml,{{dmtx}}"
       alt="Plot of Design Matrix used in {{dmtx_title}}."
     />
-    {{endfor}} {{else}}
+    {{endfor}}
+    <!--  -->
+    {{else}}
     <p>No design matrix was provided.</p>
     {{endif}}
 
-    <h3 id="all-contrasts">Contrasts</h3>
+    <h2 id="all-contrasts">Contrasts</h2>
     {{if contrasts_dict}}
     <!--  -->
     {{py: contrasts = contrasts_dict.items()}}
@@ -57,7 +62,7 @@
     <p>No contrast was provided.</p>
     {{endif}}
 
-    <h3>Mask</h3>
+    <h2>Mask</h2>
 
     <img
       src="data:image/svg+xml,${mask_plot}"
@@ -65,17 +70,20 @@
     />
 
     {{if contrasts_dict}}
-    <h3>Stat Maps with Cluster Tables</h3>
-    {{py: contrasts = contrasts_dict.items()}} {{for contrast_name,
-    contrast_plot in contrasts}}
-    <h4>Contrast: {{contrast_name}}</h4>
+    <h2>Stat Maps with Cluster Tables</h2>
+    {{py: contrasts = contrasts_dict.items()}}
+    <!--  -->
+    {{for contrast_name, contrast_plot in contrasts}}
+    <h3>Contrast: {{contrast_name}}</h3>
 
     <details>
       <summary class="pure-button">Contrast Plot</summary>
-      <img
-        src="data:image/svg+xml,{{contrast_plot}}"
-        alt="Stat map plot for the contrast: {{contrast_name}}"
-      />
+      <div>
+        <img
+          src="data:image/svg+xml,{{contrast_plot}}"
+          alt="Stat map plot for the contrast: {{contrast_name}}"
+        />
+      </div>
     </details>
 
     <details>

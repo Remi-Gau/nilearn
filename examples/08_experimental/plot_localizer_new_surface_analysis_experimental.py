@@ -238,8 +238,11 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
 
 # plotting.show()
 
+from pathlib import Path
 
 report = glm.generate_report(
     contrasts,
-    title="foo",
+    title="surface-based example",
 )
+
+report.save_as_html(Path() / "glm.html")

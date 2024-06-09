@@ -25,6 +25,7 @@ from matplotlib import pyplot as plt
 
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
+from nilearn._version import __version__
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.externals import tempita
 from nilearn.maskers import NiftiMasker
@@ -183,7 +184,6 @@ def make_glm_report(
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
-            report_dims=report_dims,
         )
         report_text.width, report_text.height = _check_report_dims(report_dims)
         return report_text
@@ -295,8 +295,12 @@ def _make_surface_glm_report(
     alpha=0.001,
     cluster_threshold=0,
     height_control="fpr",
-    report_dims=(1600, 800),
 ):
+
+    if title:
+        title = f" - {title}"
+    else:
+        title = ""
 
     selected_attributes = [
         "subject_label",
@@ -339,10 +343,35 @@ def _make_surface_glm_report(
             ]
             parameters.pop(attribute_name_)
 
-    contrasts_text = ""
-    if contrasts:
-        contrasts_names = sorted(list(contrasts.keys()))
-        contrasts_text = ", ".join(contrasts_names)
+    cluster_table_details = OrderedDict()
+    threshold = np.around(threshold, 3)
+    if height_control:
+        cluster_table_details.update({"Height control": height_control})
+        if alpha < 0.001:
+            alpha = f"{Decimal(alpha):.2E}"
+        cluster_table_details.update({"\u03B1": alpha})
+        cluster_table_details.update({"Threshold (computed)": threshold})
+    else:
+        cluster_table_details.update({"Height control": "None"})
+        cluster_table_details.update({"Threshold Z": threshold})
+    cluster_table_details.update(
+        {"Cluster size threshold (vertices)": cluster_threshold}
+    )
+
+    warning_messages = []
+    if model.labels_ is None or model.results_ is None:
+        warning_messages.append("The model has not been fit yet.")
+
+    docstring = model.__doc__
+    snippet = docstring.partition("Parameters\n    ----------\n")[0]
+
+    try:
+        design_matrices = model.design_matrices_
+    except AttributeError:
+        design_matrices = []
+    design_matrices_dict = _return_design_matrices_dict(design_matrices)
+
+    contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
     body_template_path = Path(HTML_TEMPLATE_ROOT_PATH) / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
@@ -350,25 +379,19 @@ def _make_surface_glm_report(
         encoding="utf-8",
     )
 
-    warning_messages = []
-    if model.labels_ is None or model.results_ is None:
-        warning_messages.append("The model has not been fit yet.")
-
     css_file_path = CSS_PATH / "masker_report.css"
     with open(css_file_path, encoding="utf-8") as css_file:
         css = css_file.read()
 
     body = tpl.substitute(
         css=css,
-        title="Statistical Report",
-        docstring="docstring",
-        model_type=_return_model_type(model),
-        contrasts_text=contrasts_text,
+        title=f"Statistical Report - {_return_model_type(model)}{title}",
+        docstring=snippet,
         warning_messages=warning_messages,
-        design_matrices_dict=None,
+        design_matrices_dict=design_matrices_dict,
         parameters=parameters,
-        contrasts_dict=None,
-        cluster_table_details=None,
+        contrasts_dict=contrasts_dict,
+        cluster_table_details=cluster_table_details,
         cluster_table=None,
     )
 
@@ -390,10 +413,53 @@ def _make_surface_glm_report(
         head_tpl=head_tpl,
         head_values={
             "head_css": head_css,
-            "version": "0.14.0",
-            "page_title": "foo",
+            "version": __version__,
+            "page_title": (
+                "Statistical Report - " f"{_return_model_type(model)}{title}"
+            ),
         },
     )
+
+
+def _return_design_matrices_dict(design_matrices):
+    if not design_matrices:
+        return None
+
+    design_matrices_dict = {}
+    for dmtx_count, design_matrix in enumerate(design_matrices, start=1):
+        dmtx_plot = plot_design_matrix(design_matrix)
+        dmtx_title = f"Run {dmtx_count}"
+        if len(design_matrices) > 1:
+            plt.title(dmtx_title, y=1.025, x=-0.1)
+        dmtx_plot = _resize_plot_inches(dmtx_plot, height_change=0.3)
+        url_design_matrix_svg = _plot_to_svg(dmtx_plot)
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close()
+
+        design_matrices_dict[dmtx_title] = url_design_matrix_svg
+    return design_matrices_dict
+
+
+def _return_contrasts_dict(design_matrices, contrasts):
+    if not design_matrices and not contrasts:
+        return None
+
+    contrasts_dict = {}
+    for design_matrix in design_matrices:
+        for contrast_name, contrast_data in contrasts.items():
+            contrast_plot = plot_contrast_matrix(
+                contrast_data, design_matrix, colorbar=True
+            )
+            contrast_plot.set_xlabel(contrast_name)
+            contrast_plot.figure.set_figheight(2)
+            contrast_plot.figure.set_tight_layout(True)
+            url_contrast_plot_svg = _plot_to_svg(contrast_plot)
+            # prevents sphinx-gallery & jupyter
+            # from scraping & inserting plots
+            plt.close()
+            contrasts_dict[contrast_name] = url_contrast_plot_svg
+
+    return contrasts_dict
 
 
 def _return_model_type(model):
