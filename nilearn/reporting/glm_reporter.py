@@ -39,7 +39,7 @@ from nilearn.plotting.matrix_plotting import (
 )
 from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import HTMLReport
-from nilearn.reporting.utils import figure_to_svg_quoted
+from nilearn.reporting.utils import figure_to_png_base64, figure_to_svg_quoted
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
@@ -364,14 +364,8 @@ def _make_surface_glm_report(
 
     mask_plot = None
     if masker and masker.mask_img_:
-        fig = experimental.plotting.plot_surf_roi(
-            roi_map=model.masker_.mask_img_,
-            hemi="left",
-            view="dorsal",
-        )
-        mask_plot = _plot_to_svg(fig)
-        # prevents sphinx-gallery & jupyter from scraping & inserting plots
-        plt.close()
+        fig = masker._create_figure_for_report()
+        mask_plot = figure_to_png_base64(fig)
 
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
@@ -383,6 +377,32 @@ def _make_surface_glm_report(
     design_matrices_dict = _return_design_matrices_dict(design_matrices)
 
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
+
+    statistical_maps = None
+    if contrasts:
+        statistical_maps = {}
+        statistical_maps = {
+            contrast_name: model.compute_contrast(
+                contrast_val, output_type="z_score"
+            )
+            for contrast_name, contrast_val in contrasts.items()
+        }
+
+        for contrast_name, contrast_val in contrasts.items():
+            contrast_map = model.compute_contrast(
+                contrast_val, output_type="z_score"
+            )
+            fig = experimental.plotting.plot_surf_stat_map(
+                stat_map=contrast_map,
+                hemi="left",
+                title=contrast_name,
+                colorbar=True,
+                threshold=threshold,
+            )
+            statistical_maps[contrast_name] = {
+                "stat_map_img": figure_to_png_base64(fig),
+                "contrast_img": contrasts_dict[contrast_name],
+            }
 
     body_template_path = Path(HTML_TEMPLATE_ROOT_PATH) / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
@@ -402,6 +422,7 @@ def _make_surface_glm_report(
         design_matrices_dict=design_matrices_dict,
         parameters=parameters,
         contrasts_dict=contrasts_dict,
+        statistical_maps=statistical_maps,
         cluster_table_details=cluster_table_details,
         mask_plot=mask_plot,
         cluster_table=None,

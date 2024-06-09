@@ -36,10 +36,12 @@
     {{py: design_matrices = design_matrices_dict.items()}}
     <!--  -->
     {{for dmtx_title, dmtx in design_matrices}}
-    <img
-      src="data:image/svg+xml,{{dmtx}}"
-      alt="Plot of Design Matrix used in {{dmtx_title}}."
-    />
+    <div class="scrollit">
+      <img
+        src="data:image/svg+xml,{{dmtx}}"
+        alt="Plot of Design Matrix used in {{dmtx_title}}."
+      />
+    </div>
     {{endfor}}
     <!--  -->
     {{else}}
@@ -48,7 +50,9 @@
 
     <h2>Mask</h2>
     <img
-      src="data:image/svg+xml, {{mask_plot}}"
+      class="pure-img"
+      width="75%"
+      src="data:image/svg+xml;base64, {{mask_plot}}"
       alt="Model did not supply a mask image."
     />
 
@@ -58,30 +62,49 @@
     {{py: contrasts = contrasts_dict.items()}}
     <!--  -->
     {{for contrast_name, contrast_plot in contrasts}}
-    <img
-      src="data:image/svg+xml,{{contrast_plot}}"
-      alt="Plot of the contrast: {{contrast_name}}."
-    />
+    <div class="scrollit" style="padding-top: 10px">
+      <img
+        src="data:image/svg+xml,{{contrast_plot}}"
+        alt="Plot of the contrast: {{contrast_name}}."
+      />
+    </div>
     {{endfor}}
     <!--  -->
     {{else}}
     <p>No contrast was provided.</p>
-    {{endif}} {{if contrasts_dict}}
-    <h2>Stat Maps with Cluster Tables</h2>
-    {{py: contrasts = contrasts_dict.items()}}
+    {{endif}}
+
     <!--  -->
-    {{for contrast_name, contrast_plot in contrasts}}
+    {{if statistical_maps}}
+    <h2>Stat Maps with Cluster Tables</h2>
+    {{py: contrasts = statistical_maps.items()}}
+    <!--  -->
+    {{for contrast_name, maps in contrasts}}
     <h3>Contrast: {{contrast_name}}</h3>
 
+    {{py: images = maps.items()}}
+    <!--  -->
+    {{for key, value in images}}
+    <!--  -->
+    {{if key == "stat_map_img"}}
+    <img
+      class="pure-img"
+      src="data:image/svg+xml;base64,{{value}}"
+      alt="Stat map plot for the contrast: {{contrast_name}}"
+    />
+    {{elif key == "contrast_img"}}
     <details>
       <summary class="pure-button">Contrast Plot</summary>
-      <div>
+      <div class="scrollit">
         <img
-          src="data:image/svg+xml,{{contrast_plot}}"
+          src="data:image/svg+xml,{{value}}"
           alt="Stat map plot for the contrast: {{contrast_name}}"
         />
       </div>
     </details>
+    {{endif}}
+    <!--  -->
+    {{endfor}}
 
     <details>
       <summary class="pure-button">Cluster Table</summary>
@@ -107,7 +130,9 @@
       </table>
       {{else}}
       <p>No cluster table parameter provided</p>
-      {{endif}} {{cluster_table}}
+      {{endif}}
+      <!--  -->
+      {{cluster_table}}
     </details>
     {{endfor}}
     <!--  -->
