@@ -236,4 +236,10 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         bg_map=fsaverage.sulc_left,
     )
 
-plotting.show()
+# plotting.show()
+
+
+report = glm.generate_report(
+    contrasts,
+    title="foo",
+)

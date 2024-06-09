@@ -1,0 +1,26 @@
+<!-- CSS for the report -->
+<style type="text/css">
+  {{css}}
+</style>
+
+<div class="nilearn_report">
+  <h1 class="withtooltip">
+    {{title}}
+    <span class="tooltiptext">{{docstring}}</span>
+  </h1>
+
+  <div class="pure-g">
+    <div class="pure-u-1 pure-u-md-3-3 raise">
+      {{if warning_messages}}
+      <h2 style="color: red">WARNING</h2>
+      <ul>
+        {{for message in warning_messages}}
+        <li class="elem-warn">{{message}}</li>
+        {{endfor}}
+      </ul>
+      {{endif}}
+    </div>
+  </div>
+
+  {{self.report|html}}
+</div>

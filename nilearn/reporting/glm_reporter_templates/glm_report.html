@@ -1,0 +1,112 @@
+{{inherit "base.html"}} {{def report}}
+<div class="pure-g">
+  <div class="pure-u-1 pure-u-md-3-3 scrollit">
+    <h2>{{model_type}}</h2>
+
+    <h3>Model details</h3>
+
+    <details>
+      <summary class="pure-button">Parameters</summary>
+      {{if parameters}}
+      <table class="pure-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{py: params = parameters.items()}}
+          <!--  -->
+          {{for p, v in params}}
+          <tr>
+            <td data-column="Parameter">{{p}}</td>
+            <td data-column="Value">{{v}}</td>
+          </tr>
+          {{endfor}}
+        </tbody>
+      </table>
+      {{endif}}
+    </details>
+
+    <h3>Design Matrix</h3>
+    {{if design_matrices_dict}} {{py: design_matrices =
+    design_matrices_dict.items()}} {{for dmtx_title, dmtx in design_matrices}}
+    <img
+      src="data:image/svg+xml,{{dmtx}}"
+      alt="Plot of Design Matrix used in {{dmtx_title}}."
+    />
+    {{endfor}} {{else}}
+    <p>No design matrix was provided.</p>
+    {{endif}}
+
+    <h3 id="all-contrasts">Contrasts</h3>
+    {{if contrasts_dict}}
+    <!--  -->
+    {{py: contrasts = contrasts_dict.items()}}
+    <!--  -->
+    {{for contrast_name, contrast_plot in contrasts}}
+    <img
+      src="data:image/svg+xml,{{contrast_plot}}"
+      alt="Plot of the contrast: {{contrast_name}}."
+    />
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No contrast was provided.</p>
+    {{endif}}
+
+    <h3>Mask</h3>
+
+    <img
+      src="data:image/svg+xml,${mask_plot}"
+      alt="Model did not supply a mask image."
+    />
+
+    {{if contrasts_dict}}
+    <h3>Stat Maps with Cluster Tables</h3>
+    {{py: contrasts = contrasts_dict.items()}} {{for contrast_name,
+    contrast_plot in contrasts}}
+    <h4>Contrast: {{contrast_name}}</h4>
+
+    <details>
+      <summary class="pure-button">Contrast Plot</summary>
+      <img
+        src="data:image/svg+xml,{{contrast_plot}}"
+        alt="Stat map plot for the contrast: {{contrast_name}}"
+      />
+    </details>
+
+    <details>
+      <summary class="pure-button">Cluster Table</summary>
+      {{if cluster_table_details}}
+      <table class="pure-table">
+        <thead>
+          <tr>
+            <th>Parameter</th>
+            <th>Value</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {{py: cluster_params = cluster_table_details.items()}}
+          <!--  -->
+          {{for p, v in cluster_params}}
+          <tr>
+            <td data-column="Parameter">{{p}}</td>
+            <td data-column="Value">{{v}}</td>
+          </tr>
+          {{endfor}}
+        </tbody>
+      </table>
+      {{else}}
+      <p>No cluster table parameter provided</p>
+      {{endif}} {{cluster_table}}
+    </details>
+    {{endfor}}
+    <!--  -->
+    {{endif}}
+  </div>
+</div>
+{{enddef}}

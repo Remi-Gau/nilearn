@@ -16,11 +16,18 @@ from collections import OrderedDict
 from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
+from pathlib import Path
+from string import Template
 
 import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from nilearn._utils import check_niimg, fill_doc
+from nilearn._utils.niimg import safe_get_data
+from nilearn.experimental.surface import SurfaceMasker
+from nilearn.externals import tempita
+from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
 from nilearn.plotting.cm import _cmap_d as nilearn_cmaps
 from nilearn.plotting.img_plotting import MNI152TEMPLATE
@@ -28,31 +35,27 @@ from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
     plot_design_matrix,
 )
+from nilearn.reporting.get_clusters_table import get_clusters_table
 from nilearn.reporting.html_report import HTMLReport
-
-from .._utils import fill_doc
+from nilearn.reporting.utils import figure_to_svg_quoted
 
 with warnings.catch_warnings():
     warnings.simplefilter("ignore", FutureWarning)
     from nilearn import glm
     from nilearn.glm.thresholding import threshold_stats_img
 
-from nilearn._utils import check_niimg
-from nilearn._utils.niimg import safe_get_data
-from nilearn.experimental.surface import SurfaceMasker
-from nilearn.maskers import NiftiMasker
-from nilearn.reporting.get_clusters_table import get_clusters_table
-from nilearn.reporting.utils import figure_to_svg_quoted
 
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
     os.path.dirname(__file__), "glm_reporter_templates"
 )
 
+CSS_PATH = Path(__file__).parent / "data" / "css"
+
 
 @fill_doc
 def make_glm_report(
     model,
-    contrasts,
+    contrasts=None,
     title=None,
     bg_img="MNI152TEMPLATE",
     threshold=3.09,
@@ -172,9 +175,18 @@ def make_glm_report(
 
     """
     if isinstance(model.masker_, SurfaceMasker):
-        raise NotImplementedError(
-            "Report generation is not yet supported for surface analysis."
+        report_text = _make_surface_glm_report(
+            model,
+            contrasts=contrasts,
+            title=title,
+            threshold=threshold,
+            alpha=alpha,
+            cluster_threshold=cluster_threshold,
+            height_control=height_control,
+            report_dims=report_dims,
         )
+        report_text.width, report_text.height = _check_report_dims(report_dims)
+        return report_text
 
     if bg_img == "MNI152TEMPLATE":
         bg_img = MNI152TEMPLATE
@@ -273,6 +285,122 @@ def make_glm_report(
     # setting report size for better visual experience in Jupyter Notebooks.
     report_text.width, report_text.height = _check_report_dims(report_dims)
     return report_text
+
+
+def _make_surface_glm_report(
+    model,
+    contrasts=None,
+    title=None,
+    threshold=3.09,
+    alpha=0.001,
+    cluster_threshold=0,
+    height_control="fpr",
+    report_dims=(1600, 800),
+):
+
+    selected_attributes = [
+        "subject_label",
+        "drift_model",
+        "hrf_model",
+        "standardize",
+        "noise_model",
+        "t_r",
+        "target_shape",
+        "signal_scaling",
+        "scaling_axis",
+        "smoothing_fwhm",
+        "target_affine",
+        "slice_time_ref",
+    ]
+    attribute_units = {
+        "t_r": "seconds",
+        "high_pass": "Hertz",
+    }
+
+    if hasattr(model, "hrf_model") and model.hrf_model == "fir":
+        selected_attributes.append("fir_delays")
+
+    if hasattr(model, "drift_model"):
+        if model.drift_model == "cosine":
+            selected_attributes.append("high_pass")
+        elif model.drift_model == "polynomial":
+            selected_attributes.append("drift_order")
+
+    selected_attributes.sort()
+    parameters = {
+        attr_name: getattr(model, attr_name)
+        for attr_name in selected_attributes
+        if hasattr(model, attr_name)
+    }
+    for attribute_name_, attribute_unit_ in attribute_units.items():
+        if attribute_name_ in parameters:
+            parameters[f"{attribute_name_} ({attribute_unit_})"] = parameters[
+                attribute_name_
+            ]
+            parameters.pop(attribute_name_)
+
+    contrasts_text = ""
+    if contrasts:
+        contrasts_names = sorted(list(contrasts.keys()))
+        contrasts_text = ", ".join(contrasts_names)
+
+    body_template_path = Path(HTML_TEMPLATE_ROOT_PATH) / "glm_report.html"
+    tpl = tempita.HTMLTemplate.from_filename(
+        str(body_template_path),
+        encoding="utf-8",
+    )
+
+    warning_messages = []
+    if model.labels_ is None or model.results_ is None:
+        warning_messages.append("The model has not been fit yet.")
+
+    css_file_path = CSS_PATH / "masker_report.css"
+    with open(css_file_path, encoding="utf-8") as css_file:
+        css = css_file.read()
+
+    body = tpl.substitute(
+        css=css,
+        title="Statistical Report",
+        docstring="docstring",
+        model_type=_return_model_type(model),
+        contrasts_text=contrasts_text,
+        warning_messages=warning_messages,
+        design_matrices_dict=None,
+        parameters=parameters,
+        contrasts_dict=None,
+        cluster_table_details=None,
+        cluster_table=None,
+    )
+
+    # revert HTML safe substitutions in CSS sections
+    body = body.replace(".pure-g &gt; div", ".pure-g > div")
+
+    head_template_path = (
+        Path(HTML_TEMPLATE_ROOT_PATH) / "surface_report_head_template.html"
+    )
+    with open(str(head_template_path)) as head_file:
+        head_tpl = Template(head_file.read())
+
+    head_css_file_path = CSS_PATH / "head.css"
+    with open(head_css_file_path, encoding="utf-8") as head_css_file:
+        head_css = head_css_file.read()
+
+    return HTMLReport(
+        body=body,
+        head_tpl=head_tpl,
+        head_values={
+            "head_css": head_css,
+            "version": "0.14.0",
+            "page_title": "foo",
+        },
+    )
+
+
+def _return_model_type(model):
+    if isinstance(model, glm.first_level.FirstLevelModel):
+        return "First Level Model"
+    elif isinstance(model, glm.second_level.SecondLevelModel):
+        return "Second Level Model"
 
 
 def _check_report_dims(report_size):
@@ -444,10 +572,7 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    if isinstance(model, glm.first_level.FirstLevelModel):
-        model_type = "First Level Model"
-    elif isinstance(model, glm.second_level.SecondLevelModel):
-        model_type = "Second Level Model"
+    model_type = _return_model_type(model)
 
     if title:
         return title, title, model_type
