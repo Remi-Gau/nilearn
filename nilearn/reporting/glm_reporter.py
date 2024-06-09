@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 
+from nilearn import experimental
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
 from nilearn._version import __version__
@@ -297,10 +298,7 @@ def _make_surface_glm_report(
     height_control="fpr",
 ):
 
-    if title:
-        title = f" - {title}"
-    else:
-        title = ""
+    title = f" - {title}" if title else ""
 
     selected_attributes = [
         "subject_label",
@@ -362,6 +360,19 @@ def _make_surface_glm_report(
     if model.labels_ is None or model.results_ is None:
         warning_messages.append("The model has not been fit yet.")
 
+    masker = getattr(model, "masker_", None)
+
+    mask_plot = None
+    if masker and masker.mask_img_:
+        fig = experimental.plotting.plot_surf_roi(
+            roi_map=model.masker_.mask_img_,
+            hemi="left",
+            view="dorsal",
+        )
+        mask_plot = _plot_to_svg(fig)
+        # prevents sphinx-gallery & jupyter from scraping & inserting plots
+        plt.close()
+
     docstring = model.__doc__
     snippet = docstring.partition("Parameters\n    ----------\n")[0]
 
@@ -392,6 +403,7 @@ def _make_surface_glm_report(
         parameters=parameters,
         contrasts_dict=contrasts_dict,
         cluster_table_details=cluster_table_details,
+        mask_plot=mask_plot,
         cluster_table=None,
     )
 

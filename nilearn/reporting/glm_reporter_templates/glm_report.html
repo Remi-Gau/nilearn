@@ -46,6 +46,12 @@
     <p>No design matrix was provided.</p>
     {{endif}}
 
+    <h2>Mask</h2>
+    <img
+      src="data:image/svg+xml, {{mask_plot}}"
+      alt="Model did not supply a mask image."
+    />
+
     <h2 id="all-contrasts">Contrasts</h2>
     {{if contrasts_dict}}
     <!--  -->
@@ -60,16 +66,7 @@
     <!--  -->
     {{else}}
     <p>No contrast was provided.</p>
-    {{endif}}
-
-    <h2>Mask</h2>
-
-    <img
-      src="data:image/svg+xml,${mask_plot}"
-      alt="Model did not supply a mask image."
-    />
-
-    {{if contrasts_dict}}
+    {{endif}} {{if contrasts_dict}}
     <h2>Stat Maps with Cluster Tables</h2>
     {{py: contrasts = contrasts_dict.items()}}
     <!--  -->

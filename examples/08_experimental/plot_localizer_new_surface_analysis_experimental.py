@@ -205,7 +205,7 @@ from nilearn.experimental.surface import load_fsaverage_data
 
 # %%
 # Let's estimate the contrasts by iterating over them.
-from nilearn.plotting import show
+# from nilearn.plotting import show
 
 fsaverage_data = load_fsaverage_data(data_type="sulcal")
 
@@ -232,7 +232,7 @@ for index, (contrast_id, contrast_val) in enumerate(contrasts.items()):
         )
 
 # plotting.show()
-show()
+# show()
 
 from pathlib import Path
 
