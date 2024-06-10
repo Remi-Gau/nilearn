@@ -166,7 +166,6 @@ for hemi, stat_map in zip(["left", "right"], [z_val_left, z_val_right]):
         bg_map=fsaverage_data,
     )
 
-
 show()
 
 from pathlib import Path
