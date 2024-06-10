@@ -1,6 +1,5 @@
 """Functionality to create reports for GLM on surface data."""
 
-import os
 import warnings
 from collections import OrderedDict
 from decimal import Decimal
@@ -25,11 +24,14 @@ with warnings.catch_warnings():
     from nilearn import glm
 
 
-HTML_TEMPLATE_ROOT_PATH = os.path.join(
-    os.path.dirname(__file__), "glm_reporter_templates"
+EXPERIMENTAL_HTML_TEMPLATE_ROOT_PATH = (
+    Path(__file__).parent / "glm_reporter_templates"
 )
 
-CSS_PATH = Path(__file__).parent.parent.parent / "reporting" / "data" / "css"
+
+TEMPLATE_ROOT_PATH = Path(__file__).parent.parent.parent / "reporting" / "data"
+
+CSS_PATH = TEMPLATE_ROOT_PATH / "css"
 
 
 def _make_surface_glm_report(
@@ -148,7 +150,9 @@ def _make_surface_glm_report(
                 "contrast_img": contrasts_dict[contrast_name],
             }
 
-    body_template_path = Path(HTML_TEMPLATE_ROOT_PATH) / "glm_report.html"
+    body_template_path = (
+        EXPERIMENTAL_HTML_TEMPLATE_ROOT_PATH / "glm_report.html"
+    )
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
@@ -176,9 +180,9 @@ def _make_surface_glm_report(
     body = body.replace(".pure-g &gt; div", ".pure-g > div")
 
     head_template_path = (
-        Path(HTML_TEMPLATE_ROOT_PATH) / "surface_report_head_template.html"
+        TEMPLATE_ROOT_PATH / "html" / "report_head_template.html"
     )
-    with open(str(head_template_path)) as head_file:
+    with open(head_template_path) as head_file:
         head_tpl = Template(head_file.read())
 
     head_css_file_path = CSS_PATH / "head.css"
