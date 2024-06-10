@@ -48,6 +48,14 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   border-radius: 2px;
 }
 
+.button-xsmall {
+  font-size: 70%;
+}
+
+.button-small {
+  font-size: 85%;
+}
+
 /*!
 End pure-button class definition from pure-min.css
 */
@@ -162,6 +170,20 @@ div.nilearn_report .image .overlay {
 
 div.nilearn_report .image:hover .overlay {
   opacity: 1;
+}
+
+.warning {
+  padding-top: 0px;
+  border: solid red;
+  border-width: 1pt;
+  border-radius: 6pt;
+}
+
+div.warning h2:first-child {
+  margin-top: 0pt;
+  background-color: #f5f5f5;
+  border-radius: 6pt 6pt 0pt 0pt;
+  padding-left: 5pt;
 }
 
 .elem-warn {

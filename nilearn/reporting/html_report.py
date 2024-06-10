@@ -173,7 +173,11 @@ def _update_template(
     return HTMLReport(
         body=body,
         head_tpl=head_tpl,
-        head_values={"head_css": head_css, "version": __version__},
+        head_values={
+            "head_css": head_css,
+            "version": __version__,
+            "page_title": f"{title} report",
+        },
     )
 
 

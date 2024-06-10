@@ -184,6 +184,7 @@ def make_glm_report(
             alpha=alpha,
             cluster_threshold=cluster_threshold,
             height_control=height_control,
+            bg_img=bg_img,
         )
         report_text.width, report_text.height = _check_report_dims(report_dims)
         return report_text

@@ -11,6 +11,7 @@ from matplotlib import pyplot as plt
 
 from nilearn._version import __version__
 from nilearn.experimental import plotting
+from nilearn.experimental.surface import SurfaceImage
 from nilearn.externals import tempita
 from nilearn.plotting.matrix_plotting import (
     plot_contrast_matrix,
@@ -42,6 +43,7 @@ def _make_surface_glm_report(
     alpha=0.001,
     cluster_threshold=0,
     height_control="fpr",
+    bg_img=None,
 ):
 
     title = f" - {title}" if title else ""
@@ -73,6 +75,9 @@ def _make_surface_glm_report(
             selected_attributes.append("high_pass")
         elif model.drift_model == "polynomial":
             selected_attributes.append("drift_order")
+
+    if bg_img:
+        assert isinstance(bg_img, SurfaceImage)
 
     selected_attributes.sort()
     parameters = {
@@ -125,6 +130,7 @@ def _make_surface_glm_report(
     contrasts_dict = _return_contrasts_dict(design_matrices, contrasts)
 
     statistical_maps = None
+
     if contrasts:
         statistical_maps = {}
         statistical_maps = {
@@ -133,6 +139,10 @@ def _make_surface_glm_report(
             )
             for contrast_name, contrast_val in contrasts.items()
         }
+
+        surf_mesh = None
+        if bg_img:
+            surf_mesh = bg_img.mesh
 
         for contrast_name, contrast_val in contrasts.items():
             contrast_map = model.compute_contrast(
@@ -143,7 +153,10 @@ def _make_surface_glm_report(
                 hemi="left",
                 title=contrast_name,
                 colorbar=True,
+                cmap="seismic",
                 threshold=threshold,
+                bg_map=bg_img,
+                surf_mesh=surf_mesh,
             )
             statistical_maps[contrast_name] = {
                 "stat_map_img": figure_to_png_base64(fig),

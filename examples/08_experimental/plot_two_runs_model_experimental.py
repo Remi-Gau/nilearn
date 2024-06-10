@@ -155,9 +155,15 @@ contrasts = {
 # Since we have already computed the FirstLevelModel
 # and have a number of contrasts,
 # we can quickly create a summary report.
+
+from nilearn.experimental.surface import load_fsaverage_data
+
+fsaverage_sulcal = load_fsaverage_data(
+    data_type="sulcal", mesh_type="inflated"
+)
+
 report = fmri_glm_multirun.generate_report(
-    contrasts,
-    title="two-runs fMRI model fitting",
+    contrasts, title="two-runs fMRI model fitting", bg_img=fsaverage_sulcal
 )
 
 # %%

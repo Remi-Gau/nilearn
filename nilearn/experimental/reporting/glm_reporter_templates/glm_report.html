@@ -1,85 +1,89 @@
 {{inherit "base.html"}}
 <!--  -->
 {{def report}}
-<div class="pure-g">
-  <div class="pure-u-1 pure-u-md-3-3 scrollit">
-    <h2>Model details</h2>
+<h2>Model details</h2>
 
-    <details>
-      <summary class="pure-button">Parameters</summary>
-      {{if parameters}}
-      <table class="pure-table">
-        <thead>
-          <tr>
-            <th>Parameter</th>
-            <th>Value</th>
-          </tr>
-        </thead>
+<details>
+  <summary class="pure-button button-small">Parameters</summary>
+  {{if parameters}}
+  <table class="pure-table">
+    <thead>
+      <tr>
+        <th>Parameter</th>
+        <th>Value</th>
+      </tr>
+    </thead>
 
-        <tbody>
-          {{py: params = parameters.items()}}
-          <!--  -->
-          {{for p, v in params}}
-          <tr>
-            <td data-column="Parameter">{{p}}</td>
-            <td data-column="Value">{{v}}</td>
-          </tr>
-          {{endfor}}
-        </tbody>
-      </table>
-      {{endif}}
-    </details>
+    <tbody>
+      {{py: params = parameters.items()}}
+      <!--  -->
+      {{for p, v in params}}
+      <tr>
+        <td data-column="Parameter">{{p}}</td>
+        <td data-column="Value">{{v}}</td>
+      </tr>
+      {{endfor}}
+    </tbody>
+  </table>
+  {{endif}}
+</details>
 
-    <h2>Design Matrix</h2>
-    {{if design_matrices_dict}}
-    <!--  -->
-    {{py: design_matrices = design_matrices_dict.items()}}
-    <!--  -->
-    {{for dmtx_title, dmtx in design_matrices}}
-    <div class="scrollit">
-      <img
-        src="data:image/svg+xml,{{dmtx}}"
-        alt="Plot of Design Matrix used in {{dmtx_title}}."
-      />
-    </div>
-    {{endfor}}
-    <!--  -->
-    {{else}}
-    <p>No design matrix was provided.</p>
-    {{endif}}
-
-    <h2>Mask</h2>
+<h2>Design Matrix</h2>
+{{if design_matrices_dict}}
+<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  {{py: design_matrices = design_matrices_dict.items()}}
+  <!--  -->
+  {{for dmtx_title, dmtx in design_matrices}}
+  <div class="scrollit">
     <img
-      class="pure-img"
-      width="75%"
-      src="data:image/svg+xml;base64, {{mask_plot}}"
-      alt="Model did not supply a mask image."
+      src="data:image/svg+xml,{{dmtx}}"
+      alt="Plot of Design Matrix used in {{dmtx_title}}."
     />
+  </div>
+  {{endfor}}
+</div>
+<!--  -->
+{{else}}
+<p>No design matrix was provided.</p>
+{{endif}}
 
-    <h2 id="all-contrasts">Contrasts</h2>
-    {{if contrasts_dict}}
-    <!--  -->
-    {{py: contrasts = contrasts_dict.items()}}
-    <!--  -->
-    {{for contrast_name, contrast_plot in contrasts}}
-    <div class="scrollit" style="padding-top: 10px">
-      <img
-        src="data:image/svg+xml,{{contrast_plot}}"
-        alt="Plot of the contrast: {{contrast_name}}."
-      />
-    </div>
-    {{endfor}}
-    <!--  -->
-    {{else}}
-    <p>No contrast was provided.</p>
-    {{endif}}
+<h2>Mask</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  <img
+    class="pure-img"
+    width="75%"
+    src="data:image/svg+xml;base64, {{mask_plot}}"
+    alt="Model did not supply a mask image."
+  />
+</div>
 
-    <!--  -->
-    {{if statistical_maps}}
-    <h2>Stat Maps with Cluster Tables</h2>
-    {{py: contrasts = statistical_maps.items()}}
-    <!--  -->
-    {{for contrast_name, maps in contrasts}}
+<h2 id="all-contrasts">Contrasts</h2>
+{{if contrasts_dict}}
+<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  {{py: contrasts = contrasts_dict.items()}}
+  <!--  -->
+  {{for contrast_name, contrast_plot in contrasts}}
+  <div class="scrollit" style="padding-top: 10px">
+    <img
+      src="data:image/svg+xml,{{contrast_plot}}"
+      alt="Plot of the contrast: {{contrast_name}}."
+    />
+  </div>
+  {{endfor}}
+</div>
+<!--  -->
+{{else}}
+<p>No contrast was provided.</p>
+{{endif}}
+
+<!--  -->
+{{if statistical_maps}}
+<h2>Stat Maps with Cluster Tables</h2>
+<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  {{py: contrasts = statistical_maps.items()}}
+  <!--  -->
+  {{for contrast_name, maps in contrasts}}
+  <div style="margin: 10px">
     <h3>Contrast: {{contrast_name}}</h3>
 
     {{py: images = maps.items()}}
@@ -94,7 +98,7 @@
     />
     {{elif key == "contrast_img"}}
     <details>
-      <summary class="pure-button">Contrast Plot</summary>
+      <summary class="pure-button button-small">Contrast Plot</summary>
       <div class="scrollit">
         <img
           src="data:image/svg+xml,{{value}}"
@@ -107,7 +111,7 @@
     {{endfor}}
 
     <details>
-      <summary class="pure-button">Cluster Table</summary>
+      <summary class="pure-button button-small">Cluster Table</summary>
       {{if cluster_table_details}}
       <table class="pure-table">
         <thead>
@@ -134,9 +138,10 @@
       <!--  -->
       {{cluster_table}}
     </details>
-    {{endfor}}
-    <!--  -->
-    {{endif}}
   </div>
+  {{endfor}}
 </div>
+<!--  -->
+{{endif}}
+<!--  -->
 {{enddef}}
