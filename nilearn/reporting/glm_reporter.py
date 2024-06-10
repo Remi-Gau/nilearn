@@ -16,7 +16,6 @@ from collections import OrderedDict
 from collections.abc import Iterable
 from decimal import Decimal
 from html import escape
-from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -49,8 +48,6 @@ with warnings.catch_warnings():
 HTML_TEMPLATE_ROOT_PATH = os.path.join(
     os.path.dirname(__file__), "glm_reporter_templates"
 )
-
-CSS_PATH = Path(__file__).parent / "data" / "css"
 
 
 @fill_doc
@@ -288,13 +285,6 @@ def make_glm_report(
     return report_text
 
 
-def _return_model_type(model):
-    if isinstance(model, glm.first_level.FirstLevelModel):
-        return "First Level Model"
-    elif isinstance(model, glm.second_level.SecondLevelModel):
-        return "Second Level Model"
-
-
 def _check_report_dims(report_size):
     """Warns user & reverts to default if report dimensions are non-numerical.
 
@@ -464,7 +454,10 @@ def _make_headings(contrasts, title, model):
         If title is user-supplied, then subheading is empty string.
 
     """
-    model_type = _return_model_type(model)
+    if isinstance(model, glm.first_level.FirstLevelModel):
+        model_type = "First Level Model"
+    elif isinstance(model, glm.second_level.SecondLevelModel):
+        model_type = "Second Level Model"
 
     if title:
         return title, title, model_type
