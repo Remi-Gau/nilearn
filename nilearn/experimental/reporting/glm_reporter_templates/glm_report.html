@@ -29,8 +29,9 @@
 </details>
 
 <h2>Design Matrix</h2>
-{{if design_matrices_dict}}
 <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  {{if design_matrices_dict}}
+  <!--  -->
   {{py: design_matrices = design_matrices_dict.items()}}
   <!--  -->
   {{for dmtx_title, dmtx in design_matrices}}
@@ -41,11 +42,11 @@
     />
   </div>
   {{endfor}}
+  <!--  -->
+  {{else}}
+  <p>No design matrix was provided.</p>
+  {{endif}}
 </div>
-<!--  -->
-{{else}}
-<p>No design matrix was provided.</p>
-{{endif}}
 
 <h2>Mask</h2>
 <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
@@ -58,8 +59,9 @@
 </div>
 
 <h2 id="all-contrasts">Contrasts</h2>
-{{if contrasts_dict}}
 <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
+  {{if contrasts_dict}}
+  <!--  -->
   {{py: contrasts = contrasts_dict.items()}}
   <!--  -->
   {{for contrast_name, contrast_plot in contrasts}}
@@ -70,15 +72,15 @@
     />
   </div>
   {{endfor}}
+  <!--  -->
+  {{else}}
+  <p>No contrast was provided.</p>
+  {{endif}}
 </div>
-<!--  -->
-{{else}}
-<p>No contrast was provided.</p>
-{{endif}}
 
 <!--  -->
-{{if statistical_maps}}
 <h2>Stat Maps with Cluster Tables</h2>
+{{if statistical_maps}}
 <div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
   {{py: contrasts = statistical_maps.items()}}
   <!--  -->
@@ -140,8 +142,8 @@
     </details>
   </div>
   {{endfor}}
+  <!--  -->
+  {{endif}}
 </div>
-<!--  -->
-{{endif}}
 <!--  -->
 {{enddef}}
