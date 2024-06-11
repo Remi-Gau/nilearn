@@ -23,9 +23,6 @@ from matplotlib import pyplot as plt
 
 from nilearn._utils import check_niimg, fill_doc
 from nilearn._utils.niimg import safe_get_data
-from nilearn.experimental.reporting.glm_reporter import (
-    _make_surface_glm_report,
-)
 from nilearn.experimental.surface import SurfaceMasker
 from nilearn.maskers import NiftiMasker
 from nilearn.plotting import plot_glass_brain, plot_roi, plot_stat_map
@@ -172,6 +169,10 @@ def make_glm_report(
         Contains the HTML code for the :term:`GLM` Report.
 
     """
+    from nilearn.experimental.reporting.glm_reporter import (
+        _make_surface_glm_report,
+    )
+
     if isinstance(model.masker_, SurfaceMasker):
         report_text = _make_surface_glm_report(
             model,

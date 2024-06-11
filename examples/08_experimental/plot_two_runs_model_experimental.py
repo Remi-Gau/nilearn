@@ -74,13 +74,14 @@ for volume_image in [data["func1"], data["func2"]]:
 
 # %%
 # Generate surface mask
+import numpy as np
 
 texture_left = surface.vol_to_surf(
     data["mask"], fsaverage5["pial"].parts["left"], interpolation="nearest"
-).astype("int8")
+).astype(np.int8)
 texture_right = surface.vol_to_surf(
     data["mask"], fsaverage5["pial"].parts["right"], interpolation="nearest"
-).astype("int8")
+).astype(np.int8)
 mask_img = SurfaceImage(
     mesh=fsaverage5["pial"],
     data={
@@ -93,7 +94,6 @@ mask_img = SurfaceImage(
 # %%
 # The design matrices were pre-computed,
 # we simply put them in a list of DataFrames.
-import numpy as np
 import pandas as pd
 
 design_files = [data["design_matrix1"], data["design_matrix2"]]
@@ -170,13 +170,10 @@ report = fmri_glm_multirun.generate_report(
 # We have several ways to access the report:
 
 # report  # This report can be viewed in a notebook
-report.open_in_browser()
+# report.open_in_browser()
 
 # or we can save as an html file
-# from pathlib import Path
-# output_dir = Path.cwd() / "results" / "plot_oasis"
-# output_dir.mkdir(exist_ok=True, parents=True)
-# report.save_as_html(output_dir / 'report.html')
+report.save_as_html(output_dir / "report.html")
 
 # %%
 # References
