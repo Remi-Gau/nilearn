@@ -1,149 +1,201 @@
 {{inherit "base.html"}}
 <!--  -->
-{{def report}}
-<h2>Model details</h2>
-
-<details>
-  <summary class="pure-button button-small">Parameters</summary>
-  {{if parameters}}
-  <table class="pure-table">
-    <thead>
-      <tr>
-        <th>Parameter</th>
-        <th>Value</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      {{py: params = parameters.items()}}
-      <!--  -->
-      {{for p, v in params}}
-      <tr>
-        <td data-column="Parameter">{{p}}</td>
-        <td data-column="Value">{{v}}</td>
-      </tr>
-      {{endfor}}
-    </tbody>
-  </table>
-  {{endif}}
-</details>
-
-<h2>Design Matrix</h2>
-<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
-  {{if design_matrices_dict}}
-  <!--  -->
-  {{py: design_matrices = design_matrices_dict.items()}}
-  <!--  -->
-  {{for dmtx_title, dmtx in design_matrices}}
-  <div class="scrollit">
-    <img
-      src="data:image/svg+xml,{{dmtx}}"
-      alt="Plot of Design Matrix used in {{dmtx_title}}."
-    />
-  </div>
-  {{endfor}}
-  <!--  -->
-  {{else}}
-  <p>No design matrix was provided.</p>
-  {{endif}}
+{{def navbar}}
+<div class="sticky-header">
+  <nav id="navbar">
+    <ul>
+      <li>
+        <a href="#model-details"
+          ><button class="pure-button">Model details</button></a
+        >
+      </li>
+      <li>
+        <a href="#design-matrix"
+          ><button class="pure-button">Design Matrix</button></a
+        >
+      </li>
+      <li>
+        <a href="#mask"><button class="pure-button">Mask</button></a>
+      </li>
+      <li>
+        <a href="#contrasts"><button class="pure-button">Contrasts</button></a>
+      </li>
+      <li>
+        <a href="#statistical-maps"
+          ><button class="pure-button">Statistical Maps</button></a
+        >
+      </li>
+      <li>
+        <a href="#about"><button class="pure-button">About</button></a>
+      </li>
+    </ul>
+  </nav>
 </div>
-
-<h2>Mask</h2>
-<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
-  <img
-    class="pure-img"
-    width="75%"
-    src="data:image/svg+xml;base64, {{mask_plot}}"
-    alt="Model did not supply a mask image."
-  />
-</div>
-
-<h2 id="all-contrasts">Contrasts</h2>
-<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
-  {{if contrasts_dict}}
-  <!--  -->
-  {{py: contrasts = contrasts_dict.items()}}
-  <!--  -->
-  {{for contrast_name, contrast_plot in contrasts}}
-  <div class="scrollit" style="padding-top: 10px">
-    <img
-      src="data:image/svg+xml,{{contrast_plot}}"
-      alt="Plot of the contrast: {{contrast_name}}."
-    />
-  </div>
-  {{endfor}}
-  <!--  -->
-  {{else}}
-  <p>No contrast was provided.</p>
-  {{endif}}
-</div>
-
+{{enddef}}
 <!--  -->
-<h2>Stat Maps with Cluster Tables</h2>
-{{if statistical_maps}}
-<div style="display: flex; flex-wrap: wrap; justify-content: space-evenly">
-  {{py: contrasts = statistical_maps.items()}}
-  <!--  -->
-  {{for contrast_name, maps in contrasts}}
-  <div style="margin: 10px">
-    <h3>Contrast: {{contrast_name}}</h3>
+{{def report}}
+<section>
+  <h2 id="model-details">Model details</h2>
+  <details>
+    <summary class="pure-button button-small">Parameters</summary>
+    {{if parameters}}
+    <table class="pure-table">
+      <thead>
+        <tr>
+          <th>Parameter</th>
+          <th>Value</th>
+        </tr>
+      </thead>
 
-    {{py: images = maps.items()}}
+      <tbody>
+        {{py: params = parameters.items()}}
+        <!--  -->
+        {{for p, v in params}}
+        <tr>
+          <td data-column="Parameter">{{p}}</td>
+          <td data-column="Value">{{v}}</td>
+        </tr>
+        {{endfor}}
+      </tbody>
+    </table>
+    {{endif}}
+  </details>
+</section>
+
+<section>
+  <h2 id="design-matrix">Design Matrix</h2>
+  <div class="image-container">
+    {{if design_matrices_dict}}
     <!--  -->
-    {{for key, value in images}}
+    {{py: design_matrices = design_matrices_dict.items()}}
     <!--  -->
-    {{if key == "stat_map_img"}}
+    {{for dmtx_title, dmtx in design_matrices}}
+    <div class="scrollit">
+      <img
+        src="data:image/svg+xml,{{dmtx}}"
+        alt="Plot of Design Matrix used in {{dmtx_title}}."
+      />
+    </div>
+    {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No design matrix was provided.</p>
+    {{endif}}
+  </div>
+</section>
+
+<section>
+  <h2 id="mask">Mask</h2>
+  <div class="image-container">
+    {{if mask_plot}}
     <img
       class="pure-img"
-      src="data:image/svg+xml;base64,{{value}}"
-      alt="Stat map plot for the contrast: {{contrast_name}}"
+      width="75%"
+      src="data:image/svg+xml;base64, {{mask_plot}}"
+      alt="Mask image."
     />
-    {{elif key == "contrast_img"}}
-    <details>
-      <summary class="pure-button button-small">Contrast Plot</summary>
-      <div class="scrollit">
-        <img
-          src="data:image/svg+xml,{{value}}"
-          alt="Stat map plot for the contrast: {{contrast_name}}"
-        />
-      </div>
-    </details>
+    {{else}}
+    <p>No mask was provided.</p>
     {{endif}}
+  </div>
+</section>
+
+<section>
+  <h2 id="contrasts">Contrasts</h2>
+  <div class="image-container">
+    {{if contrasts_dict}}
     <!--  -->
+    {{py: contrasts = contrasts_dict.items()}}
+    <!--  -->
+    {{for contrast_name, contrast_plot in contrasts}}
+    <div class="scrollit" style="padding-top: 10px">
+      <img
+        src="data:image/svg+xml,{{contrast_plot}}"
+        alt="Plot of the contrast: {{contrast_name}}."
+      />
+    </div>
     {{endfor}}
+    <!--  -->
+    {{else}}
+    <p>No contrast was provided.</p>
+    {{endif}}
+  </div>
+</section>
 
-    <details>
-      <summary class="pure-button button-small">Cluster Table</summary>
-      {{if cluster_table_details}}
-      <table class="pure-table">
-        <thead>
-          <tr>
-            <th>Parameter</th>
-            <th>Value</th>
-          </tr>
-        </thead>
+<section>
+  <h2 id="statistical-maps">Statistical Maps</h2>
+  {{if statistical_maps}}
+  <div class="image-container">
+    {{py: contrasts = statistical_maps.items()}}
+    <!--  -->
+    {{for contrast_name, maps in contrasts}}
+    <div style="margin: 10px">
+      <h3>{{contrast_name}}</h3>
 
-        <tbody>
-          {{py: cluster_params = cluster_table_details.items()}}
-          <!--  -->
-          {{for p, v in cluster_params}}
-          <tr>
-            <td data-column="Parameter">{{p}}</td>
-            <td data-column="Value">{{v}}</td>
-          </tr>
-          {{endfor}}
-        </tbody>
-      </table>
-      {{else}}
-      <p>No cluster table parameter provided</p>
+      {{py: images = maps.items()}}
+      <!--  -->
+      {{for key, value in images}}
+      <!--  -->
+      {{if key == "stat_map_img"}}
+      <img
+        class="pure-img"
+        src="data:image/svg+xml;base64,{{value}}"
+        alt="Stat map plot for the contrast: {{contrast_name}}"
+      />
+      {{elif key == "contrast_img"}}
+      <details>
+        <summary class="pure-button button-small">Contrast Plot</summary>
+        <div class="scrollit">
+          <img
+            src="data:image/svg+xml,{{value}}"
+            alt="Stat map plot for the contrast: {{contrast_name}}"
+          />
+        </div>
+      </details>
       {{endif}}
       <!--  -->
-      {{cluster_table}}
-    </details>
+      {{endfor}}
+
+      <details>
+        <summary class="pure-button button-small">Cluster Table</summary>
+        {{if cluster_table_details}}
+        <table class="pure-table">
+          <thead>
+            <tr>
+              <th>Parameter</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {{py: cluster_params = cluster_table_details.items()}}
+            <!--  -->
+            {{for p, v in cluster_params}}
+            <tr>
+              <td data-column="Parameter">{{p}}</td>
+              <td data-column="Value">{{v}}</td>
+            </tr>
+            {{endfor}}
+          </tbody>
+        </table>
+        {{else}}
+        <p>No cluster table parameter provided</p>
+        {{endif}}
+        <!--  -->
+        {{cluster_table}}
+      </details>
+    </div>
+    {{endfor}}
+    <!--  -->
   </div>
-  {{endfor}}
-  <!--  -->
   {{endif}}
-</div>
-<!--  -->
+</section>
+
+<section>
+  <h2 id="about">About</h2>
+  <ul>
+    <li>Date preprocessed: <time>{{date}}</time></li>
+  </ul>
+</section>
+
 {{enddef}}

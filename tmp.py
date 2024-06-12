@@ -12,3 +12,5 @@ model = FirstLevelModel()
 report = _make_surface_glm_report(model)
 
 report.save_as_html(Path() / "results" / "tmp.html")
+
+print(report.body)

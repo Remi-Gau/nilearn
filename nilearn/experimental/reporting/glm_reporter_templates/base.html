@@ -1,28 +1,28 @@
 <!-- CSS for the report -->
-<style type="text/css">
-  {{css}}
-</style>
+<article>
+  <style type="text/css">
+    {{css}}
+  </style>
 
-<div class="nilearn_report">
-  <h1 class="withtooltip">
-    {{title}}
-    <span class="tooltiptext">{{docstring}}</span>
-  </h1>
+  <div class="nilearn_report">
+    <h1 class="withtooltip">
+      {{title}}
+      <span class="tooltiptext">{{docstring}}</span>
+    </h1>
 
-  <div class="pure-g" style="display: flex; justify-content: center">
-    <div class="pure-u-4-5 pure-u-md-4-5 raise">
-      {{if warning_messages}}
-      <div class="warning">
-        <h2 class="elem-warn">WARNING</h2>
-        <ul>
-          {{for message in warning_messages}}
-          <li class="elem-warn">{{message}}</li>
-          {{endfor}}
-        </ul>
+    <div class="pure-g" style="display: flex; justify-content: center">
+      <div class="pure-u-7-8 pure-u-md-7-8 raise">
+        {{if warning_messages}}
+        <div class="warning">
+          <h2 class="elem-warn">WARNING</h2>
+          <ul>
+            {{for message in warning_messages}}
+            <li class="elem-warn">{{message}}</li>
+            {{endfor}}
+          </ul>
+        </div>
+        {{endif}} {{self.navbar|html}} {{self.report|html}}
       </div>
-      {{endif}}
-
-      <div>{{self.report|html}}</div>
     </div>
   </div>
-</div>
+</article>

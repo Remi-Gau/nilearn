@@ -2,10 +2,21 @@
 <html lang="en">
   <head>
     <title>Nilearn - $page_title</title>
+
     <link
       rel="icon"
       type="image/x-icon"
       href="https://raw.githubusercontent.com/nilearn/nilearn/main/doc/logos/favicon.ico"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
+      integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
+      crossorigin="anonymous"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css"
     />
     <meta
       name="viewport"
@@ -19,31 +30,19 @@
   </head>
 
   <body>
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/purecss@1.0.0/build/pure-min.css"
-      integrity="sha384-nn4HPE8lTHyVtfCBi5yW9d20FjT8BJwUXyWZT9InLYax14RDjBj46LmSztkmNP9w"
-      crossorigin="anonymous"
-    />
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/purecss@1.0.0/build/grids-responsive-min.css"
-    />
-    $body
+    <main class="pure-g">
+      <div class="pure-u-7-8 pure-u-md-7-8 raise">$body</div>
+    </main>
   </body>
-
   <footer>
-    <div class="footer">
-      <address>
-        <p style="text-align: center">
-          Built using
-          <a href="https://nilearn.github.io">Nilearn (version=$version)</a>.
-          Source code on
-          <a href="https://github.com/nilearn/nilearn">GitHub</a>. File bugs &
-          feature requests
-          <a href="https://github.com/nilearn/nilearn/issues">here</a>.
-        </p>
-      </address>
-    </div>
+    <address>
+      <p>
+        Built using
+        <a href="https://nilearn.github.io">Nilearn (version=$version)</a>.
+        Source code on <a href="https://github.com/nilearn/nilearn">GitHub</a>.
+        File bugs &amp; feature requests
+        <a href="https://github.com/nilearn/nilearn/issues">here</a>.
+      </p>
+    </address>
   </footer>
 </html>

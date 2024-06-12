@@ -296,6 +296,8 @@ class HTMLReport(HTMLDocument):
     Methods such as ``save_as_html``, or ``open_in_browser``
     are inherited from class ``nilearn.plotting.html_document.HTMLDocument``.
 
+    foo
+
     """
 
     def __init__(self, head_tpl, body, head_values=None):
@@ -331,7 +333,7 @@ class HTMLReport(HTMLDocument):
         html = head_tpl.safe_substitute(body=body, **head_values)
         super().__init__(html)
         self.head_tpl = head_tpl
-        self.body = body
+        self.body: str = body
 
     def _repr_html_(self):
         """Return body of the report.
@@ -340,6 +342,17 @@ class HTMLReport(HTMLDocument):
         Users normally won't call this method explicitly.
         """
         return self.body
+
+    def _hide_navbar(
+        self,
+    ):
+        self.body = self.body.replace(
+            '<nav id="navbar">', '<nav id="navbar" style="display: none">'
+        )
+        self.body = self.body.replace(
+            '<nav id="navbar" style="display: block">',
+            '<nav id="navbar" style="display: none">',
+        )
 
     def __str__(self):
         return self.body

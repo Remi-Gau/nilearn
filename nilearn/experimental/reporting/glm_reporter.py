@@ -1,5 +1,6 @@
 """Functionality to create reports for GLM on surface data."""
 
+import datetime
 import warnings
 from collections import OrderedDict
 from decimal import Decimal
@@ -151,7 +152,6 @@ def _make_surface_glm_report(
             fig = plotting.plot_surf_stat_map(
                 stat_map=contrast_map,
                 hemi="left",
-                title=contrast_name,
                 colorbar=True,
                 cmap="seismic",
                 threshold=threshold,
@@ -187,6 +187,7 @@ def _make_surface_glm_report(
         cluster_table_details=cluster_table_details,
         mask_plot=mask_plot,
         cluster_table=None,
+        date=datetime.datetime.now().replace(microsecond=0).isoformat(),
     )
 
     # revert HTML safe substitutions in CSS sections
