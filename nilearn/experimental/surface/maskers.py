@@ -34,6 +34,22 @@ def check_same_n_vertices(mesh_1: PolyMesh, mesh_2: PolyMesh) -> None:
             )
 
 
+def _compute_mean_image(img: SurfaceImage):
+    """Compute mean of the surface (for 'time series')."""
+    if len(img.shape) <= 1:
+        return img
+    for part, value in img.data.parts.items():
+        img.data.parts[part] = np.squeeze(value.mean(axis=0)).astype(float)
+    return img
+
+
+def _get_min_max(img: SurfaceImage):
+    """Get min and max across hemisphere for a SurfaceImage."""
+    vmin = min(min(x) for x in img.data.parts.values())
+    vmax = max(max(x) for x in img.data.parts.values())
+    return vmin, vmax
+
+
 class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
     """Extract data from a SurfaceImage."""
 
@@ -98,7 +114,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         self._reporting_data = {
             "mask": None,
             "images": None,
-            "data_to_plot": None,
         }
 
     def _fit_mask_img(self, img: SurfaceImage | None) -> None:
@@ -233,13 +248,6 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
             **parameters["clean_kwargs"],
         )
 
-        if self.reports:
-            data_to_plot = output
-            #  get mean image if time series
-            if len(img.shape) > 1:
-                data_to_plot = data_to_plot.mean(axis=0)
-            self._reporting_data["data_to_plot"] = data_to_plot
-
         return output
 
     def fit_transform(
@@ -353,15 +361,18 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
         from nilearn.experimental import plotting
 
-        data_to_plot = self._reporting_data["data_to_plot"]
-
-        if data_to_plot is None:
+        if not self._reporting_data["images"] and not getattr(
+            self, "mask_img_", None
+        ):
             return None
 
-        vmin = data_to_plot.min()
-        vmax = data_to_plot.max()
+        if self._reporting_data["images"]:
+            background_data = self._reporting_data["images"]
+        else:
+            background_data = self.mask_img_
 
-        img_to_plot = self.inverse_transform(data_to_plot)
+        background_data = _compute_mean_image(background_data)
+        vmin, vmax = _get_min_max(background_data)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
@@ -377,7 +388,7 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         for ax_row, view in zip(axes, views):
             for ax, hemi in zip(ax_row, hemispheres):
                 plotting.plot_surf(
-                    surf_map=img_to_plot,
+                    surf_map=background_data,
                     hemi=hemi,
                     view=view,
                     figure=fig,
@@ -386,13 +397,22 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
                     vmin=vmin,
                     vmax=vmax,
                 )
-                # plotting.plot_surf_contours(
-                #     self.mask_img_,
-                #     hemi=hemi,
-                #     view=view,
-                #     figure=fig,
-                #     axes=ax,
-                # )
+
+                colors = None
+                nb_regions = len(np.unique(self.mask_img_.data.parts[hemi]))
+                if nb_regions == 1:
+                    colors = "b"
+                elif nb_regions == 2:
+                    colors = ["w", "b"]
+
+                plotting.plot_surf_contours(
+                    self.mask_img_,
+                    hemi=hemi,
+                    view=view,
+                    figure=fig,
+                    axes=ax,
+                    colors=colors,
+                )
 
         plt.tight_layout()
 
@@ -662,19 +682,9 @@ class SurfaceLabelsMasker(BaseEstimator):
         labels_img = self._reporting_data["labels_image"]
 
         img = self._reporting_data["images"]
-
         if img:
-            if len(img.shape) > 1:
-                # average each hemisphere in case of a time series
-                for part, value in img.data.parts.items():
-                    img.data.parts[part] = np.squeeze(
-                        value.mean(axis=0)
-                    ).astype("float32", casting="unsafe")
-            data_to_plot = np.concatenate(
-                list(img.data.parts.values()), axis=-1
-            )
-            vmin = data_to_plot.min()
-            vmax = data_to_plot.max()
+            img = _compute_mean_image(img)
+            vmin, vmax = _get_min_max(img)
 
         views = ["lateral", "medial"]
         hemispheres = ["left", "right"]
