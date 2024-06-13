@@ -1,6 +1,4 @@
-section {
-  margin: 8px;
-}
+/* -----------------------  Pure framework ----------------------- */
 
 /* Add a gutter to Pure's Columns */
 .pure-g > div {
@@ -52,23 +50,113 @@ https://github.com/yahoo/pure/blob/master/LICENSE.md
   border-radius: 2px;
 }
 
-.button-xsmall {
-  font-size: 70%;
-}
-
-.button-small {
-  font-size: 85%;
-}
-
 /*!
 End pure-button class definition from pure-min.css
 */
+
+.btn {
+  background-color: #3498db;
+  color: white;
+  padding: 6px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-xsmall {
+  font-size: 70%;
+}
+
+.btn-small {
+  font-size: 85%;
+}
+
+.btn:hover,
+.btn:focus {
+  background-color: #2980b9;
+}
+
+.btn-container {
+  float: left;
+  width: 33%;
+}
+
+.empty {
+  height: 60px;
+}
+
+.table-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.scrollit {
+  overflow-x: scroll;
+}
+
+.image-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+}
 
 .container {
   display: flex;
   justify-content: center;
 }
 
+/* -----------------------  Warning banner  ----------------------- */
+.warning {
+  padding-top: 0px;
+  margin: 8px 0px 8px 0px;
+  border: solid red;
+  border-width: 1pt;
+  border-radius: 4pt;
+}
+.warning h2:first-child {
+  margin-top: 0pt;
+  background-color: #f5f5f5;
+  border-radius: 6pt 6pt 0pt 0pt;
+  padding: 4pt 0pt 4pt 4pt;
+}
+.elem-warn {
+  color: #ff0000;
+  font-weight: bold;
+}
+
+/* -----------------------  Navbar  ----------------------- */
+.navbar {
+  position: sticky; /* Apply the sticky positioning */
+  top: 0; /* Stick the element to the top of the viewport */
+  z-index: 100; /* Ensure the navbar is above other content */
+  background-color: #f5f5f5;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.navbar ul {
+  margin: 0px;
+  padding: 0px;
+  padding-left: 48px;
+  list-style-type: none;
+  display: flex;
+  justify-content: left;
+}
+.navbar ul li {
+  margin: 0px;
+  padding: 0px;
+  background-color: #f5f5f5;
+}
+.navbar ul li a {
+  padding: 8px 16px 8px 16px;
+  margin: 0px;
+  background-color: #f5f5f5;
+}
+.navbar .white-divider {
+  height: 5px;
+  background-color: white;
+}
+
+/* -----------------------  Nilearn report  ----------------------- */
 .nilearn_report {
   padding-top: 0px;
   border: solid rgb(150, 150, 150);
@@ -84,8 +172,6 @@ End pure-button class definition from pure-min.css
 .terminal .nilearn_report {
   max-width: min(50ex, 100vw); /* Needed in vscode */
 }
-
-/* Isolate us a bit from the styles specified by other stylesheets */
 
 .nilearn_report h1 {
   text-align: left;
@@ -150,7 +236,7 @@ End pure-button class definition from pure-min.css
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
-  z-index: 2;
+  z-index: 200;
 
   width: 99%;
   left: 2pt;
@@ -181,91 +267,4 @@ End pure-button class definition from pure-min.css
 
 .nilearn_report .image:hover .overlay {
   opacity: 1;
-}
-
-.btn {
-  background-color: #3498db;
-  color: white;
-  padding: 6px;
-  font-size: 16px;
-  border: none;
-  cursor: pointer;
-}
-
-.btn:hover,
-.btn:focus {
-  background-color: #2980b9;
-}
-
-.buttonContainer {
-  float: left;
-  width: 33%;
-}
-
-.empty {
-  height: 60px;
-}
-
-.table-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.scrollit {
-  overflow-x: scroll;
-}
-
-.image-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-}
-
-.warning {
-  padding-top: 0px;
-  margin: 8px 0px 8px 0px;
-  border: solid red;
-  border-width: 1pt;
-  border-radius: 4pt;
-}
-.warning h2:first-child {
-  margin-top: 0pt;
-  background-color: #f5f5f5;
-  border-radius: 6pt 6pt 0pt 0pt;
-  padding: 4pt 0pt 4pt 4pt;
-}
-.elem-warn {
-  color: #ff0000;
-  font-weight: bold;
-}
-
-.navbar {
-  position: sticky; /* Apply the sticky positioning */
-  top: 0; /* Stick the element to the top of the viewport */
-  z-index: 100; /* Ensure the navbar is above other content */
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  margin-bottom: 20px;
-}
-.navbar ul {
-  margin: 0px;
-  padding: 0px;
-  padding-left: 48px;
-  list-style-type: none;
-  display: flex;
-  justify-content: left;
-}
-.navbar ul li {
-  margin: 0px;
-  padding: 0px;
-  background-color: #f5f5f5;
-}
-.navbar ul li a {
-  padding: 8px 16px 8px 16px;
-  margin: 0px;
-  background-color: #f5f5f5;
-}
-.white-divider {
-  height: 5px;
-  background-color: white;
 }
