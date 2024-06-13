@@ -1,3 +1,125 @@
+/* GLOBALS */
+:root {
+  --main-bg-color: white;
+}
+
+/* ALIASES */
+.m-0 {
+  margin: 0px;
+}
+.mt-2 {
+  margin-top: 0px;
+}
+.mt-8 {
+  margin-top: 8px;
+}
+.mb-2 {
+  margin-bottom: 8px;
+}
+.ml-2 {
+  margin-left: 8px;
+}
+.my-0 {
+  margin-top: 0px;
+  margin-bottom: 0px;
+}
+.my-1 {
+  margin-top: 4px;
+  margin-bottom: 4px;
+}
+.my-2 {
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+
+.p-0 {
+  padding: 0px;
+}
+.p-1 {
+  padding: 4px;
+}
+.p-2 {
+  padding: 8px;
+}
+.pl-2 {
+  padding-left: 8px;
+}
+.pl-5 {
+  padding-left: 48px;
+}
+.pt-0 {
+  padding-top: 0px;
+}
+.pt-2 {
+  padding-top: 8px;
+}
+.py-2 {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.d-flex {
+  display: flex;
+}
+
+.flex-row {
+  flex-direction: column;
+}
+
+.flex-wrap {
+  flex-wrap: wrap;
+}
+
+.justify-content-center {
+  justify-content: center;
+}
+
+.justify-content-evenly {
+  justify-content: space-evenly;
+}
+
+.justify-content-left {
+  justify-content: left;
+}
+
+.fw-bold {
+  font-weight: bold;
+}
+.fw-200 {
+  font-weight: 200;
+}
+
+.fs-1 {
+  font-size: 8px;
+}
+.fs-2 {
+  font-size: 12px;
+}
+.fs-3 {
+  font-size: 16px;
+}
+.fs-5 {
+  font-size: 36px;
+}
+
+.border {
+  border-style: solid;
+}
+
+.border-1 {
+  border-width: 1pt;
+}
+
+.rounded-1 {
+  border-radius: 4px;
+}
+.rounded-2 {
+  border-radius: 8px;
+}
+.rounded-top-2 {
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
 /* -----------------------  Pure framework ----------------------- */
 
 /* Add a gutter to Pure's Columns */
@@ -64,11 +186,11 @@ End pure-button class definition from pure-min.css
 }
 
 .btn-xsmall {
-  font-size: 70%;
+  font-size: 12px;
 }
 
 .btn-small {
-  font-size: 85%;
+  font-size: 14px;
 }
 
 .btn:hover,
@@ -85,43 +207,20 @@ End pure-button class definition from pure-min.css
   height: 60px;
 }
 
-.table-section {
-  display: flex;
-  flex-direction: column;
-}
-
-.scrollit {
+.scroll-x {
   overflow-x: scroll;
 }
-
-.image-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-evenly;
-}
-
-.container {
-  display: flex;
-  justify-content: center;
+.scroll-y {
+  overflow-y: scroll;
 }
 
 /* -----------------------  Warning banner  ----------------------- */
 .warning {
-  padding-top: 0px;
-  margin: 8px 0px 8px 0px;
-  border: solid red;
-  border-width: 1pt;
-  border-radius: 4pt;
+  border-color: red;
+  color: red;
 }
 .warning h2:first-child {
-  margin-top: 0pt;
   background-color: #f5f5f5;
-  border-radius: 6pt 6pt 0pt 0pt;
-  padding: 4pt 0pt 4pt 4pt;
-}
-.elem-warn {
-  color: #ff0000;
-  font-weight: bold;
 }
 
 /* -----------------------  Navbar  ----------------------- */
@@ -130,64 +229,47 @@ End pure-button class definition from pure-min.css
   top: 0; /* Stick the element to the top of the viewport */
   z-index: 100; /* Ensure the navbar is above other content */
   background-color: #f5f5f5;
-  border-radius: 4px;
-  margin-bottom: 20px;
+}
+.navbar .pure-button {
+  margin: 0px;
 }
 .navbar ul {
-  margin: 0px;
-  padding: 0px;
-  padding-left: 48px;
   list-style-type: none;
-  display: flex;
-  justify-content: left;
 }
-.navbar ul li {
+.navbar li {
   margin: 0px;
   padding: 0px;
-  background-color: #f5f5f5;
 }
-.navbar ul li a {
-  padding: 8px 16px 8px 16px;
-  margin: 0px;
+.navbar a {
   background-color: #f5f5f5;
 }
 .navbar .white-divider {
   height: 5px;
-  background-color: white;
+  background-color: var(--main-bg-color);
 }
 
 /* -----------------------  Nilearn report  ----------------------- */
 .nilearn_report {
-  padding-top: 0px;
-  border: solid rgb(150, 150, 150);
-  border-width: 1pt;
-  border-radius: 6pt;
+  border-color: rgb(150, 150, 150);
   overflow: hidden; /* Needed to avoid scrolling in jupyter :( */
   color: black;
-  background-color: white;
-  overflow-y: scroll;
+  background-color: var(--main-bg-color);
   height: 800px;
+  overflow-y: scroll;
 }
 
+.nilearn_report section {
+  margin: 8px;
+  padding: 8px;
+}
 .terminal .nilearn_report {
   max-width: min(50ex, 100vw); /* Needed in vscode */
 }
 
-.nilearn_report h1 {
-  text-align: left;
-  margin-left: 0pt;
-  margin-right: 0pt;
-  padding-top: 5pt;
-  padding-left: 5pt;
-  font-size: 1.8em;
-}
-
 .nilearn_report h1:first-child {
-  margin-top: 0pt;
-  margin-bottom: 0px;
-  padding-left: 5pt;
   background-color: #f5f5f5;
-  border-radius: 6pt 6pt 0pt 0pt;
+  text-align: left;
+  margin-top: 18px;
 }
 
 .nilearn_report summary::-webkit-details-marker {
@@ -223,23 +305,16 @@ End pure-button class definition from pure-min.css
 .nilearn_report .withtooltip .tooltiptext {
   visibility: hidden;
   max-width: 35em;
-  width: 90%;
   background-color: rgba(24, 24, 24, 0.9);
   color: #fff;
   text-align: center;
-  font-size: 12pt;
-  font-weight: 200;
-  border-radius: 6px;
-  padding: 5px;
-
-  margin-left: 3pt;
 
   /* Position the tooltip text - see examples below! */
   position: absolute;
   z-index: 200;
 
   width: 99%;
-  left: 2pt;
+  left: 8px;
   top: 133%;
 }
 

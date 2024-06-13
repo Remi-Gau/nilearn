@@ -15,22 +15,24 @@
   {{css}}
 </style>
 
-<section class="nilearn_report">
-  <h1 class="withtooltip">
+<section class="nilearn_report pt-0 border border-1 rounded-2 scroll-y">
+  <h1 class="withtooltip m-0 mt-2 p-2 rounded-top-2 fs-5">
     {{title}}
-    <span class="tooltiptext">{{docstring}}</span>
+    <span class="tooltiptext m-1 p-1 fw-200 fs-3 border border-1 rounded-2"
+      >{{docstring}}</span
+    >
   </h1>
   {{self.navbar|html}}
 
-  <div class="pure-g container">
+  <div class="pure-g d-flex justify-content-center">
     <div class="pure-u-7-8 pure-u-md-7-8 raise">
       <!--  -->
       {{if warning_messages}}
-      <div class="warning">
-        <h2 class="elem-warn">WARNING</h2>
+      <div class="warning my-1 pt-0 border border-1 rounded-2">
+        <h2 class="mt-2 p-2 fw-bold rounded-top-2">WARNING</h2>
         <ul>
           {{for message in warning_messages}}
-          <li class="elem-warn">{{message}}</li>
+          <li class="fw-bold">{{message}}</li>
           {{endfor}}
         </ul>
       </div>

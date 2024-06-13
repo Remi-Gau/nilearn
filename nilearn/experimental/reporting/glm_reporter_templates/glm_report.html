@@ -1,8 +1,8 @@
 {{inherit "base.html"}}
 <!--  -->
 {{def navbar}}
-<nav class="navbar" id="navbar">
-  <ul>
+<nav class="navbar fw-bold" id="navbar">
+  <ul class="m-0 p-0 pt-2 pl-5 d-flex justify-content-left">
     <li>
       <a class="pure-button" href="#model-details">Model details</a>
     </li>
@@ -30,7 +30,7 @@
 <section>
   <h2 id="model-details">Model details</h2>
   <details>
-    <summary class="pure-button button-small">Parameters</summary>
+    <summary class="pure-button btn-small">Parameters</summary>
     {{if parameters}}
     <table class="pure-table">
       <thead>
@@ -57,13 +57,13 @@
 
 <section>
   <h2 id="design-matrix">Design Matrix</h2>
-  <div class="image-container">
+  <div class="d-flex flex-wrap justify-content-evenly">
     {{if design_matrices_dict}}
     <!--  -->
     {{py: design_matrices = design_matrices_dict.items()}}
     <!--  -->
     {{for dmtx_title, dmtx in design_matrices}}
-    <div class="scrollit">
+    <div class="scroll-x">
       <img
         src="data:image/svg+xml,{{dmtx}}"
         alt="Plot of Design Matrix used in {{dmtx_title}}."
@@ -79,7 +79,7 @@
 
 <section>
   <h2 id="mask">Mask</h2>
-  <div class="image-container">
+  <div class="d-flex flex-wrap justify-content-evenly">
     {{if mask_plot}}
     <img
       class="pure-img"
@@ -95,13 +95,13 @@
 
 <section>
   <h2 id="contrasts">Contrasts</h2>
-  <div class="image-container">
+  <div class="d-flex flex-wrap justify-content-evenly">
     {{if contrasts_dict}}
     <!--  -->
     {{py: contrasts = contrasts_dict.items()}}
     <!--  -->
     {{for contrast_name, contrast_plot in contrasts}}
-    <div class="scrollit" style="padding-top: 10px">
+    <div class="scroll-x" style="padding-top: 10px">
       <img
         src="data:image/svg+xml,{{contrast_plot}}"
         alt="Plot of the contrast: {{contrast_name}}."
@@ -118,7 +118,7 @@
 <section>
   <h2 id="statistical-maps">Statistical Maps</h2>
   {{if statistical_maps}}
-  <div class="image-container">
+  <div class="d-flex flex-wrap justify-content-evenly">
     {{py: contrasts = statistical_maps.items()}}
     <!--  -->
     {{for contrast_name, maps in contrasts}}
@@ -138,7 +138,7 @@
       {{elif key == "contrast_img"}}
       <details>
         <summary class="pure-button button-small">Contrast Plot</summary>
-        <div class="scrollit">
+        <div class="scroll-x">
           <img
             src="data:image/svg+xml,{{value}}"
             alt="Stat map plot for the contrast: {{contrast_name}}"
