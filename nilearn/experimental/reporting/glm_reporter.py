@@ -26,14 +26,11 @@ with warnings.catch_warnings():
     from nilearn import glm
 
 
-EXPERIMENTAL_HTML_TEMPLATE_ROOT_PATH = (
-    Path(__file__).parent / "glm_reporter_templates"
-)
-
-
 TEMPLATE_ROOT_PATH = Path(__file__).parent.parent.parent / "reporting" / "data"
 
 CSS_PATH = TEMPLATE_ROOT_PATH / "css"
+
+HTML_TEMPLATE_ROOT_PATH = TEMPLATE_ROOT_PATH / "html"
 
 
 def _make_surface_glm_report(
@@ -163,9 +160,7 @@ def _make_surface_glm_report(
                 "contrast_img": contrasts_dict[contrast_name],
             }
 
-    body_template_path = (
-        EXPERIMENTAL_HTML_TEMPLATE_ROOT_PATH / "glm_report.html"
-    )
+    body_template_path = HTML_TEMPLATE_ROOT_PATH / "glm_report.html"
     tpl = tempita.HTMLTemplate.from_filename(
         str(body_template_path),
         encoding="utf-8",
