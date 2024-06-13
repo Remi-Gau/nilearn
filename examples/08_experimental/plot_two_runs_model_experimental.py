@@ -72,24 +72,8 @@ for volume_image in [data["func1"], data["func2"]]:
         )
     )
 
-# %%
-# Generate surface mask
+
 import numpy as np
-
-texture_left = surface.vol_to_surf(
-    data["mask"], fsaverage5["pial"].parts["left"], interpolation="nearest"
-).astype(np.int8)
-texture_right = surface.vol_to_surf(
-    data["mask"], fsaverage5["pial"].parts["right"], interpolation="nearest"
-).astype(np.int8)
-mask_img = SurfaceImage(
-    mesh=fsaverage5["pial"],
-    data={
-        "left": texture_left.T,
-        "right": texture_right.T,
-    },
-)
-
 
 # %%
 # The design matrices were pre-computed,
@@ -109,7 +93,6 @@ design_matrices = [pd.DataFrame(np.load(df)["X"]) for df in design_files]
 from nilearn.glm.first_level import FirstLevelModel
 
 fmri_glm = FirstLevelModel(
-    # mask_img=mask_img,
     minimize_memory=True,
 )
 

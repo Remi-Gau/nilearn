@@ -241,4 +241,4 @@ report = glm.generate_report(
     title="surface-based example",
 )
 
-report.save_as_html(Path() / "glm.html")
+report.save_as_html(Path() / "localizer.html")

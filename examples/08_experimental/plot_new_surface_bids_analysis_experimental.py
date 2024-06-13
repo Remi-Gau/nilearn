@@ -174,4 +174,4 @@ report = first_level_glm.generate_report(
     title="BIDS surface-based example",
 )
 
-report.save_as_html(Path() / "glm.html")
+report.save_as_html(Path() / "bids.html")
