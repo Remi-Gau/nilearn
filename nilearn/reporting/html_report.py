@@ -156,6 +156,7 @@ def _update_template(
         parameters=parameters,
         **data,
         css=css,
+        warning_messages=[],
     )
 
     # revert HTML safe substitutions in CSS sections
@@ -223,6 +224,8 @@ def generate_report(estimator):
     else:
         data = {}
 
+    warning_messages = []
+
     if not hasattr(estimator, "_reporting_data"):
         warnings.warn(
             "This object has not been fitted yet ! "
@@ -233,14 +236,15 @@ def generate_report(estimator):
             "This report was not generated. Please `fit` the object."
         )
         if "warning_message" in data and not data["warning_message"]:
-            data["warning_message"] = warning_message
+            warning_messages.append(warning_message)
         return _update_template(
             title="Empty Report",
-            docstring=warning_message,
+            docstring="",
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
+            warning_messages=warning_messages,
         )
 
     elif estimator._reporting_data is None:
@@ -254,15 +258,16 @@ def generate_report(estimator):
             "Please check that reporting is enabled."
         )
         if "warning_message" in data and not data["warning_message"]:
-            data["warning_message"] = warning_message
+            warning_messages.append(warning_message)
 
         return _update_template(
             title="Empty Report",
-            docstring=warning_message,
+            docstring="",
             content=_embed_img(None),
             overlay=None,
             parameters={},
             data=data,
+            warning_messages=warning_messages,
         )
 
     return _create_report(estimator, data)
