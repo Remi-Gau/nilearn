@@ -117,7 +117,7 @@
   font-size: 36px;
 }
 
-@media (max-width: 1000px) {
+@media (max-width: 1023px) {
   .fs-5 {
     font-size: 30px;
   }
@@ -309,7 +309,7 @@ End pure-button class definition from pure-min.css
   transform: rotate(-45deg);
 }
 
-@media (max-width: 765px) {
+@media (max-width: 1023px) {
   .custom-toggle {
     display: block;
   }
