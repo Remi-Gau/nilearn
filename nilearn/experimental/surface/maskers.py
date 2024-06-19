@@ -310,7 +310,17 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
 
     def generate_report(self):
         """Generate a report."""
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
         return generate_report(self)
 
@@ -322,23 +332,9 @@ class SurfaceMasker(BaseEstimator, TransformerMixin, CacheMixin):
         displays : list
             A list of all displays to be rendered.
         """
-        from nilearn.reporting.utils import figure_to_png_base64
+        import matplotlib.pyplot as plt
 
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(
-                    category=ImportWarning,
-                    message=mpl_unavail_msg,
-                    stacklevel=3,
-                )
-                return [None]
+        from nilearn.reporting.utils import figure_to_png_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
@@ -469,13 +465,9 @@ class SurfaceLabelsMasker(BaseEstimator):
                 [str(label) for label in self.labels_]
             )
         else:
-            tmp = []
-            for x in self.labels_:
-                if isinstance(label_names[x], bytes):
-                    tmp.append(label_names[x].decode("utf-8"))
-                else:
-                    tmp.append(label_names[x])
-            self.label_names_ = np.asarray(tmp)
+            self.label_names_ = np.asarray(
+                [label_names[x] for x in self.labels_]
+            )
 
         self.reports = reports
         self.cmap = kwargs.get("cmap", "inferno")
@@ -631,7 +623,17 @@ class SurfaceLabelsMasker(BaseEstimator):
 
     def generate_report(self):
         """Generate a report."""
-        from nilearn.reporting.html_report import generate_report
+        try:
+            from nilearn.reporting.html_report import generate_report
+        except ImportError:
+            with warnings.catch_warnings():
+                mpl_unavail_msg = (
+                    "Matplotlib is not imported! "
+                    "No reports will be generated."
+                )
+                warnings.filterwarnings("always", message=mpl_unavail_msg)
+                warnings.warn(category=ImportWarning, message=mpl_unavail_msg)
+                return [None]
 
         return generate_report(self)
 
@@ -643,23 +645,9 @@ class SurfaceLabelsMasker(BaseEstimator):
         displays : list
             A list of all displays to be rendered.
         """
-        from nilearn.reporting.utils import figure_to_png_base64
+        import matplotlib.pyplot as plt
 
-        try:
-            import matplotlib.pyplot as plt
-        except ImportError:
-            with warnings.catch_warnings():
-                mpl_unavail_msg = (
-                    "Matplotlib is not imported! "
-                    "No reports will be generated."
-                )
-                warnings.filterwarnings("always", message=mpl_unavail_msg)
-                warnings.warn(
-                    category=ImportWarning,
-                    message=mpl_unavail_msg,
-                    stacklevel=3,
-                )
-                return [None]
+        from nilearn.reporting.utils import figure_to_png_base64
 
         # Handle the edge case where this function is
         # called with a masker having report capabilities disabled
