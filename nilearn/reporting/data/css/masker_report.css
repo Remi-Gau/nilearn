@@ -77,7 +77,7 @@
   display: flex;
 }
 
-.flex-row {
+.flex-column {
   flex-direction: column;
 }
 
@@ -95,6 +95,10 @@
 
 .justify-content-left {
   justify-content: left;
+}
+
+.justify-content-space-around {
+  justify-content: space-around;
 }
 
 .fw-bold {
@@ -408,4 +412,8 @@ End pure-button class definition from pure-min.css
 
 .nilearn_report .image:hover .overlay {
   opacity: 1;
+}
+
+.nilearn_report .main-container {
+  min-height: 700px;
 }
