@@ -44,6 +44,9 @@ def _make_surface_glm_report(
     bg_img=None,
 ):
 
+    if bg_img == "MNI152TEMPLATE":
+        bg_img = None
+
     title = f" - {title}" if title else ""
 
     selected_attributes = [

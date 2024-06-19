@@ -84,7 +84,14 @@ def _str_params(params):
 
 
 def _update_template(
-    title, docstring, content, overlay, parameters, data, template_name=None
+    title,
+    docstring,
+    content,
+    overlay,
+    parameters,
+    data,
+    template_name=None,
+    warning_messages=None,
 ):
     """Populate a report with content.
 
@@ -131,6 +138,8 @@ def _update_template(
         An instance of a populated HTML report.
 
     """
+    if warning_messages is None:
+        warning_messages = []
     resource_path = Path(__file__).resolve().parent / "data"
 
     if template_name is None:
@@ -156,7 +165,7 @@ def _update_template(
         parameters=parameters,
         **data,
         css=css,
-        warning_messages=[],
+        warning_messages=warning_messages,
     )
 
     # revert HTML safe substitutions in CSS sections
