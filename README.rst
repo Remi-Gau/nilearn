@@ -106,7 +106,7 @@ If no error is raised, you have installed nilearn correctly.
 Drop-in Hours
 =============
 
-The Nilearn team organizes regular online drop-in hours to answer questions,
+The Nilearn team organizes  regular online drop-in hours to answer questions,
 discuss feature requests, or have any Nilearn-related discussions. Nilearn
 drop-in hours occur *every Wednesday from 4pm to 5pm UTC*, and we make sure that at
 least one member of the core-developer team is available. These events are held
