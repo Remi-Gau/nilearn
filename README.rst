@@ -8,7 +8,7 @@
 
 .. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
     :target: https://github.com/nilearn/nilearn/actions
-    :alt: Github Actions Build Status
+    :alt: Github Actions  Build Status
 
 .. image:: https://codecov.io/gh/nilearn/nilearn/branch/main/graph/badge.svg
     :target: https://codecov.io/gh/nilearn/nilearn
