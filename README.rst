@@ -3,7 +3,7 @@
     :alt: Pypi Package
 
 .. image:: https://img.shields.io/pypi/pyversions/nilearn.svg
-    :target: https://pypi.org/project/nilearn/
+    :target: https://pypi.org/project/nilearn/ 
     :alt: PyPI - Python Version
 
 .. image:: https://github.com/nilearn/nilearn/workflows/build/badge.svg?branch=main&event=push
