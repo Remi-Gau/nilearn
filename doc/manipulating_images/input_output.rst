@@ -263,6 +263,16 @@ data, which we call Niimgs or Niimg-4D. Accepted input arguments are:
    If multiple images are loaded into memory sequentially, another solution may
    be to `uncache <https://nipy.org/nibabel/images_and_memory.html#using-uncache>`_ one before loading and performing operations on another.
 
+Surface data
+------------
+
+
+.. warning::
+
+  fsaverage as provided with FreeSurfer is not in MNI152 space
+
+  https://onlinelibrary.wiley.com/doi/pdfdirect/10.1002/hbm.24213
+
 Text files: phenotype or behavior
 ----------------------------------
 
