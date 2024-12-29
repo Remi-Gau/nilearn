@@ -2214,5 +2214,7 @@ def smooth_img(
         weights[hemi] = w
 
     smoothed_imgs = new_img_like(imgs, new_data)
+    weights = new_img_like(imgs, weights)
+
 
     return smoothed_imgs, weights

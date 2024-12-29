@@ -1098,15 +1098,6 @@ def test_inmemorymesh_index_error(in_memory_mesh):
         in_memory_mesh[2]
 
 
-def test_smooth_img(surf_img_1d):
-    surf_data_smooth, _ = smooth_img(surf_img_1d, iterations=1, match="sum")
-    # checking that output was properly normalized
-    assert np.isclose(
-        np.sum(surf_data_smooth.data.parts["right"]),
-        np.sum(surf_img_1d.data.parts["right"]),
-    )
-
-
 def test_mean_img(surf_img_1d, surf_img_2d):
     """Check that mean is properly computed over 'time points'."""
     # one 'time point' image returns same
@@ -1206,3 +1197,21 @@ def test_index_img_wrong_input():
     """Check that only SurfaceImage is accepted as input."""
     with pytest.raises(TypeError, match="Input must a be SurfaceImage"):
         index_img(1, index=1)
+
+
+def test_smooth_img(surf_img_1d):
+    surf_data_smooth, weights = smooth_img(surf_img_1d, iterations=1, match="sum")
+
+    print(weights.shape)
+    print(surf_data_smooth.shape)
+
+    # checking that output was properly normalized
+    assert np.isclose(
+        np.sum(surf_data_smooth.data.parts["right"]),
+        np.sum(surf_img_1d.data.parts["right"]),
+    )
+
+@pytest.mark.parametrize("match", ['sum', 'mean', 'var', 'dist', None])
+def test_smooth_img_match(surf_img_1d, match):
+    """Smole test for match parameter."""
+    surf_data_smooth, _ = smooth_img(surf_img_1d, iterations=1, match=match)

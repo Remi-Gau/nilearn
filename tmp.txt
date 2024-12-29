@@ -1,0 +1,49 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.1, pytest-8.3.4, pluggy-1.5.0 -- /workspaces/nilearn/.venv/bin/python3
+cachedir: .pytest_cache
+Using --randomly-seed=1591176711
+rootdir: /workspaces/nilearn
+configfile: pyproject.toml
+plugins: cov-6.0.0, reporter-0.5.3, reporter-html1-0.9.2, xdist-3.6.1, randomly-3.16.0
+collecting ... collected 144 items / 138 deselected / 6 selected
+
+nilearn/surface/tests/test_surface.py::test_smooth_img (9,)
+(9,)
+PASSED
+nilearn/surface/tests/test_surface.py::test_smooth_img_match[dist] PASSED
+nilearn/surface/tests/test_surface.py::test_smooth_img_match[mean] PASSED
+nilearn/surface/tests/test_surface.py::test_smooth_img_match[var] PASSED
+nilearn/surface/tests/test_surface.py::test_smooth_img_match[sum] PASSED
+nilearn/surface/tests/test_surface.py::test_smooth_img_match[None] PASSED
+
+---------- coverage: platform linux, python 3.12.1-final-0 -----------
+Name                               Stmts   Miss Branch BrPart  Cover
+--------------------------------------------------------------------
+nilearn/surface/__init__.py            2      0      0      0   100%
+nilearn/surface/_testing.py           15     10      4      0    26%
+nilearn/surface/data/__init__.py       0      0      0      0   100%
+nilearn/surface/surface.py           605    396    232     24    30%
+--------------------------------------------------------------------
+TOTAL                                622    406    236     24    30%
+
+
+============================== slowest durations ===============================
+0.02s setup    nilearn/surface/tests/test_surface.py::test_smooth_img
+0.00s setup    nilearn/surface/tests/test_surface.py::test_smooth_img_match[dist]
+0.00s setup    nilearn/surface/tests/test_surface.py::test_smooth_img_match[var]
+0.00s setup    nilearn/surface/tests/test_surface.py::test_smooth_img_match[mean]
+0.00s setup    nilearn/surface/tests/test_surface.py::test_smooth_img_match[None]
+0.00s setup    nilearn/surface/tests/test_surface.py::test_smooth_img_match[sum]
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img_match[dist]
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img_match[var]
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img_match[mean]
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img_match[sum]
+0.00s call     nilearn/surface/tests/test_surface.py::test_smooth_img_match[None]
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img_match[None]
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img_match[dist]
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img_match[sum]
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img_match[mean]
+0.00s teardown nilearn/surface/tests/test_surface.py::test_smooth_img_match[var]
+====================== 6 passed, 138 deselected in 0.54s =======================
