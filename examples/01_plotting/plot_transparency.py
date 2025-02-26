@@ -61,6 +61,8 @@ is shown in the rest of this example.
 
 """
 
+# sphinx_gallery_thumbnail_number = 2
+
 import matplotlib.pyplot as plt
 
 from nilearn import datasets
