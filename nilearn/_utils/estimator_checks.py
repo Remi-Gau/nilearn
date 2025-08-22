@@ -271,13 +271,13 @@ def return_expected_failed_checks(
         "check_estimators_fit_returns_self": (
             "replaced by check_fit_returns_self"
         ),
+        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
         "check_fit_score_takes_y": (
-            "replaced by check_masker_fit_score_takes_y"
+            "replaced by check_img_estimator_fit_score_takes_y"
         ),
-        "check_estimators_pickle": "replaced by check_img_estimator_pickle",
         "check_n_features_in": "replaced by check_img_estimator_n_elements",
         "check_n_features_in_after_fitting": (
             "replaced by check_img_estimator_n_elements"
@@ -342,8 +342,6 @@ def return_expected_failed_checks(
             "check_fit_check_is_fitted": (
                 "replaced by check_img_estimator_fit_check_is_fitted"
             ),
-            # nilearn replacements required
-            "check_fit_score_takes_y": "TODO",
         }
 
     if isinstance(estimator, (_BaseDecomposition,)):
@@ -445,6 +443,9 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_fit_check_is_fitted": (
             "replaced by check_img_estimator_fit_check_is_fitted"
         ),
+        "check_fit_score_takes_y": (
+            "replaced by check_img_estimator_fit_score_takes_y"
+        ),
         "check_pipeline_consistency": (
             "replaced by check_img_estimator_pipeline_consistency"
         ),
@@ -468,7 +469,6 @@ def expected_failed_checks_decoders(estimator) -> dict[str, str]:
         "check_estimators_nan_inf": "TODO",
         "check_estimators_overwrite_params": "TODO",
         "check_fit_idempotent": "TODO",
-        "check_fit_score_takes_y": "TODO",
         "check_methods_sample_order_invariance": "TODO",
         "check_methods_subset_invariance": "TODO",
         "check_positive_only_tag_during_fit": "TODO",
@@ -632,6 +632,7 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_img_estimator_fit_check_is_fitted)
         yield (clone(estimator), check_img_estimator_overwrite_params)
         yield (clone(estimator), check_img_estimator_pickle)
+        yield (clone(estimator), check_img_estimator_fit_score_takes_y)
         yield (clone(estimator), check_img_estimator_n_elements)
         yield (clone(estimator), check_img_estimator_pipeline_consistency)
 
@@ -641,6 +642,8 @@ def nilearn_check_generator(estimator: BaseEstimator):
         if is_classifier(estimator) or is_regressor(estimator):
             yield (clone(estimator), check_supervised_img_estimator_y_no_nan)
             yield (clone(estimator), check_decoder_empty_data_messages)
+            yield (clone(estimator), check_decoder_compatibility_mask_image)
+            yield (clone(estimator), check_decoders_with_surface_data)
             if is_regressor(estimator):
                 yield (
                     clone(estimator),
@@ -652,7 +655,6 @@ def nilearn_check_generator(estimator: BaseEstimator):
         yield (clone(estimator), check_masker_compatibility_mask_image)
         yield (clone(estimator), check_masker_dtypes)
         yield (clone(estimator), check_masker_empty_data_messages)
-        yield (clone(estimator), check_masker_fit_score_takes_y)
         yield (clone(estimator), check_masker_fit_with_empty_mask)
         yield (
             clone(estimator),
@@ -1316,6 +1318,53 @@ def check_img_estimator_requires_y_none(estimator) -> None:
 
 
 @ignore_warnings()
+def check_img_estimator_fit_score_takes_y(estimator):
+    """Replace sklearn check_fit_score_takes_y for maskers.
+
+    Check that all estimators accept an (optional) y
+    in fit / fit_transform and score so they can be used in pipelines.
+
+    For decoders, y is not optional
+    """
+    if is_glm(estimator):
+        # GLM estimators take no "y" at all.
+        return
+
+    for attr in ["fit", "fit_transform", "score"]:
+        if not hasattr(estimator, attr):
+            continue
+
+        if is_classifier(estimator) or is_regressor(estimator):
+            tmp = {
+                k: v.default
+                for k, v in inspect.signature(
+                    getattr(estimator, attr)
+                ).parameters.items()
+                if v.default is inspect.Parameter.empty
+            }
+            if "y" not in tmp:
+                raise ValueError(
+                    f"{estimator.__class__.__name__} "
+                    f"is missing parameter 'y' for the method '{attr}'."
+                )
+
+        else:
+            tmp = {
+                k: v.default
+                for k, v in inspect.signature(
+                    getattr(estimator, attr)
+                ).parameters.items()
+                if v.default is not inspect.Parameter.empty
+            }
+            if "y" not in tmp:
+                raise ValueError(
+                    f"{estimator.__class__.__name__} "
+                    f"is missing 'y=None' for the method '{attr}'."
+                )
+            assert tmp["y"] is None
+
+
+@ignore_warnings()
 def check_img_estimator_n_elements(estimator):
     """Check n_elements is set during fitting and used after that.
 
@@ -1442,6 +1491,95 @@ def check_decoder_empty_data_messages(estimator):
 
     with pytest.raises(ValueError, match="empty"):
         estimator.fit(X, y)
+
+
+@ignore_warnings()
+def check_decoder_compatibility_mask_image(estimator_orig):
+    """Check compatibility of the mask_img and images for decoders.
+
+    Compatibility should be check for fit, score, predict, decision function.
+    """
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
+    estimator = clone(estimator_orig)
+
+    # fitting volume data when the mask is a surface should fail
+    estimator.mask = _make_surface_mask()
+
+    if isinstance(estimator, BaseSpaceNet):
+        # TODO: remove when BaseSpaceNet support surface data
+        with pytest.raises(
+            TypeError, match=("input should be a NiftiLike object")
+        ):
+            fit_estimator(estimator)
+        return
+
+    with pytest.raises(
+        TypeError, match=("Mask and input images must be of compatible types")
+    ):
+        fit_estimator(estimator)
+
+    estimator = clone(estimator_orig)
+
+    X, y = generate_data_to_fit(estimator)
+    estimator.fit(X, y)
+
+    # decoders were fitted with nifti images
+    # so running the following method with surface image should fail
+    for method in ["score", "predict", "decision_function"]:
+        if not hasattr(estimator, method):
+            continue
+
+        input = (_make_surface_img(3),)
+        if method == "score":
+            input = (_make_surface_img(3), y)
+
+        with pytest.raises(
+            TypeError,
+            match=("Mask and input images must be of compatible types"),
+        ):
+            getattr(estimator, method)(*input)
+
+
+@ignore_warnings()
+def check_decoders_with_surface_data(estimator_orig):
+    """Test fit and other methods with surface image."""
+    if isinstance(estimator_orig, SearchLight):
+        # note searchlight does not fit Surface data
+        return
+
+    n_samples = 50
+    y = _rng().choice([0, 1], size=n_samples)
+    X = _make_surface_img(n_samples)
+
+    estimator = clone(estimator_orig)
+
+    for mask in [None, SurfaceMasker(), _surf_mask_1d(), _make_surface_mask()]:
+        estimator.mask = mask
+        if hasattr(estimator, "clustering_percentile"):
+            # for FREM decoders include all elements
+            # to avoid getting 0 clusters to work with
+            estimator.clustering_percentile = 100
+
+        if isinstance(estimator, BaseSpaceNet):
+            # TODO: remove when BaseSpaceNet support surface data
+            with pytest.raises(NotImplementedError):
+                estimator.fit(X, y)
+            continue
+
+        estimator.fit(X, y)
+
+        assert estimator.coef_ is not None
+
+        for method in ["score", "predict", "decision_function"]:
+            if not hasattr(estimator, method):
+                continue
+            if method == "score":
+                getattr(estimator, method)(X, y)
+            else:
+                getattr(estimator, method)(X)
 
 
 @ignore_warnings
@@ -2262,29 +2400,6 @@ def check_masker_transform_resampling(estimator) -> None:
                     "at transform time" not in str(x.message)
                     for x in warning_list
                 )
-
-
-@ignore_warnings()
-def check_masker_fit_score_takes_y(estimator):
-    """Replace sklearn check_fit_score_takes_y for maskers.
-
-    Check that all estimators accept an optional y
-    in fit and score so they can be used in pipelines.
-    """
-    for attr in ["fit", "fit_transform"]:
-        tmp = {
-            k: v.default
-            for k, v in inspect.signature(
-                getattr(estimator, attr)
-            ).parameters.items()
-            if v.default is not inspect.Parameter.empty
-        }
-        if "y" not in tmp:
-            raise ValueError(
-                f"{estimator.__class__.__name__} "
-                f"is missing 'y=None' for the method '{attr}'."
-            )
-        assert tmp["y"] is None
 
 
 @ignore_warnings()
