@@ -39,7 +39,7 @@ def plt(request, engine):
 
 
 @pytest.fixture
-def bg_map(rng, in_memory_mesh):
+def bg_map(rng, in_memory_mesh) -> np.ndarray:
     """Return a background map with positive value."""
     return np.abs(rng.standard_normal(size=in_memory_mesh.n_vertices))
 

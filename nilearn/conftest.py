@@ -1,6 +1,7 @@
 """Configuration and extra fixtures for pytest."""
 
 import inspect
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -66,7 +67,7 @@ if not is_gil_enabled():
     )
 
 
-def pytest_configure(config):  # noqa: ARG001
+def pytest_configure(config) -> None:  # noqa: ARG001
     """Use Agg so that no figures pop up."""
     if matplotlib is not None:
         matplotlib.use("Agg", force=True)
@@ -85,7 +86,7 @@ def close_all():
 # ------------------------   RNG   ------------------------#
 
 
-def _rng(seed=42):
+def _rng(seed: int = 42):
     return np.random.default_rng(seed)
 
 
@@ -114,7 +115,7 @@ def _affine_mni() -> np.ndarray:
 
 
 @pytest.fixture()
-def affine_mni():
+def affine_mni() -> np.ndarray:
     """Return an affine corresponding to 2mm isotropic MNI template."""
     return _affine_mni()
 
@@ -128,7 +129,7 @@ def _affine_eye() -> np.ndarray:
 
 
 @pytest.fixture()
-def affine_eye():
+def affine_eye() -> np.ndarray:
     """Return an identity matrix affine."""
     return _affine_eye()
 
@@ -136,7 +137,7 @@ def affine_eye():
 # ------------------------ SHAPES ------------------------#
 
 
-def _shape_3d_default():
+def _shape_3d_default() -> tuple[int, int, int]:
     """Return default shape for a 3D image.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -146,7 +147,7 @@ def _shape_3d_default():
     return (7, 8, 9)
 
 
-def _shape_3d_large():
+def _shape_3d_large() -> tuple[int, int, int]:
     """Shape usually used for maps images.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -156,7 +157,7 @@ def _shape_3d_large():
     return (29, 30, 31)
 
 
-def _shape_4d_default():
+def _shape_4d_default() -> tuple[int, int, int, int]:
     """Return default shape for a 4D image.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -166,14 +167,14 @@ def _shape_4d_default():
     return (7, 8, 9, 5)
 
 
-def _shape_4d_medium():
+def _shape_4d_medium() -> tuple[int, int, int, int]:
     """Return default shape for a long 4D image."""
     # avoid having identical shapes values,
     # because this fails to detect if the code does not handle dimensions well.
     return (7, 8, 9, 100)
 
 
-def _shape_4d_long():
+def _shape_4d_long() -> tuple[int, int, int, int]:
     """Return default shape for a long 4D image."""
     # avoid having identical shapes values,
     # because this fails to detect if the code does not handle dimensions well.
@@ -181,41 +182,41 @@ def _shape_4d_long():
 
 
 @pytest.fixture()
-def shape_3d_default():
+def shape_3d_default() -> tuple[int, int, int]:
     """Return default shape for a 3D image."""
     return _shape_3d_default()
 
 
 @pytest.fixture
-def shape_3d_large():
+def shape_3d_large() -> tuple[int, int, int]:
     """Shape usually used for maps images."""
     return _shape_3d_large()
 
 
 @pytest.fixture()
-def shape_4d_default():
+def shape_4d_default() -> tuple[int, int, int, int]:
     """Return default shape for a 4D image."""
     return _shape_4d_default()
 
 
 @pytest.fixture()
-def shape_4d_long():
+def shape_4d_long() -> tuple[int, int, int, int]:
     """Return long shape for a 4D image."""
     return _shape_4d_long()
 
 
-def _img_zeros(shape, affine):
+def _img_zeros(shape, affine: np.ndarray) -> Nifti1Image:
     return Nifti1Image(np.zeros(shape), affine)
 
 
-def _img_ones(shape, affine):
+def _img_ones(shape, affine: np.ndarray) -> Nifti1Image:
     return Nifti1Image(np.ones(shape), affine)
 
 
 # ------------------------ 3D IMAGES ------------------------#
 
 
-def _img_3d_rand(affine=None):
+def _img_3d_rand(affine: None | np.ndarray = None) -> Nifti1Image:
     """Return random 3D Nifti1Image in MNI space.
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -227,12 +228,12 @@ def _img_3d_rand(affine=None):
 
 
 @pytest.fixture()
-def img_3d_rand_eye():
+def img_3d_rand_eye() -> Nifti1Image:
     """Return random 3D Nifti1Image in MNI space."""
     return _img_3d_rand()
 
 
-def _img_3d_mni(affine=None):
+def _img_3d_mni(affine: None | np.ndarray = None) -> Nifti1Image:
     if affine is None:
         affine = _affine_mni()
     data_positive = np.zeros((7, 7, 3))
@@ -243,20 +244,22 @@ def _img_3d_mni(affine=None):
 
 
 @pytest.fixture()
-def img_3d_mni():
+def img_3d_mni() -> Nifti1Image:
     """Return a default random 3D Nifti1Image in MNI space."""
     return _img_3d_mni()
 
 
 @pytest.fixture()
-def img_3d_mni_as_file(tmp_path):
+def img_3d_mni_as_file(tmp_path) -> Path:
     """Return path to a random 3D Nifti1Image in MNI space saved to disk."""
     filename = tmp_path / "img.nii"
     _img_3d_mni().to_filename(filename)
     return filename
 
 
-def _img_3d_zeros(shape=None, affine=None):
+def _img_3d_zeros(
+    shape: None | tuple[int, int, int] = None, affine: None | np.ndarray = None
+) -> Nifti1Image:
     """Return a default zeros filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -269,12 +272,14 @@ def _img_3d_zeros(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_3d_zeros_eye():
+def img_3d_zeros_eye() -> Nifti1Image:
     """Return a zeros-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_zeros()
 
 
-def _img_3d_ones(shape=None, affine=None):
+def _img_3d_ones(
+    shape: None | tuple[int, int, int] = None, affine: None | np.ndarray = None
+) -> Nifti1Image:
     """Return a ones-filled 3D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -287,41 +292,41 @@ def _img_3d_ones(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_3d_ones_eye():
+def img_3d_ones_eye() -> Nifti1Image:
     """Return a ones-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_ones()
 
 
 @pytest.fixture
-def img_3d_ones_mni():
+def img_3d_ones_mni() -> Nifti1Image:
     """Return a ones-filled 3D Nifti1Image (identity affine)."""
     return _img_3d_ones(shape=_shape_3d_default(), affine=_affine_mni())
 
 
-def _mask_data():
+def _mask_data() -> np.ndarray:
     mask_data = np.zeros(_shape_3d_default(), dtype="int32")
     mask_data[3:6, 3:6, 3:6] = 1
     return mask_data
 
 
-def _img_mask_mni():
+def _img_mask_mni() -> Nifti1Image:
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return Nifti1Image(_mask_data(), _affine_mni())
 
 
 @pytest.fixture
-def img_mask_mni():
+def img_mask_mni() -> Nifti1Image:
     """Return a 3D nifti mask in MNI space with some 1s in the center."""
     return _img_mask_mni()
 
 
-def _img_mask_eye():
+def _img_mask_eye() -> Nifti1Image:
     """Return a 3D nifti mask with identity affine with 1s in the center."""
     return Nifti1Image(_mask_data(), _affine_eye())
 
 
 @pytest.fixture
-def img_mask_eye():
+def img_mask_eye() -> Nifti1Image:
     """Return a 3D nifti mask with identity affine with 1s in the center."""
     return _img_mask_eye()
 
@@ -329,7 +334,10 @@ def img_mask_eye():
 # ------------------------ 4D IMAGES ------------------------#
 
 
-def _img_4d_zeros(shape=None, affine=None):
+def _img_4d_zeros(
+    shape: None | tuple[int, int, int, int] = None,
+    affine: None | np.ndarray = None,
+) -> Nifti1Image:
     """Return a default zeros filled 4D Nifti1Image (identity affine).
 
     Mostly used for set up in other fixtures in other testing modules.
@@ -341,19 +349,22 @@ def _img_4d_zeros(shape=None, affine=None):
     return _img_zeros(shape, affine)
 
 
-def _img_4d_rand_eye():
+def _img_4d_rand_eye() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image (identity affine)."""
     data = _rng().random(_shape_4d_default())
     return Nifti1Image(data, _affine_eye())
 
 
-def _img_4d_rand_eye_medium():
+def _img_4d_rand_eye_medium() -> Nifti1Image:
     """Return a random 4D Nifti1Image (identity affine, many volumes)."""
     data = _rng().random(_shape_4d_medium())
     return Nifti1Image(data, _affine_eye())
 
 
-def _img_4d_mni(shape=None, affine=None):
+def _img_4d_mni(
+    shape: None | tuple[int, int, int, int] = None,
+    affine: None | np.ndarray = None,
+) -> Nifti1Image:
     if shape is None:
         shape = _shape_4d_default()
     if affine is None:
@@ -362,37 +373,37 @@ def _img_4d_mni(shape=None, affine=None):
 
 
 @pytest.fixture
-def img_4d_zeros_eye():
+def img_4d_zeros_eye() -> Nifti1Image:
     """Return a default zeros filled 4D Nifti1Image (identity affine)."""
     return _img_4d_zeros()
 
 
 @pytest.fixture
-def img_4d_ones_eye():
+def img_4d_ones_eye() -> Nifti1Image:
     """Return a default ones filled 4D Nifti1Image (identity affine)."""
     return _img_ones(_shape_4d_default(), _affine_eye())
 
 
 @pytest.fixture
-def img_4d_rand_eye():
+def img_4d_rand_eye() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image (identity affine)."""
     return _img_4d_rand_eye()
 
 
 @pytest.fixture
-def img_4d_mni():
+def img_4d_mni() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image."""
     return _img_4d_mni()
 
 
 @pytest.fixture
-def img_4d_rand_eye_medium():
+def img_4d_rand_eye_medium() -> Nifti1Image:
     """Return a default random filled 4D Nifti1Image of medium length."""
     return _img_4d_rand_eye_medium()
 
 
 @pytest.fixture
-def img_4d_long_mni(rng, shape_4d_long, affine_mni):
+def img_4d_long_mni(rng, shape_4d_long, affine_mni) -> Nifti1Image:
     """Return a default random filled long 4D Nifti1Image."""
     return Nifti1Image(rng.uniform(size=shape_4d_long), affine=affine_mni)
 
@@ -416,12 +427,12 @@ def img_atlas(shape_3d_default, affine_mni):
     }
 
 
-def _n_regions():
+def _n_regions() -> int:
     """Return a default number of regions for maps."""
     return 9
 
 
-def generate_regions_ts(n_features, n_regions):
+def generate_regions_ts(n_features: int, n_regions: int):
     """Generate some regions as timeseries.
 
     adapted from nilearn._utils.data_gen.generate_regions_ts
@@ -470,12 +481,12 @@ def generate_regions_ts(n_features, n_regions):
 
 
 @pytest.fixture
-def n_regions():
+def n_regions() -> int:
     """Return a default number of regions for maps."""
     return _n_regions()
 
 
-def _img_maps(n_regions=None):
+def _img_maps(n_regions: int | None = None) -> Nifti1Image:
     """Generate a default map image.
 
     adapted from nilearn._utils.data_gen.generate_maps
@@ -493,12 +504,12 @@ def _img_maps(n_regions=None):
 
 
 @pytest.fixture
-def img_maps(n_regions):
+def img_maps(n_regions: int) -> Nifti1Image:
     """Generate fixture for default map image."""
     return _img_maps(n_regions)
 
 
-def _img_labels(n_regions=None):
+def _img_labels(n_regions: int | None = None) -> Nifti1Image:
     """Generate fixture for default label image.
 
     adapted from nilearn._utils.data_gen.generate_labeled_regions
@@ -531,7 +542,7 @@ def img_labels(n_regions):
 
 
 @pytest.fixture
-def length():
+def length() -> int:
     """Return a default length for 4D images."""
     return 10
 
@@ -563,7 +574,7 @@ def img_fmri(shape_3d_default, affine_eye, length, rng) -> Nifti1Image:
 
 # ------------------------ SURFACE ------------------------#
 @pytest.fixture
-def single_mesh(rng):
+def single_mesh(rng) -> list[np.ndarray]:
     """Create random coordinates and faces for a single mesh.
 
     This does not generate meaningful surfaces.
@@ -574,7 +585,7 @@ def single_mesh(rng):
 
 
 @pytest.fixture
-def in_memory_mesh(single_mesh):
+def in_memory_mesh(single_mesh) -> InMemoryMesh:
     """Create a random InMemoryMesh.
 
     This does not generate meaningful surfaces.
@@ -583,7 +594,7 @@ def in_memory_mesh(single_mesh):
     return InMemoryMesh(coordinates=coords, faces=faces)
 
 
-def _make_mesh():
+def _make_mesh() -> PolyMesh:
     """Create a sample mesh with two parts: left and right, and total of
     9 vertices and 10 faces.
 
@@ -613,12 +624,12 @@ def _make_mesh():
 
 
 @pytest.fixture()
-def surf_mesh():
+def surf_mesh() -> PolyMesh:
     """Return _make_mesh as a function allowing it to be used as a fixture."""
     return _make_mesh()
 
 
-def _make_surface_img(n_samples=1):
+def _make_surface_img(n_samples: int = 1):
     mesh = _make_mesh()
     data = {}
     for i, (key, val) in enumerate(mesh.parts.items()):
@@ -640,7 +651,7 @@ def surf_img_2d():
     return _make_surface_img
 
 
-def _surf_img_1d():
+def _surf_img_1d() -> SurfaceImage:
     """Return a 1D SurfaceImage with random data.
 
     The shape of the data will be (n_vertices,).
@@ -652,7 +663,7 @@ def _surf_img_1d():
 
 
 @pytest.fixture
-def surf_img_1d():
+def surf_img_1d() -> SurfaceImage:
     """Return a 1D SurfaceImage with random data.
 
     The shape of the data will be (n_vertices,).
@@ -660,7 +671,7 @@ def surf_img_1d():
     return _surf_img_1d()
 
 
-def _make_surface_mask(n_zeros=4):
+def _make_surface_mask(n_zeros: int = 4):
     mesh = _make_mesh()
     data = {}
     for key, val in mesh.parts.items():
@@ -673,7 +684,7 @@ def _make_surface_mask(n_zeros=4):
     return SurfaceImage(mesh, data)
 
 
-def _surf_mask_1d():
+def _surf_mask_1d() -> SurfaceImage:
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -688,7 +699,7 @@ def _surf_mask_1d():
 
 
 @pytest.fixture
-def surf_mask_1d():
+def surf_mask_1d() -> SurfaceImage:
     """Create a sample surface mask using the sample mesh.
     This will create a mask with n_zeros zeros (default is 4) and the
     rest ones.
@@ -711,7 +722,7 @@ def surf_mask_2d():
 
 
 @pytest.fixture
-def surf_label_img(surf_mesh):
+def surf_label_img(surf_mesh) -> SurfaceImage:
     """Return a sample surface label image using the sample mesh.
     Has two regions with values 0 and 1 respectively.
     """
@@ -723,7 +734,7 @@ def surf_label_img(surf_mesh):
 
 
 @pytest.fixture
-def surf_three_labels_img(surf_mesh):
+def surf_three_labels_img(surf_mesh) -> SurfaceImage:
     """Return a sample surface label image using the sample mesh.
     Has 3 regions with values 0, 1 and 2.
     """
@@ -734,7 +745,7 @@ def surf_three_labels_img(surf_mesh):
     return SurfaceImage(surf_mesh, data)
 
 
-def _surf_maps_img():
+def _surf_maps_img() -> SurfaceImage:
     """Return a sample surface map image using the sample mesh.
     Has 6 regions in total: 3 in both, 1 only in left and 2 only in right.
     Later we multiply the data with random "probability" values to make it
@@ -767,7 +778,7 @@ def _surf_maps_img():
 
 
 @pytest.fixture
-def surf_maps_img():
+def surf_maps_img() -> SurfaceImage:
     """Return a sample surface map as fixture."""
     return _surf_maps_img()
 
@@ -785,7 +796,7 @@ def flip_surf_img_parts():
     return _flip_surf_img_parts
 
 
-def _flip_surf_img(img):
+def _flip_surf_img(img) -> SurfaceImage:
     """Flip hemispheres of a surface image."""
     return SurfaceImage(
         _flip_surf_img_parts(img.mesh), _flip_surf_img_parts(img.data)
@@ -798,7 +809,7 @@ def flip_surf_img():
     return _flip_surf_img
 
 
-def _drop_surf_img_part(img, part_name="right"):
+def _drop_surf_img_part(img, part_name="right") -> SurfaceImage:
     """Remove one hemisphere from a SurfaceImage."""
     mesh_parts = img.mesh.parts.copy()
     mesh_parts.pop(part_name)
@@ -865,7 +876,7 @@ def plotly():
 
 
 @pytest.fixture
-def transparency_image(rng, affine_mni):
+def transparency_image(rng, affine_mni) -> Nifti1Image:
     """Return 3D image to use as transparency image.
 
     Make sure that values are not just between 0 and 1.
@@ -909,7 +920,7 @@ def check_obj_docstring(obj) -> None:
     check_methods_docstring(obj.__class__)
 
 
-def check_parameters_doctring(parameters, doc_dict):
+def check_parameters_doctring(parameters, doc_dict) -> None:
     """Check if all parameters are documented without duplicates and extras."""
     documented = []
     for param in doc_dict:
@@ -932,7 +943,7 @@ def check_parameters_doctring(parameters, doc_dict):
     assert len(documented) == len(set(documented))
 
 
-def check_methods_docstring(cls):
+def check_methods_docstring(cls) -> None:
     """Check if all public functions and parameters are documented."""
     for name, member in cls.__dict__.items():
         if name.startswith("_"):
