@@ -5,7 +5,7 @@ import pytest
 
 
 @pytest.fixture
-def adjacency():
+def adjacency() -> np.ndarray:
     """Adjacency matrix symmetric up to 1e-3 relative tolerance."""
     return np.array(
         [
@@ -18,12 +18,12 @@ def adjacency():
 
 
 @pytest.fixture
-def node_coords():
+def node_coords() -> np.ndarray:
     """Array of node coordinates for testing."""
     return np.arange(3 * 4).reshape(4, 3)
 
 
 @pytest.fixture
-def params_plot_connectome():
+def params_plot_connectome() -> dict[str, str | float]:
     """Return basic set of parameters for testing plot_connectome."""
     return {"edge_threshold": 0.38, "title": "threshold=0.38", "node_size": 10}
