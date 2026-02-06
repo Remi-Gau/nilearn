@@ -280,6 +280,7 @@ exclude = [
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
+strict = false
 warn_unreachable = true
 
 [[tool.mypy.overrides]]
