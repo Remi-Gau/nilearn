@@ -15,6 +15,8 @@ from nilearn.plotting import (
     plot_surf_stat_map,
 )
 
+from ..utils import generate_fake_fmri
+
 PLOTTING_FUNCS_3D = [
     plot_img,
     plot_anat,
@@ -27,8 +29,6 @@ SURFACE_FUNCS = [
     plot_surf,
     plot_surf_stat_map,
 ]
-
-from ..utils import generate_fake_fmri
 
 
 class BenchMarkPlotting3D:
@@ -97,8 +97,3 @@ class BenchMarkPlottingSurface:
             self.surf_stat_map,
             engine=engine,
         )
-
-
-img = load_mni152_template()
-print(img.shape)
-print(img.affine)
