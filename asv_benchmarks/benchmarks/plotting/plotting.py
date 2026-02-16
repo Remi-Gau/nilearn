@@ -34,6 +34,8 @@ SURFACE_FUNCS = [
 class BenchMarkPlotting3D:
     """Check plotting of 3D images."""
 
+    length = 1
+
     param_names = "plot_func"
     params = PLOTTING_FUNCS_3D
 

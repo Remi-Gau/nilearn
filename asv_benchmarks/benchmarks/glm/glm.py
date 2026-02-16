@@ -1,9 +1,11 @@
 """Benchmarks for GLM."""
 # ruff: noqa: ARG002
 
+import string
 from typing import ClassVar
 
 import numpy as np
+import pandas as pd
 
 from nilearn.glm.first_level import FirstLevelModel
 from nilearn.interfaces.bids import save_glm_to_bids
@@ -37,6 +39,8 @@ class BaseBenchMarkFLM:
 
         rank = 3
 
+        rng = _rng()
+
         self.fmri_data = []
         self.design_matrices = []
         for _ in range(n_runs):
@@ -49,11 +53,13 @@ class BaseBenchMarkFLM:
             self.mask = mask
             self.fmri_data.append(img)
 
-            columns = _rng().choice(
+            columns = rng.choice(
                 list(string.ascii_lowercase), size=rank, replace=False
             )
             self.design_matrices.append(
-                pd.DataFrame(rand_gen.standard_normal(rank), columns=columns)
+                pd.DataFrame(
+                    rng.standard_normal((length, rank)), columns=columns
+                )
             )
 
 
@@ -67,15 +73,17 @@ class BenchMarkFirstLevelModel(BaseBenchMarkFLM):
         [True, False],
     )
 
-    def time_glm_fit(self, n_timepoints_n_runs, minimize_memory):
-        """Time FirstLevelModel on large data."""
+    def _fit(self, n_timepoints_n_runs, minimize_memory):
         model = FirstLevelModel(mask_img=self.mask)
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
 
+    def time_glm_fit(self, n_timepoints_n_runs, minimize_memory):
+        """Time FirstLevelModel on large data."""
+        self._fit(n_timepoints_n_runs, minimize_memory)
+
     def peakmem_glm_fit(self, n_timepoints_n_runs, minimize_memory):
         """Measure peak memory for FirstLevelModel on large data."""
-        model = FirstLevelModel(mask_img=self.mask)
-        model.fit(self.fmri_data, design_matrices=self.design_matrices)
+        self._fit(n_timepoints_n_runs, minimize_memory)
 
 
 class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
@@ -84,24 +92,23 @@ class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
     param_names = "memory"
     params: ClassVar[list[str | None]] = [None, "nilearn_cache"]
 
-    def time_glm_report(self, memory):
-        """Time FirstLevelModel on large data."""
+    def _fit(self, memory):
         model = FirstLevelModel(
             mask_img=self.mask, minimize_memory=False, memory=memory
         )
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
         model.generate_report(np.array([[1, 0, 0]]))
+
+    def time_glm_report(self, memory):
+        """Time FirstLevelModel on large data."""
+        self._fit(memory)
 
     def peakmem_glm_report(self, memory):
         """Measure peak memory for FirstLevelModel on large data."""
-        model = FirstLevelModel(
-            mask_img=self.mask, minimize_memory=False, memory=memory
-        )
-        model.fit(self.fmri_data, design_matrices=self.design_matrices)
-        model.generate_report(np.array([[1, 0, 0]]))
+        self._fit(memory)
 
 
-class BenchMarkFirstLevelModelSave:
+class BenchMarkFirstLevelModelSave(BaseBenchMarkFLM):
     """Benchmarks for FLM saving."""
 
     timeout = 240
@@ -109,18 +116,17 @@ class BenchMarkFirstLevelModelSave:
     param_names = ("memory", "n_runs")
     params = ([None, "nilearn_cache"], [1, 4])
 
-    def time_glm_save(self, memory, n_runs):
-        """Time FirstLevelModel on large data."""
+    def _fit(self, memory, n_runs):
         model = FirstLevelModel(
             mask_img=self.mask, minimize_memory=False, memory=memory, verbose=0
         )
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
         save_glm_to_bids(model, contrasts={"con1": np.array([[1, 0, 0]])})
 
+    def time_glm_save(self, memory, n_runs):
+        """Time FirstLevelModel on large data."""
+        self._fit(memory, n_runs)
+
     def peakmem_glm_save(self, memory, n_runs):
         """Measure peak memory for FirstLevelModel on large data."""
-        model = FirstLevelModel(
-            mask_img=self.mask, minimize_memory=False, memory=memory, verbose=0
-        )
-        model.fit(self.fmri_data, design_matrices=self.design_matrices)
-        save_glm_to_bids(model, contrasts={"con1": np.array([[1, 0, 0]])})
+        self._fit(memory, n_runs)
