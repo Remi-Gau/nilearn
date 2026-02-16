@@ -76,6 +76,15 @@ n_jobs = 2
 # set once and the others as learning sets
 #
 # The radius is the one of the Searchlight sphere that will scan the volume
+#
+# .. note::
+#
+#   We instantiate ``SearchLight``
+#   with extra argument (``random_state``) to pass
+#   to the underlying default estimator (LinearSVC),
+#   as it is used with ``dual=False``,
+#   which may lead to irreproducible output across multiple function calls.
+#
 from sklearn.model_selection import KFold
 
 from nilearn.decoding import SearchLight
@@ -89,15 +98,15 @@ searchlight = SearchLight(
     n_jobs=n_jobs,
     verbose=1,
     cv=cv,
+    estimator_args={"random_state": 0},
 )
 searchlight.fit(fmri_img, y)
 
 # %%
 # Visualization
 # -------------
-# %%
 # After fitting the searchlight, we can access the searchlight scores
-# as a NIfTI image using the `scores_img_` attribute.
+# as a NIfTI image using the ``scores_img_`` attribute.
 scores_img = searchlight.scores_img_
 
 # %%
@@ -118,11 +127,14 @@ plot_img(
     display_mode="z",
     cut_coords=[-9],
     vmin=0.2,
+    vmax=0.9,
     cmap="inferno",
     threshold=0.2,
     black_bg=True,
     colorbar=True,
 )
+
+show()
 
 # %%
 # F-scores computation
