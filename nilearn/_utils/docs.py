@@ -487,7 +487,7 @@ docdict["estimator_args"] = """
 estimator_args : dict[str, Any] or None, default=None
     Extra parameters to pass to the scikit-learn estimators.
 
-    .. nilearn_versionadded:: 0.13.0dev
+    .. nilearn_versionadded:: 0.13.1dev
 """
 
 # extractor / extract_type
