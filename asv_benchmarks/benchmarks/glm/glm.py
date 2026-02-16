@@ -5,40 +5,67 @@ from typing import ClassVar
 
 import numpy as np
 
-from nilearn._utils.data_gen import generate_fake_fmri_data_and_design
-from nilearn.datasets import load_mni152_brain_mask
 from nilearn.glm.first_level import FirstLevelModel
-from nilearn.image import resample_to_img
 from nilearn.interfaces.bids import save_glm_to_bids
 
+from ..utils import _rng, generate_fake_fmri
 
-class BenchMarkFirstLevelModel:
+
+class BaseBenchMarkFLM:
+    """Check plotting of 3D images."""
+
+    def setup(
+        self,
+        minimize_memory,
+        memory=None,
+        shape=(64, 64, 64),
+        length_n_runs=(200, 1),
+    ):
+        """Set up for all benchmarks."""
+        (length, n_runs) = length_n_runs
+
+        shape = (200, 230, 190)
+
+        affine = np.asarray(
+            [
+                [-3.0, -0.0, 0.0, -98.0],
+                [-0.0, 3.0, -0.0, -134.0],
+                [0.0, 0.0, 3.0, -72.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
+
+        rank = 3
+
+        self.fmri_data = []
+        self.design_matrices = []
+        for _ in range(n_runs):
+            img, mask = generate_fake_fmri(
+                shape=shape,
+                length=length,
+                affine=affine,
+            )
+
+            self.mask = mask
+            self.fmri_data.append(img)
+
+            columns = _rng().choice(
+                list(string.ascii_lowercase), size=rank, replace=False
+            )
+            self.design_matrices.append(
+                pd.DataFrame(rand_gen.standard_normal(rank), columns=columns)
+            )
+
+
+class BenchMarkFirstLevelModel(BaseBenchMarkFLM):
     """Benchmarks for FLM with different image sizes."""
 
     # try different combinations run length, n_runs, minimze_memory
-    param_names = ("n_timepoints_n_runs", "minimize_memory")
+    param_names = ("length_n_runs", "minimize_memory")
     params: ClassVar[tuple[list[tuple[int, int]], list[bool]]] = (
         [(500, 2), (1000, 1)],
         [True, False],
     )
-
-    def setup(self, n_timepoints_n_runs, minimize_memory):
-        """Set up common to all benchmarks."""
-        (n_timepoints, n_runs) = n_timepoints_n_runs
-        mni_brain_mask = load_mni152_brain_mask(resolution=3)
-        shape = [(64, 64, 64, n_timepoints)] * n_runs
-        mask, self.fmri_data, self.design_matrices = (
-            generate_fake_fmri_data_and_design(
-                shapes=shape, affine=mni_brain_mask.affine
-            )
-        )
-
-        self.mask = resample_to_img(
-            source_img=mni_brain_mask,
-            target_img=mask,
-            interpolation="nearest",
-            force_resample=True,
-        )
 
     def time_glm_fit(self, n_timepoints_n_runs, minimize_memory):
         """Time FirstLevelModel on large data."""
@@ -51,28 +78,11 @@ class BenchMarkFirstLevelModel:
         model.fit(self.fmri_data, design_matrices=self.design_matrices)
 
 
-class BenchMarkFirstLevelModelReport:
+class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
     """Benchmarks for FLM report generation."""
 
     param_names = "memory"
     params: ClassVar[list[str | None]] = [None, "nilearn_cache"]
-
-    def setup(self, memory):
-        """Set up common to all benchmarks."""
-        mni_brain_mask = load_mni152_brain_mask(resolution=3)
-        shape = [(64, 64, 64, 200), (64, 64, 64, 200), (64, 64, 64, 200)]
-        mask, self.fmri_data, self.design_matrices = (
-            generate_fake_fmri_data_and_design(
-                shapes=shape, affine=mni_brain_mask.affine
-            )
-        )
-
-        self.mask = resample_to_img(
-            source_img=mni_brain_mask,
-            target_img=mask,
-            interpolation="nearest",
-            force_resample=True,
-        )
 
     def time_glm_report(self, memory):
         """Time FirstLevelModel on large data."""
@@ -98,23 +108,6 @@ class BenchMarkFirstLevelModelSave:
 
     param_names = ("memory", "n_runs")
     params = ([None, "nilearn_cache"], [1, 4])
-
-    def setup(self, memory, n_runs):
-        """Set up common to all benchmarks."""
-        mni_brain_mask = load_mni152_brain_mask(resolution=3)
-        shape = [(30, 30, 30, 100)] * n_runs
-        mask, self.fmri_data, self.design_matrices = (
-            generate_fake_fmri_data_and_design(
-                shapes=shape, affine=mni_brain_mask.affine
-            )
-        )
-
-        self.mask = resample_to_img(
-            source_img=mni_brain_mask,
-            target_img=mask,
-            interpolation="nearest",
-            force_resample=True,
-        )
 
     def time_glm_save(self, memory, n_runs):
         """Time FirstLevelModel on large data."""

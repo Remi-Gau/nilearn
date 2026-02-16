@@ -2,7 +2,9 @@
 
 # ruff: noqa: ARG002
 
-from nilearn.datasets import fetch_surf_fsaverage, load_mni152_template
+import numpy as np
+
+from nilearn.datasets import fetch_surf_fsaverage
 from nilearn.plotting import (
     plot_anat,
     plot_epi,
@@ -26,6 +28,8 @@ SURFACE_FUNCS = [
     plot_surf_stat_map,
 ]
 
+from ..utils import generate_fake_fmri
+
 
 class BenchMarkPlotting3D:
     """Check plotting of 3D images."""
@@ -34,8 +38,28 @@ class BenchMarkPlotting3D:
     params = PLOTTING_FUNCS_3D
 
     def setup(self, plot_func):
-        """Set up for all benchmarks."""
-        self.img = load_mni152_template()
+        """Set up for all benchmarks.
+
+        Use affine and shape adapted from load_mni152_template()
+        """
+        shape = (200, 230, 190)
+
+        affine = np.asarray(
+            [
+                [-3.0, -0.0, 0.0, -98.0],
+                [-0.0, 3.0, -0.0, -134.0],
+                [0.0, 0.0, 3.0, -72.0],
+                [0.0, 0.0, 0.0, 1.0],
+            ]
+        )
+
+        img, _ = generate_fake_fmri(
+            shape=shape,
+            length=self.length,
+            affine=affine,
+        )
+
+        self.img = img
 
     def time_plotting_3d(self, plot_func):
         """Check time."""
@@ -73,3 +97,8 @@ class BenchMarkPlottingSurface:
             self.surf_stat_map,
             engine=engine,
         )
+
+
+img = load_mni152_template()
+print(img.shape)
+print(img.affine)
