@@ -14,7 +14,7 @@ from ..utils import _rng, generate_fake_fmri
 
 
 class BaseBenchMarkFLM:
-    """Check plotting of 3D images."""
+    """Base benchmark class for GLM."""
 
     def setup(
         self,
