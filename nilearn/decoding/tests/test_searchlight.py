@@ -58,7 +58,8 @@ else:
             searchlight.SearchLight(
                 mask_img=Nifti1Image(
                     np.ones((5, 5, 5), dtype=bool).astype("uint8"), np.eye(4)
-                )
+                ),
+                estimator_args={"random_state": 42},
             )
         ]
     ),

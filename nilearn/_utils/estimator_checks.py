@@ -1058,10 +1058,6 @@ def check_img_estimator_verbose(estimator_orig) -> None:
     output = buffer.getvalue()
     assert output != ""
 
-    if isinstance(estimator, SearchLight):
-        # TODO
-        pytest.skip("Some failures with SearchLight.")
-
     # verbose True == verbose 1
     # should mostly be the same except for object reference
     estimator.verbose = True
@@ -1513,11 +1509,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
 
     replaces sklearn check_fit_idempotent
     """
-    # TODO
-    # fix for flaky test with free threaded python
-    if not is_gil_enabled() and isinstance(estimator_orig, (SearchLight)):
-        return None
-
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
@@ -1558,8 +1549,6 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # investigate why
         if isinstance(estimator, (Decoder)):
             tol = 1e-5
-        elif isinstance(estimator, (SearchLight)):
-            tol = 1e-4
         elif isinstance(estimator, FREMClassifier):
             tol = 0.1
 
@@ -1758,11 +1747,7 @@ def check_img_estimator_pickle(estimator_orig) -> None:
             unpickled_result = getattr(unpickled_estimator, method)(input)
 
         if isinstance(unpickled_result, np.ndarray):
-            if isinstance(estimator, SearchLight):
-                # TODO check why Searchlight has lower absolute tolerance
-                ...
-            else:
-                assert_allclose_dense_sparse(result[method], unpickled_result)
+            assert_allclose_dense_sparse(result[method], unpickled_result)
         elif isinstance(unpickled_result, SurfaceImage):
             assert_surface_image_equal(result[method], unpickled_result)
         elif isinstance(unpickled_result, Nifti1Image):
@@ -1817,13 +1802,7 @@ def check_img_estimator_pipeline_consistency(estimator_orig) -> None:
             else:
                 result = func(X, y)
                 result_pipe = func_pipeline(X, y)
-            if isinstance(estimator, SearchLight) and func_name == "transform":
-                # TODO flaky test
-                # SearchLight transform seem to return
-                # slightly different results
-                ...
-            else:
-                assert_allclose_dense_sparse(result, result_pipe)
+            assert_allclose_dense_sparse(result, result_pipe)
 
 
 def check_img_estimator_requires_y_none(estimator_orig) -> None:
