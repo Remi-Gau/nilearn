@@ -1581,9 +1581,6 @@ dummy_output_ : ndarray, shape=(n_classes, 2) \
 
 estimator_ : Estimator object used during decoding.
 
-estimator_args_ : dict[str, Any]
-    Extra parameters passed to the scikit-learn estimators.
-
 intercept_ : ndarray, shape (nclasses,)
     Intercept (also known as bias) added to the decision function.
     Ignored if Dummy estimators are provided.
