@@ -1572,13 +1572,7 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
     check_methods = ["predict", "transform", "decision_function"]
 
     for method in check_methods:
-        if not hasattr(estimator_orig, method) or (
-            isinstance(estimator_orig, FREMClassifier)
-            and method == "decision_function"
-        ):
-            # TODO
-            # Fails for FREMClassifier
-            # mostly on Mac and sometimes linux
+        if not hasattr(estimator_orig, method):
             continue
 
         estimator = clone(estimator_orig)
@@ -1611,12 +1605,8 @@ def check_img_estimator_fit_idempotent(estimator_orig) -> None:
         # TODO
         # some estimator can return some pretty different results
         # investigate why
-        if isinstance(estimator, (Decoder)):
-            tol = 1e-5
-        elif isinstance(estimator, (SearchLight)):
+        if isinstance(estimator, (SearchLight)):
             tol = 1e-4
-        elif isinstance(estimator, FREMClassifier):
-            tol = 0.1
 
         assert_allclose_dense_sparse(
             result,
@@ -2332,8 +2322,6 @@ def check_decoder_estimator_args(estimator_orig):
     estimator = fit_estimator(estimator)
 
     if isinstance(estimator_orig, SearchLight):
-        # SearchLight does not keep track of its embedded masker
-        # TODO: something to fix?
         return
     assert estimator.estimator_.max_iter == 5000
 

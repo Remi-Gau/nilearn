@@ -80,9 +80,17 @@ ESTIMATOR_REGRESSION = ("ridge", "svr")
 
 
 ESTIMATORS_TO_CHECK = [
-    Decoder(standardize="zscore_sample", screening_percentile=100),
+    Decoder(
+        standardize="zscore_sample",
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
     DecoderRegressor(standardize="zscore_sample", screening_percentile=100),
-    FREMClassifier(standardize="zscore_sample", screening_percentile=100),
+    FREMClassifier(
+        standardize="zscore_sample",
+        screening_percentile=100,
+        estimator_args={"random_state": 0},
+    ),
     FREMRegressor(standardize="zscore_sample", screening_percentile=100),
 ]
 
