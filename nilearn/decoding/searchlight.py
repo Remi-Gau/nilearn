@@ -268,6 +268,13 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
 
     %(verbose0)s
 
+    %(random_state)s
+
+        .. note::
+
+            This parameter will be passed to the underlying
+            estimator.
+
     %(estimator_args)s
 
     Attributes
@@ -330,6 +337,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         scoring=None,
         cv=None,
         verbose=0,
+        random_state=0,
         estimator_args=None,
     ):
         self.mask_img = mask_img
@@ -340,6 +348,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
         self.scoring = scoring
         self.cv = cv
         self.verbose = verbose
+        self.random_state = random_state
         self.estimator_args = estimator_args
 
     def __sklearn_tags__(self):
