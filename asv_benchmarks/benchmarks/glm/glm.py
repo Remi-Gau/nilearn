@@ -16,6 +16,8 @@ from ..utils import _rng, generate_fake_fmri
 class BaseBenchMarkFLM:
     """Base benchmark class for GLM."""
 
+    timeout: int = 2400  # 40 mins
+
     def setup(
         self,
         minimize_memory,
@@ -110,8 +112,6 @@ class BenchMarkFirstLevelModelReport(BaseBenchMarkFLM):
 
 class BenchMarkFirstLevelModelSave(BaseBenchMarkFLM):
     """Benchmarks for FLM saving."""
-
-    timeout = 240
 
     param_names = ("memory", "n_runs")
     params = ([None, "nilearn_cache"], [1, 4])
