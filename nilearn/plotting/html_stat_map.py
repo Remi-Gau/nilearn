@@ -6,10 +6,12 @@ import warnings
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
+from typing import Any, Literal
 
 import matplotlib
 import numpy as np
 from matplotlib.image import imsave
+from nibabel import Nifti1Image
 from nibabel.affines import apply_affine
 
 from nilearn import DEFAULT_DIVERGING_CMAP
@@ -31,9 +33,12 @@ from nilearn.plotting._engine_utils import colorscale
 from nilearn.plotting.find_cuts import find_xyz_cut_coords
 from nilearn.plotting.image.utils import load_anat
 from nilearn.plotting.js_plotting_utils import get_html_template
+from nilearn.typing import Threshold
 
 
-def _data_to_sprite(data, radiological=False):
+def _data_to_sprite(
+    data: np.ndarray, radiological: bool = False
+) -> np.ndarray:
     """Convert a 3D array into a sprite of sagittal slices.
 
     Parameters
@@ -74,7 +79,7 @@ def _data_to_sprite(data, radiological=False):
     return sprite
 
 
-def _threshold_data(data, threshold=None):
+def _threshold_data(data: np.ndarray, threshold: Any = None):
     """Threshold a data array.
 
     Parameters
@@ -134,9 +139,9 @@ def _save_sprite(
     vmin,
     mask=None,
     cmap="Greys",
-    format="png",
-    radiological=False,
-):
+    format: str = "png",
+    radiological: bool = False,
+) -> np.ndarray:
     """Generate a sprite from a 3D Niimg-like object.
 
     Parameters
@@ -210,7 +215,9 @@ class StatMapView(HTMLDocument):  # noqa: D101
     pass
 
 
-def _mask_stat_map(stat_map_img, threshold=None):
+def _mask_stat_map(
+    stat_map_img: Any, threshold: Threshold = None
+) -> tuple[Nifti1Image, Nifti1Image, np.ndarray, Threshold]:
     """Load a stat map and apply a threshold.
 
     Returns
@@ -238,7 +245,12 @@ def _mask_stat_map(stat_map_img, threshold=None):
     return mask_img, stat_map_img, data, threshold
 
 
-def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
+def load_bg_img(
+    stat_map_img,
+    bg_img="MNI152",
+    black_bg: bool | Literal["auto"] = "auto",
+    dim="auto",
+):
     """Load and resample bg_img in an isotropic resolution, \
     with a positive diagonal affine matrix.
 
@@ -277,7 +289,7 @@ def load_bg_img(stat_map_img, bg_img="MNI152", black_bg="auto", dim="auto"):
 
 def _resample_stat_map(
     stat_map_img, bg_img, mask_img, resampling_interpolation="continuous"
-):
+) -> tuple[Nifti1Image, Nifti1Image]:
     """Resample the stat map and mask to the background.
 
     Returns
@@ -311,7 +323,7 @@ def _json_view_params(
     value=True,
     radiological=False,
     show_lr=True,
-):
+) -> dict[str, Any]:
     """Create a dictionary with all the brainsprite parameters.
 
     Returns
@@ -362,7 +374,7 @@ def _json_view_params(
     return params
 
 
-def _json_view_size(params, width_view=600):
+def _json_view_size(params, width_view: int = 600) -> tuple[int, int]:
     """Define the size of the viewer.
 
     Returns
@@ -387,7 +399,7 @@ def _json_view_size(params, width_view=600):
     return width_view, height_view
 
 
-def _get_bg_mask_and_cmap(bg_img, black_bg):
+def _get_bg_mask_and_cmap(bg_img, black_bg: bool):
     """Get background data for _json_view_data."""
     bg_mask = np.ma.getmaskarray(get_data(bg_img))
     bg_cmap = copy.copy(matplotlib.pyplot.get_cmap("gray"))
@@ -404,12 +416,12 @@ def _json_view_data(
     mask_img,
     bg_min,
     bg_max,
-    black_bg,
+    black_bg: bool,
     colors,
     cmap,
-    colorbar,
-    radiological,
-):
+    colorbar: bool = True,
+    radiological: bool = False,
+) -> dict[str, Any]:
     """Create a json-like viewer object, and populate with base64 data.
 
     Returns
@@ -471,7 +483,9 @@ def _json_view_data(
     return json_view
 
 
-def _json_view_to_html(json_view, width_view=600):
+def _json_view_to_html(
+    json_view: dict[str, Any], width_view: int = 600
+) -> StatMapView:
     """Fill a brainsprite html template with relevant parameters and data.
 
     Returns

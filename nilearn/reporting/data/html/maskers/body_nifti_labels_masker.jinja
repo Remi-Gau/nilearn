@@ -14,6 +14,28 @@
                          src="data:image/svg+xml;base64,{{ content }}"
                          alt="image" />
                 </div>
+                {% if engine == "brainsprite" %}
+                    <div id="div_viewer">
+                        <!-- this is the canvas that will feature the brain slices -->
+                        <canvas id="3Dviewer">
+                            <!-- load a hidden version of the sprite image that includes all (sagittal) brain slices -->
+                            <img id="spriteImg"
+                                 class="hidden"
+                                 src="data:image/png;base64,{{ bg_base64 }}"
+                                 alt="background">
+                            <!-- the colormap -->
+                            <img id="colorMap"
+                                 class="hidden"
+                                 src="data:image/png;base64,{{ cm_base64 }}"
+                                 alt="colormap">
+                            <!-- another sprite image, with an overlay-->
+                            <img id="overlayImg"
+                                 class="hidden"
+                                 src="data:image/png;base64,{{ stat_map_base64 }}"
+                                 alt="overlay">
+                        </canvas>
+                    </div>
+                {% endif %}
             {% endif %}
         </div>
         <div class="pure-u-1 pure-u-md-1-3">
@@ -41,4 +63,15 @@
     {% include "html/maskers/partials/parameters.jinja" %}
     {% include "html/maskers/partials/info_transfom.jinja" %}
 
+    {% if engine == "brainsprite" %}
+        <script> {{ js_query_code }} </script>
+        <script> {{ brainsprite_code }} </script>
+        <script>
+      // On load: build all figures
+      $(window).on("load", function () {
+        // Create brain slices
+        var brain = brainsprite({{params}});
+      });
+        </script>
+    {% endif %}
 {% endblock report %}
