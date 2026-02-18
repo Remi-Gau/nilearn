@@ -448,7 +448,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
 
         import matplotlib.pyplot as plt
 
-        from nilearn.plotting import plot_img
+        from nilearn.plotting import find_xyz_cut_coords, plot_img
 
         img = self._reporting_data["images"]
         mask = self._reporting_data["mask"]
@@ -456,12 +456,15 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:  # images were not provided to fit
             img = mask
 
+        # ensure that the crosshaoir will be in the mask
+        cut_coords = find_xyz_cut_coords(img)
+        if mask is not None:
+            cut_coords = find_xyz_cut_coords(mask)
+
         # create display of retained input mask, image
         # for visual comparison
         init_display = plot_img(
-            img,
-            black_bg=False,
-            cmap=self.cmap,
+            img, black_bg=False, cmap=self.cmap, cut_coords=cut_coords
         )
         plt.close()
 
@@ -492,6 +495,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 resampled_img,
                 black_bg=False,
                 cmap=self.cmap,
+                cut_coords=cut_coords,
             )
             plt.close()
             overlay.add_contours(
