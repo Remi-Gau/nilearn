@@ -163,7 +163,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         If set to True, data is saved in order to produce a report.
 
     %(cmap)s
-        default="CMRmap_r"
+        default="tab20"
         Only relevant for the report figures.
 
     %(clean_args)s
@@ -219,7 +219,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
         strategy="mean",
         keep_masked_labels=False,
         reports=True,
-        cmap="CMRmap_r",
+        cmap="tab20",
         clean_args=None,
     ):
         self.labels_img = labels_img
@@ -359,7 +359,11 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 self._report_content["warning_messages"].append(msg)
 
             if engine == "brainsprite":
-                self._create_brainsprite()
+                bg_img = self._reporting_data["images"]
+                stat_map_img = self._reporting_data["labels_image"]
+                self._create_brainsprite(
+                    bg_img=bg_img, stat_map_img=stat_map_img, opacity=0.9
+                )
 
         return generate_report(self)
 
@@ -451,7 +455,7 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
                 img,
                 cut_coords=cut_coords,
                 black_bg=False,
-                cmap=self.cmap,
+                cmap="gray",
             )
             plt.close()
             display.add_contours(labels_image, filled=False, linewidths=3)
@@ -472,85 +476,6 @@ class NiftiLabelsMasker(_LabelMaskerMixin, BaseMasker):
             )
 
         return display
-
-    def _create_brainsprite(self):
-
-        import json
-
-        from nilearn.plotting.html_stat_map import (
-            _get_cut_slices,
-            _json_view_data,
-            _json_view_params,
-            _mask_stat_map,
-            _resample_stat_map,
-            colorscale,
-            load_bg_img,
-        )
-
-        self._reporting_data["bg_base64"] = None
-        self._reporting_data["cm_base64"] = None
-        self._reporting_data["stat_map_base64"] = None
-        self._reporting_data["params"] = json.dumps({})
-        if not is_matplotlib_installed():
-            return
-
-        bg_img = self._reporting_data["images"]
-        stat_map_img = self._reporting_data["labels_image"]
-
-        if bg_img is None:  # images were not provided to fit
-            bg_img = stat_map_img
-
-        black_bg = "auto"
-        cmap = self.cmap
-        symmetric_cmap = False
-        dim = "auto"
-        opacity = 0.9
-        threshold = 1e-6
-
-        mask_img, stat_map_img, data, _ = _mask_stat_map(
-            stat_map_img, threshold=threshold
-        )
-        colors = colorscale(
-            cmap,
-            data.ravel(),
-            symmetric_cmap=symmetric_cmap,
-            threshold=threshold,
-        )
-
-        bg_img, bg_min, bg_max, black_bg = load_bg_img(
-            stat_map_img, bg_img, black_bg, dim
-        )
-        stat_map_img, mask_img = _resample_stat_map(
-            stat_map_img, bg_img, mask_img
-        )
-        cut_slices = _get_cut_slices(stat_map_img, threshold=threshold)
-
-        json_view = _json_view_data(
-            bg_img,
-            stat_map_img,
-            mask_img,
-            bg_min,
-            bg_max,
-            black_bg,
-            colors,
-            cmap,
-        )
-
-        json_view["params"] = _json_view_params(
-            stat_map_img.shape,
-            stat_map_img.affine,
-            vmin=colors["vmin"],
-            vmax=colors["vmax"],
-            cut_slices=cut_slices,
-            black_bg=black_bg,
-            opacity=opacity,
-            value=False,
-        )
-
-        self._reporting_data["bg_base64"] = json_view["bg_base64"]
-        self._reporting_data["cm_base64"] = json_view["cm_base64"]
-        self._reporting_data["stat_map_base64"] = json_view["stat_map_base64"]
-        self._reporting_data["params"] = json.dumps(json_view["params"])
 
     def _fit(self, imgs):
         check_reduction_strategy(self.strategy)

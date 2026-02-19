@@ -247,7 +247,7 @@ def _mask_stat_map(
 
 def load_bg_img(
     stat_map_img,
-    bg_img="MNI152",
+    bg_img: Any = "MNI152",
     black_bg: bool | Literal["auto"] = "auto",
     dim="auto",
 ):
