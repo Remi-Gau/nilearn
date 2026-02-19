@@ -228,6 +228,7 @@ def test_slicer_save_to_file(slicer, img, tmp_path):
     slicer.close()
 
 
+@pytest.mark.thread_unsafe
 @pytest.mark.parametrize("cut_coords", [2, 4])
 def test_mosaic_slicer_integer_cut_coords(cut_coords, img):
     """Tests for MosaicSlicer with cut_coords provided as an integer."""
