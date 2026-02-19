@@ -339,7 +339,9 @@ def smooth_array(arr, affine, fwhm=None, ensure_finite=True, copy=True):
         (4, 4) matrix, giving affine transformation for image. (3, 3) matrices
         are also accepted (only these coefficients are used).
         If `fwhm='fast'`, the affine is not used and can be None.
+
     %(fwhm)s
+
     ensure_finite : :obj:`bool`, default=True
         If True, replace every non-finite values (like NaNs) by zero before
         filtering.
@@ -432,6 +434,8 @@ def smooth_img(imgs, fwhm):
 
     ret = []
     if is_surface:
+        if fwhm is not None and hasattr(fwhm, "__iter__"):
+            raise TypeError("For surface data, 'fwhm' must be a scalar.")
         for img in imgs:
             iterations = _mris_fwhm_to_niters(fwhm, img)
             ret.append(_smooth_surface_img(img, iterations))

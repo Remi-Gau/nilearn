@@ -375,13 +375,28 @@ def test_apply_mask(tmp_path, create_files, affine):
         assert_equal(proj.sum(), 9 / np.abs(affine[axis, axis]))
 
 
-def test_apply_mask_surface(surf_img_2d, surf_mask_1d):
+@pytest.mark.parametrize("smoothing_fwhm", [None, 0, 1])
+def test_apply_mask_surface(surf_img_2d, surf_mask_1d, smoothing_fwhm):
     """Test apply_mask on surface."""
     length = 5
-    series = apply_mask(surf_img_2d(length), surf_mask_1d)
+    series = apply_mask(
+        surf_img_2d(length), surf_mask_1d, smoothing_fwhm=smoothing_fwhm
+    )
 
     assert isinstance(series, np.ndarray)
     assert series.shape[0] == length
+
+
+@pytest.mark.parametrize(
+    "smoothing_fwhm", [(0, 1, 2), [0, 1, 2], np.asarray([1])]
+)
+def test_apply_mask_surface_error(surf_img_2d, surf_mask_1d, smoothing_fwhm):
+    """Test error apply_mask on surface."""
+    length = 5
+    with pytest.raises(TypeError, match="must be of type"):
+        apply_mask(
+            surf_img_2d(length), surf_mask_1d, smoothing_fwhm=smoothing_fwhm
+        )
 
 
 def test_apply_mask_nan(affine_eye):
