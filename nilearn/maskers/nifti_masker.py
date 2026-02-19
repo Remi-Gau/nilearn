@@ -456,7 +456,7 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         if img is None:  # images were not provided to fit
             img = mask
 
-        # ensure that the crosshaoir will be in the mask
+        # ensure that the crosshair will be in the mask
         cut_coords = find_xyz_cut_coords(img)
         if mask is not None:
             cut_coords = find_xyz_cut_coords(mask)
