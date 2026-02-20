@@ -7,14 +7,15 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content %}
-                <div class="image">
-                    <img class="pure-img"
-                         width="100%"
-                         src="data:image/svg+xml;base64,{{ content }}"
-                         alt="image" />
-                </div>
-                {% if engine == "brainsprite" %}
+            {% elif content or engine == "brainsprite" %}
+                {% if engine == "matplotlib" %}
+                    <div class="image">
+                        <img class="pure-img"
+                             width="100%"
+                             src="data:image/svg+xml;base64,{{ content }}"
+                             alt="image" />
+                    </div>
+                {% elif engine == "brainsprite" %}
 
                     {% include "html/maskers/partials/brainsprite.jinja" %}
 

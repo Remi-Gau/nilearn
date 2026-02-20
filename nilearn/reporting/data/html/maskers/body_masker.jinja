@@ -7,22 +7,23 @@
 
                 {% include "html/partials/missing_plotting_engine.jinja" %}
 
-            {% elif content %}
-                <div class="image">
-                    <img class="pure-img"
-                         width="100%"
-                         src="data:image/svg+xml;base64,{{ content }}"
-                         alt="No image provided." />
-                    {% if overlay %}
-                        <div class="overlay">
-                            <img class="pure-img"
-                                 width="100%"
-                                 src="data:image/svg+xml;base64,{{ overlay }}"
-                                 alt="No overlay found." />
-                        </div>
-                    {% endif %}
-                </div>
-                {% if engine == "brainsprite" %}
+            {% elif content or engine == "brainsprite" %}
+                {% if engine == "matplotlib" %}
+                    <div class="image">
+                        <img class="pure-img"
+                             width="100%"
+                             src="data:image/svg+xml;base64,{{ content }}"
+                             alt="No image provided." />
+                        {% if overlay %}
+                            <div class="overlay">
+                                <img class="pure-img"
+                                     width="100%"
+                                     src="data:image/svg+xml;base64,{{ overlay }}"
+                                     alt="No overlay found." />
+                            </div>
+                        {% endif %}
+                    </div>
+                {% elif engine == "brainsprite" %}
 
                     {% include "html/maskers/partials/brainsprite.jinja" %}
 

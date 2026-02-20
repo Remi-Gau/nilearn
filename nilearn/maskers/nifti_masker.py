@@ -395,6 +395,9 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         title : :obj:`str` or None, default=None
             title for the report. If None, title will be the class name.
 
+        engine : {"matplotlib", "brainsprite"}, default="matplotlib"
+            Choice of engine to display the mask.
+
         Returns
         -------
         report : `nilearn.reporting.html_report.HTMLReport`
@@ -422,13 +425,6 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
                 )
                 self._report_content["warning_messages"].append(msg)
 
-            if engine == "brainsprite":
-                bg_img = self._reporting_data["images"]
-                stat_map_img = self._reporting_data["mask"]
-                self._create_brainsprite(
-                    bg_img=bg_img, stat_map_img=stat_map_img, opacity=0.9
-                )
-
         return generate_report(self)
 
     def _reporting(self):
@@ -446,7 +442,16 @@ class NiftiMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
             self._report_content["overlay"] = None
             return None
 
-        return self._create_figure_for_report()
+        if self._report_content["engine"] == "matplotlib":
+            return self._create_figure_for_report()
+
+        elif self._report_content["engine"] == "brainsprite":
+            bg_img = self._reporting_data["images"]
+            stat_map_img = self._reporting_data["mask"]
+            self._create_brainsprite(
+                bg_img=bg_img, stat_map_img=stat_map_img, opacity=0.9
+            )
+            return None
 
     def _create_figure_for_report(self):
         """Generate figure to include in the report.
