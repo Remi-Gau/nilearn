@@ -6,10 +6,11 @@ import json
 import warnings
 from collections.abc import Iterable
 from copy import deepcopy
-from typing import TYPE_CHECKING, Any, Literal
+from typing import Any, Literal
 
 import numpy as np
 from joblib import Memory
+from nibabel import Nifti1Image
 from sklearn.base import TransformerMixin
 from sklearn.utils.estimator_checks import check_is_fitted
 from sklearn.utils.validation import check_array
@@ -44,9 +45,6 @@ from nilearn.masking import load_mask_img, unmask
 from nilearn.signal import clean
 from nilearn.surface.surface import SurfaceImage, at_least_2d, check_surf_img
 from nilearn.surface.utils import check_polymesh_equal
-
-if TYPE_CHECKING:
-    from nibabel import Nifti1Image
 
 
 def filter_and_extract(
