@@ -249,7 +249,7 @@ class NiftiMapsMasker(ClassNamePrefixFeaturesOutMixin, BaseMasker):
         | int
         | Literal["all"] = 10,
         title: str | None = None,
-        engine: Literal["matplotlib" | "brainsprite"] = "matplotlib",
+        engine: Literal["matplotlib", "brainsprite"] = "matplotlib",
     ):
         """Generate an HTML report for the current ``NiftiMapsMasker`` object.
 
