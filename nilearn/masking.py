@@ -818,7 +818,7 @@ def compute_multi_brain_mask(
 @fill_doc
 def apply_mask(
     imgs, mask_img, dtype="f", smoothing_fwhm=None, ensure_finite=True
-):
+) -> np.ndarray:
     """Extract signals from images using specified mask.
 
     Read the time series from the given image object, using the mask.
