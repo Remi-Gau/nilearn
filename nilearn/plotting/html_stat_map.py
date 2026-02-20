@@ -8,8 +8,7 @@ import warnings
 from base64 import b64encode
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Literal
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, Literal
 
 import matplotlib
 import numpy as np
