@@ -279,9 +279,6 @@ type = 'protected'
 allow_redefinition = false
 enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
 exclude = [
-    '.*/tests/test_.*',
-    'doc/.*',
-    'examples/.*',
     'nilearn_cache/.*',
     'nilearn/_version.py'
 ]
