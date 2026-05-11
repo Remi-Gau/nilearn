@@ -13,6 +13,7 @@ https://github.com/mne-tools/mne-python/blob/main/mne/utils/docs.py
 
 import sys
 from collections.abc import Callable
+from typing import ParamSpec, TypeVar
 
 ##############################################################################
 #
@@ -1955,7 +1956,11 @@ def _indentcount_lines(lines):
     return indentno
 
 
-def fill_doc(f: Callable) -> Callable:
+P = ParamSpec("P")
+R = TypeVar("R")
+
+
+def fill_doc(f: Callable[P, R]) -> Callable[P, R]:
     """Fill a docstring with docdict entries.
 
     Parameters
