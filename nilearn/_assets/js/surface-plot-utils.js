@@ -1,3 +1,5 @@
+/* global $, surfaceMapInfo, Plotly, textColor, addColorbar, updateLayout, getLayout, decodeHemisphere, getLighting, getConfig, color */
+
 function makePlot (surface, hemisphere, divId) {
   decodeHemisphere(surfaceMapInfo, surface, hemisphere)
   const info = surfaceMapInfo[surface + '_' + hemisphere]

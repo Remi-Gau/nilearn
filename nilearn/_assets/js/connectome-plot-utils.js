@@ -1,3 +1,5 @@
+/* global $, connectomeInfo, getLighting, getLayout, Plotly, textColor, addColorbar, surfaceRelayout, decodeBase64, updateLayout, getConfig, decodeHemisphere */
+
 const data = []
 
 function getOpacity () {

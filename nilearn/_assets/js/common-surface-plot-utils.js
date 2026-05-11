@@ -1,3 +1,5 @@
+/* global $, Plotly, decodeHemisphere */
+
 function decodeBase64 (encoded, dtype) {
   const getter = {
     float32: 'getFloat32',
