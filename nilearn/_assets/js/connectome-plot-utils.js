@@ -33,7 +33,7 @@ function makePlot (surface, hemisphere, divId) {
   Plotly.plot(divId, data, layout, config)
 }
 
-function addPlot () {
+function addPlot () { // eslint-disable-line no-unused-vars
   for (const hemisphere of ['left', 'right']) {
     makePlot('pial', hemisphere, 'connectome-plot')
   }
@@ -55,7 +55,7 @@ function addPlot () {
   }
 }
 
-function updateOpacity () {
+function updateOpacity () { // eslint-disable-line no-unused-vars
   const opacity = getOpacity()
   data[0].opacity = opacity
   data[1].opacity = opacity
@@ -67,11 +67,11 @@ function updateOpacity () {
   )
 }
 
-function surfaceRelayout () {
+function surfaceRelayout () { // eslint-disable-line no-unused-vars
   return updateLayout('connectome-plot', 'select-view', false)
 }
 
-function addConnectome () {
+function addConnectome () { // eslint-disable-line no-unused-vars
   const info = connectomeInfo.connectome
 
   for (const attribute of ['marker_x', 'marker_y', 'marker_z']) {

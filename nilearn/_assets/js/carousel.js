@@ -1,7 +1,7 @@
 /**
  * A class representing a carousel that cycles through different objects.
  */
-class Carousel {
+class Carousel { // eslint-disable-line no-unused-vars
   /**
      * Creates a new Carousel instance.
      * @param {string} uid - A unique identifier for the masker report.

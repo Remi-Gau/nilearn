@@ -44,7 +44,7 @@ function makePlot (surface, hemisphere, divId) {
   }
 }
 
-function addPlot () {
+function addPlot () { // eslint-disable-line no-unused-vars
   const hemisphere = $('#select-hemisphere').val()
   const kind = $('#select-kind').val()
 
@@ -54,7 +54,7 @@ function addPlot () {
   makePlot(kind, hemisphere, 'surface-plot')
 }
 
-function surfaceRelayout () {
+function surfaceRelayout () { // eslint-disable-line no-unused-vars
   return updateLayout(
     'surface-plot',
     'select-view',

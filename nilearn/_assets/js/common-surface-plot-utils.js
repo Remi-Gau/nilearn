@@ -41,7 +41,7 @@ function getAxisConfig () {
   return axisConfig
 }
 
-function getLighting () {
+function getLighting () { // eslint-disable-line no-unused-vars
   return {}
   // i.e. use plotly defaults:
   // {
@@ -55,7 +55,7 @@ function getLighting () {
   // };
 }
 
-function getConfig () {
+function getConfig () { // eslint-disable-line no-unused-vars
   const config = {
     modeBarButtonsToRemove: ['hoverClosest3d'],
     displayLogo: false
@@ -136,20 +136,20 @@ function getLayout (plotDivId, viewSelectId, blackBg) {
   return layout
 }
 
-function updateLayout (plotDivId, viewSelectId, blackBg) {
+function updateLayout (plotDivId, viewSelectId, blackBg) { // eslint-disable-line no-unused-vars
   const layout = getLayout(
     plotDivId, viewSelectId, blackBg)
   Plotly.relayout(plotDivId, layout)
 }
 
-function textColor (blackBg) {
+function textColor (blackBg) { // eslint-disable-line no-unused-vars
   if (blackBg) {
     return 'white'
   }
   return 'black'
 }
 
-function addColorbar (colorscale, cmin, cmax, divId, layout, config,
+function addColorbar (colorscale, cmin, cmax, divId, layout, config, // eslint-disable-line no-unused-vars
   fontsize = 25, height = 0.5, color = 'black') {
   // hack to get a colorbar
   const dummy = {
@@ -174,7 +174,7 @@ function addColorbar (colorscale, cmin, cmax, divId, layout, config,
   Plotly.plot(divId, [dummy], layout, config)
 }
 
-function decodeHemisphere (surfaceInfo, surface, hemisphere) {
+function decodeHemisphere (surfaceInfo, surface, hemisphere) { // eslint-disable-line no-unused-vars
   const info = surfaceInfo[surface + '_' + hemisphere]
 
   for (const attribute of ['x', 'y', 'z']) {
