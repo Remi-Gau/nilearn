@@ -129,6 +129,8 @@ repos:
                 | nilearn/_assets/js/niivue.umd.js
             )$
 
+        args: [--global, $, --global, Plotly]
+
     # Check imports contracts
 -   repo: https://github.com/seddonym/import-linter
     rev: v2.11

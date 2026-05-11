@@ -1,4 +1,4 @@
-/* global $, connectomeInfo, getLighting, getLayout, Plotly, textColor, addColorbar, surfaceRelayout, decodeBase64, updateLayout, getConfig, decodeHemisphere */
+/* global connectomeInfo, getLighting, getLayout, textColor, addColorbar, decodeBase64, updateLayout, getConfig, decodeHemisphere */
 
 const data = []
 
@@ -82,7 +82,7 @@ function addConnectome () {
     }
   }
 
-  const pyplot_elements = [
+  const pyplotElements = [
     {
       type: 'scatter3d',
       mode: 'markers+text',
@@ -110,7 +110,7 @@ function addConnectome () {
         }
       }
     }
-    pyplot_elements.push({
+    pyplotElements.push({
       type: 'scatter3d',
       mode: 'lines',
       x: info.con_x,
@@ -127,5 +127,5 @@ function addConnectome () {
     })
   }
 
-  Plotly.plot('connectome-plot', pyplot_elements)
+  Plotly.plot('connectome-plot', pyplotElements)
 }

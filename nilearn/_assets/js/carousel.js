@@ -5,24 +5,24 @@ class Carousel {
   /**
      * Creates a new Carousel instance.
      * @param {string} uid - A unique identifier for the masker report.
-     * @param {number[]} displayed_objects - An array of IDs to cycle through.
-     * @param {boolean} [is_sphere=false] - Determines whether the carousel operates on sphere masker.
+     * @param {number[]} displayedObjects - An array of IDs to cycle through.
+     * @param {boolean} [isSphere=false] - Determines whether the carousel operates on sphere masker.
      */
-  constructor (uid, displayed_objects, is_sphere = false) {
+  constructor (uid, displayedObjects, isSphere = false) {
     /** @private {string} */
     this.uid = uid
 
     /** @private {number[]} */
-    this.displayed_objects = displayed_objects
+    this.displayedObjects = displayedObjects
 
     /** @private {number} */
     this.current_obj_idx = 0
 
     /** @private {number} */
-    this.number_objs = displayed_objects.length
+    this.number_objs = displayedObjects.length
 
     /** @private {boolean} */
-    this.is_sphere = is_sphere
+    this.isSphere = isSphere
 
     this.init()
   }
@@ -53,7 +53,7 @@ class Carousel {
      * for sphere masker report this adapts the full title in the carousel
      */
   showObj (index) {
-    this.displayed_objects.forEach((_, i) => {
+    this.displayedObjects.forEach((_, i) => {
       const mapElement = document.getElementById(`carousel-obj-UUID-${this.uid}-${i}`)
       if (mapElement) {
         mapElement.style.display = i === index ? 'block' : 'none'
@@ -62,12 +62,12 @@ class Carousel {
 
     const compElement = document.getElementById(`comp-UUID-${this.uid}`)
     if (compElement) {
-      compElement.innerHTML = this.displayed_objects[index]
-      if (this.is_sphere) {
+      compElement.innerHTML = this.displayedObjects[index]
+      if (this.isSphere) {
         if (index === 0) {
           compElement.innerHTML = 'All Spheres'
         } else {
-          compElement.innerHTML = 'Sphere ' + this.displayed_objects[index]
+          compElement.innerHTML = 'Sphere ' + this.displayedObjects[index]
         }
       }
     }

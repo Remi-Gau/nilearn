@@ -1,4 +1,4 @@
-/* global $, surfaceMapInfo, Plotly, textColor, addColorbar, updateLayout, getLayout, decodeHemisphere, getLighting, getConfig, color */
+/* global surfaceMapInfo, textColor, addColorbar, updateLayout, getLayout, decodeHemisphere, getLighting, getConfig */
 
 function makePlot (surface, hemisphere, divId) {
   decodeHemisphere(surfaceMapInfo, surface, hemisphere)
@@ -28,6 +28,8 @@ function makePlot (surface, hemisphere, divId) {
   Plotly.react(divId, data, layout, config)
 
   if (surfaceMapInfo.colorbar) {
+    const color = textColor(surfaceMapInfo.black_bg)
+
     addColorbar(
       surfaceMapInfo.colorscale,
       surfaceMapInfo.cmin,
@@ -37,7 +39,7 @@ function makePlot (surface, hemisphere, divId) {
       config,
       surfaceMapInfo.cbar_fontsize,
       surfaceMapInfo.cbar_height,
-      (color = textColor(surfaceMapInfo.black_bg))
+      (color)
     )
   }
 }

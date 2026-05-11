@@ -1,12 +1,10 @@
-/* global $, Plotly, decodeHemisphere */
-
 function decodeBase64 (encoded, dtype) {
   const getter = {
     float32: 'getFloat32',
     int32: 'getInt32'
   }[dtype]
 
-  const arrayType = {
+  const ArrayType = {
     float32: Float32Array,
     int32: Int32Array
   }[dtype]
@@ -19,10 +17,10 @@ function decodeBase64 (encoded, dtype) {
   }
 
   const view = new DataView(buffer)
-  const decoded = new arrayType(
-    raw.length / arrayType.BYTES_PER_ELEMENT)
+  const decoded = new ArrayType(
+    raw.length / ArrayType.BYTES_PER_ELEMENT)
   for (let i = 0, off = 0; i !== decoded.length;
-    i++, off += arrayType.BYTES_PER_ELEMENT) {
+    i++, off += ArrayType.BYTES_PER_ELEMENT) {
     decoded[i] = view[getter](off, true)
   }
   return decoded
@@ -144,8 +142,8 @@ function updateLayout (plotDivId, viewSelectId, blackBg) {
   Plotly.relayout(plotDivId, layout)
 }
 
-function textColor (black_bg) {
-  if (black_bg) {
+function textColor (blackBg) {
+  if (blackBg) {
     return 'white'
   }
   return 'black'
