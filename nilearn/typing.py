@@ -76,6 +76,7 @@ NJobs: TypeAlias = int | np.integer
 NPerm: TypeAlias = int | np.integer
 NiimgLike = (Nifti1Image, str, Path)
 Opening: TypeAlias = bool | int | np.integer
+OutputFile: TypeAlias = str | pathlib.Path | None
 Radiological: TypeAlias = bool
 RandomState: TypeAlias = (
     int | np.floating | np.integer | np.random.RandomState | None
