@@ -67,10 +67,13 @@ from nilearn.decoding import (
     FREMClassifier,
     FREMRegressor,
 )
-from nilearn.decoding._utils import _get_mask_extent, check_feature_screening
+from nilearn.decoding._utils import (
+    _get_mask_extent,
+    check_feature_screening,
+    validate_estimator,
+)
 from nilearn.decoding.decoder import (
-    _BaseDecoder,
-    _check_estimator,
+    SUPPORTED_ESTIMATORS,
     _check_param_grid,
     _parallel_fit,
     _wrap_param_grid,
@@ -428,68 +431,6 @@ def test_check_inputs_length(model):
         model(
             mask=mask, screening_percentile=100.0, standardize="zscore_sample"
         ).fit(X_, y)
-
-
-@pytest.mark.parametrize(
-    "estimator",
-    [
-        "svc",
-        "svc_l2",
-        "svc_l1",
-        "logistic",
-        "logistic_l1",
-        "logistic_l2",
-        "ridge",
-        "ridge_classifier",
-        "ridge_regressor",
-        "svr",
-        "dummy_classifier",
-        "dummy_regressor",
-    ],
-)
-def test_check_supported_estimator(estimator):
-    """Check if the estimator is one of the supported estimators."""
-    expected_warning = (
-        "Use a custom estimator at your own risk "
-        "of the process not working as intended."
-    )
-
-    with warnings.catch_warnings(record=True) as raised_warnings:
-        _check_estimator(
-            _BaseDecoder(
-                estimator=estimator, standardize="zscore_sample"
-            ).estimator
-        )
-    warning_messages = [str(warning.message) for warning in raised_warnings]
-
-    assert expected_warning not in warning_messages
-
-
-@pytest.mark.parametrize("estimator", ["ridgo", "svb"])
-def test_check_unsupported_estimator(estimator):
-    """Check if the estimator is one of the supported estimators.
-
-    If not, if it is a string and if not in supported ones,
-    then raise the error.
-    """
-    with pytest.raises(ValueError, match="Invalid estimator"):
-        _check_estimator(
-            _BaseDecoder(
-                estimator=estimator, standardize="zscore_sample"
-            ).estimator
-        )
-
-    expected_warning = (
-        "Use a custom estimator at your own risk "
-        "of the process not working as intended."
-    )
-    custom_estimator = RandomForestClassifier()
-    with pytest.warns(UserWarning, match=expected_warning):
-        _check_estimator(
-            _BaseDecoder(
-                estimator=custom_estimator, standardize="zscore_sample"
-            ).estimator
-        )
 
 
 def test_parallel_fit(rand_x_y):
@@ -1448,7 +1389,12 @@ def test_decoder_vs_sklearn(classifier_penalty):
     # with 10 splits
     cv = StratifiedKFold(n_splits=10, shuffle=True, random_state=42)
     # default scoring is accuracy
-    scorer = check_scoring(_check_estimator(classifier_penalty), "accuracy")
+    scorer = check_scoring(
+        validate_estimator(
+            classifier_penalty, supported_estimaptors=SUPPORTED_ESTIMATORS
+        ),
+        "accuracy",
+    )
 
     # nilearn decoding
     nilearn_decoder = Decoder(
@@ -1466,7 +1412,9 @@ def test_decoder_vs_sklearn(classifier_penalty):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_classifier = _check_estimator(classifier_penalty)
+    sklearn_classifier = validate_estimator(
+        classifier_penalty, supported_estimaptors=SUPPORTED_ESTIMATORS
+    )
     scores_sklearn = {c: [] for c in range(n_classes)}
     # convert multiclass to n_classes binary classifications
     label_binarizer = LabelBinarizer()
@@ -1543,7 +1491,12 @@ def test_regressor_vs_sklearn(regressor):
     # to reduce variability in the test
     cv = KFold(n_splits=10, shuffle=True, random_state=42)
     # r2 is the default scoring for regression
-    scorer = check_scoring(_check_estimator(regressor), "r2")
+    scorer = check_scoring(
+        validate_estimator(
+            regressor, supported_estimaptors=SUPPORTED_ESTIMATORS
+        ),
+        "r2",
+    )
 
     # nilearn decoding
     nilearn_regressor = DecoderRegressor(
@@ -1569,7 +1522,9 @@ def test_regressor_vs_sklearn(regressor):
     masker = NiftiMasker(mask_img=mask, standardize="zscore_sample")
     X_transformed = masker.fit_transform(X)
 
-    sklearn_regressor = _check_estimator(regressor)
+    sklearn_regressor = validate_estimator(
+        regressor, supported_estimaptors=SUPPORTED_ESTIMATORS
+    )
     scores_sklearn = []
 
     for count, (train_idx, test_idx) in enumerate(cv.split(X_transformed, y)):

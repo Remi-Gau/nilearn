@@ -1,6 +1,8 @@
 """Utilities to check for decoders."""
 
+import inspect
 import warnings
+from typing import Any, TypedDict
 
 import numpy as np
 from sklearn.feature_selection import (
@@ -18,6 +20,8 @@ from nilearn.exceptions import MaskWarning
 from nilearn.image import get_data
 from nilearn.surface.surface import SurfaceImage
 from nilearn.surface.surface import get_data as get_surface_data
+
+MAX_ITER = 10000
 
 # Volume of a standard (MNI152) brain mask in mm^3
 MNI152_BRAIN_VOLUME = 1882989.0
@@ -226,3 +230,57 @@ def check_feature_screening(
         return SelectPercentile(
             f_test, percentile=int(effective_screening_percentile)
         )
+
+
+class EstimatorConfig(TypedDict):
+    estimator: Any
+    params: dict[str, Any]
+    extra_params: dict[str, Any]
+
+
+def validate_estimator(
+    estimator,
+    supported_estimaptors: dict[str, EstimatorConfig],
+    estimator_args=None,
+    verbose=0,
+):
+    """Check requested estimator.
+
+    If an actual estimator instance was passed, we allow it but warn the user.
+
+    Otherwise we instantiate one
+    from the config defined in supported_estimaptors.
+    """
+    if not isinstance(estimator, str):
+        warnings.warn(
+            "Use a custom estimator at your own risk "
+            "of the process not working as intended.",
+            stacklevel=find_stack_level(),
+        )
+        return estimator
+
+    estimator_config = supported_estimaptors.get(estimator)
+
+    if estimator_config is None:
+        raise ValueError(
+            "Invalid estimator. Known estimators are: "
+            f"{list(supported_estimaptors.keys())}. "
+            f"Got: {estimator}"
+        )
+
+    # "extra_params" can be overridden by parameters passed by user
+    params = estimator_config["extra_params"]
+    if estimator_args is not None:
+        params |= estimator_args
+
+    # "params" cannot be overridden so we use them last
+    # to update the parameter of the estimator
+    params |= estimator_config["params"]
+
+    sig = inspect.signature(estimator_config["estimator"]).parameters
+    if "verbose" in sig:
+        params["verbose"] = (verbose - 1) > 0
+
+    estimator = estimator_config["estimator"](**params)
+
+    return estimator

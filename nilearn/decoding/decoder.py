@@ -10,7 +10,6 @@ Also exposes a high-level method FREM that uses clustering and model
 ensembling to achieve state of the art performance
 """
 
-import inspect
 import itertools
 import warnings
 from collections.abc import Iterable
@@ -52,14 +51,18 @@ from nilearn._utils.masker_validation import (
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
-from nilearn.decoding._utils import check_feature_screening
+from nilearn.decoding._utils import (
+    MAX_ITER,
+    EstimatorConfig,
+    check_feature_screening,
+    validate_estimator,
+)
 from nilearn.image import check_niimg
 from nilearn.maskers import SurfaceMasker
 from nilearn.maskers.masker_validation import check_embedded_masker
 from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
-MAX_ITER = 10000
 _MIN_N_FEATURES_FOR_SCREENING = 100
 
 kwarg_logistic_regression_cv = {}
@@ -68,7 +71,8 @@ if SKLEARN_GTE_1_8:
     # TODO (sklearn 1.10) remove 'use_legacy_attributes'
     kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
 
-SUPPORTED_ESTIMATORS = {
+
+SUPPORTED_ESTIMATORS: dict[str, EstimatorConfig] = {
     # "params" cannot be overridden
     # "extra_params" can be overridden by parameters passed by user
     "svc_l1": {
@@ -396,48 +400,6 @@ def _replace_param_grid_key(param_grid, key_to_replace, new_key):
     return new_param_grid
 
 
-def _check_estimator(estimator, estimator_args=None, verbose=0):
-    """Check requested estimator.
-
-    If an actual estimator instance was passed, we allow it but warn the user.
-
-    Otherwise we instantiate one
-    from the config defined in SUPPORTED_ESTIMATORS.
-    """
-    if not isinstance(estimator, str):
-        warnings.warn(
-            "Use a custom estimator at your own risk "
-            "of the process not working as intended.",
-            stacklevel=find_stack_level(),
-        )
-        return estimator
-
-    if estimator not in SUPPORTED_ESTIMATORS:
-        raise ValueError(
-            "Invalid estimator. Known estimators are: "
-            f"{list(SUPPORTED_ESTIMATORS.keys())}"
-        )
-
-    estimator_config = SUPPORTED_ESTIMATORS.get(estimator)
-
-    # "extra_params" can be overridden by parameters passed by user
-    params = estimator_config["extra_params"]
-    if estimator_args is not None:
-        params |= estimator_args
-
-    # "params" cannot be overridden so we use them last
-    # to update the parameter of the estimator
-    params |= estimator_config["params"]
-
-    sig = inspect.signature(estimator_config["estimator"]).parameters
-    if "verbose" in sig:
-        params["verbose"] = (verbose - 1) > 0
-
-    estimator = estimator_config["estimator"](**params)
-
-    return estimator
-
-
 def _parallel_fit(
     estimator,
     X,
@@ -750,8 +712,9 @@ class _BaseDecoder(CacheMixin, NilearnBaseEstimator):
         self.estimator_args_ = (
             {} if self.estimator_args is None else self.estimator_args
         )
-        self.estimator_ = _check_estimator(
+        self.estimator_ = validate_estimator(
             self.estimator,
+            supported_estimaptors=SUPPORTED_ESTIMATORS,
             estimator_args=self.estimator_args_,
             verbose=self.verbose - 1,
         )

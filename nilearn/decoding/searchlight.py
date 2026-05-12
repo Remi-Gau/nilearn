@@ -23,12 +23,30 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
+from nilearn.decoding._utils import (
+    MAX_ITER,
+    EstimatorConfig,
+    validate_estimator,
+)
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
 
-ESTIMATOR_CATALOG = {"svc": svm.LinearSVC, "svr": svm.SVR}
+SUPPORTED_ESTIMATORS: dict[str, EstimatorConfig] = {
+    # "params" cannot be overridden
+    # "extra_params" can be overridden by parameters passed by user
+    "svc": {
+        "estimator": svm.LinearSVC,
+        "params": {"penalty": "l2"},
+        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
+    },
+    "svr": {
+        "estimator": svm.SVR,
+        "params": {"kernel": "linear"},
+        "extra_params": {"max_iter": MAX_ITER},
+    },
+}
 
 
 @fill_doc
@@ -254,7 +272,7 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : :obj:`str` or estimator object, default='svc'
+    estimator : ``'svc'``, ``'svr'`` or estimator object, default='svc'
         The object to use to fit the data.
 
         %(sk_compatible_admonition)s
@@ -395,22 +413,6 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             return "classifier"
         return ""
 
-    def _get_estimator(self):
-        if not isinstance(self.estimator, str):
-            return self.estimator
-
-        estimator_args = (
-            {} if self.estimator_args is None else self.estimator_args
-        )
-        if "verbose" not in estimator_args:
-            estimator_args["verbose"] = (self.verbose - 1) > 0
-        if self.estimator == "svc" and "random_state" not in estimator_args:
-            estimator_args["random_state"] = self.random_state
-
-        estimator = ESTIMATOR_CATALOG[self.estimator](**estimator_args)
-
-        return estimator
-
     def fit(self, imgs, y, groups=None):
         """Fit the searchlight.
 
@@ -469,7 +471,12 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
 
         scores = search_light(
             X,
@@ -527,7 +534,12 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
             mask_img=self.mask_img_,
         )
 
-        estimator = self._get_estimator()
+        estimator = validate_estimator(
+            estimator=self.estimator,
+            supported_estimaptors=SUPPORTED_ESTIMATORS,
+            estimator_args=self.estimator_args,
+            verbose=self.verbose,
+        )
 
         # Use the modified `_group_iter_search_light` logic to avoid `y` issues
         result = search_light(
