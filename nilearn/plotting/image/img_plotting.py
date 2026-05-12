@@ -543,7 +543,7 @@ def plot_anat(
     vmin=None,
     vmax=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an anatomical image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -673,7 +673,7 @@ def plot_epi(
     vmax=None,
     radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an :term:`EPI` image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -834,7 +834,7 @@ def plot_roi(
     linewidths=2.5,
     radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
@@ -1014,7 +1014,7 @@ def plot_prob_atlas(
     alpha=0.7,
     radiological: Radiological = False,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot a :term:`Probabilistic atlas` onto the anatomical image \
     by default :term:`MNI` template.
 
@@ -1290,7 +1290,7 @@ def plot_stat_map(
     transparency=None,
     transparency_range=None,
     **kwargs,
-):
+) -> OrthoSlicer | None:
     """Plot cuts of an ROI/mask image.
 
     By default 3 cuts: Frontal, Axial, and Lateral.
