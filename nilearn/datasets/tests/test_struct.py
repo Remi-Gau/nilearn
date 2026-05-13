@@ -214,7 +214,7 @@ def test_fetch_surf_fsaverage_wrong_order(mesh, tmp_path, monkeypatch):
     # named after the attribute)
     monkeypatch.undo()
 
-    with pytest.warns(FutureWarning, match="Unsorted vertex"):
+    with pytest.warns(UserWarning, match="Unsorted vertex"):
         fsx = fetch_surf_fsaverage(mesh, data_dir=tmp_path)
 
     fs7 = fetch_surf_fsaverage("fsaverage7", data_dir=tmp_path)
