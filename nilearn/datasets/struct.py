@@ -961,8 +961,7 @@ def _is_vertex_order_equal(mesh1_coords, mesh2_coords, check_len=None):
             mesh1_coords[:len_common], mesh2_coords[:len_common], decimal=-1
         )
         return True
-    except AssertionError as e:
-        print(e)
+    except AssertionError:
         return False
 
 
