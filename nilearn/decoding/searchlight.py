@@ -20,6 +20,7 @@ from sklearn.utils.estimator_checks import check_is_fitted
 from nilearn._base import NilearnBaseEstimator
 from nilearn._utils import logger
 from nilearn._utils.docs import fill_doc
+from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
@@ -52,8 +53,8 @@ def search_light(
     y : array-like
         target variable to predict.
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : scikit-learn compatible estimator object
+        Object to use to fit the data.
 
     A : scipy sparse matrix.
         adjacency matrix. Defines for each feature the neighboring features
@@ -148,8 +149,8 @@ def _group_iter_search_light(
         adjacency rows. For a voxel with index i in X, list_rows[i] is the list
         of neighboring voxels indices (in X).
 
-    estimator : estimator object implementing 'fit'
-        object to use to fit the data
+    estimator : scikit-learn compatible estimator object
+        object to use to fit the data.
 
     X : array-like of shape at least 2D
         data to fit.
@@ -226,7 +227,7 @@ def _group_iter_search_light(
                 logger.log(
                     f"Job #{thread_id}, processed {i}/{len(list_rows)} steps "
                     f"({percent:0.2f}%, "
-                    f"{remaining:0.1f} seconds remaining){crlf}",
+                    f"{readable_time(remaining)} remaining){crlf}",
                     verbose,
                 )
     return par_scores
@@ -253,8 +254,10 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : 'svr', 'svc', or an estimator object implementing 'fit'
-        The object to use to fit the data
+    estimator : :obj:`str` or estimator object, default='svc'
+        The object to use to fit the data.
+
+        %(sk_compatible_admonition)s
 
     %(n_jobs)s
 
