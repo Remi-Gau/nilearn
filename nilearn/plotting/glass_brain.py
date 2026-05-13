@@ -100,11 +100,8 @@ def _get_json_and_transform(direction):
         "r": [0.38, 0, 0, 0.38, -108, -70],
     }
 
-    glass_brain_dir = GLASS_BRAIN_ASSETS
-
-    # print(a)
     direction_to_filename = {
-        _direction: glass_brain_dir / f"brain_schematics_{view_name}.json"
+        _direction: GLASS_BRAIN_ASSETS / f"brain_schematics_{view_name}.json"
         for _direction, view_name in direction_to_view_name.items()
     }
 
