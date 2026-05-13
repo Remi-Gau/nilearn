@@ -1,4 +1,9 @@
-"""Show how to use non human glass brain"""
+"""
+Using non-human glass brains
+============================
+
+Show how to use non human glass brain.
+"""
 
 import os
 from pathlib import Path
