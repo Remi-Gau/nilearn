@@ -1,5 +1,6 @@
 """Show how to use non human glass brain"""
 
+import os
 from pathlib import Path
 
 import templateflow.api as tflow
@@ -12,18 +13,20 @@ template = "WHS"
 fetched_files = tflow.get(template, resolution=2, suffix="T2star")
 
 # change global path to glass brain files
-ni.plotting.GLASS_BRAIN_ASSETS = (
-    Path.cwd() / "examples" / "07_advanced" / "glass_brain_files"
-)
-
+# different path resolution when running locally or in CI
+if os.getenv("CI"):
+    ni.plotting.GLASS_BRAIN_ASSETS = Path.cwd() / "glass_brain_files"
+else:
+    ni.plotting.GLASS_BRAIN_ASSETS = (
+        Path(__file__).parent / "glass_brain_files"
+    )
 
 plot_glass_brain(
     fetched_files,
-    threshold=0,
+    threshold=5000,
     black_bg=True,
     title="Waxholm Space atlas of the Sprague Dawley rat brain",
     alpha=1,
-    # output_file=Path(__file__).parent / "tmp.png",
 )
 
 show()
