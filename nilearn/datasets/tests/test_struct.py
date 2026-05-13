@@ -10,6 +10,7 @@ from sklearn.utils import Bunch
 
 from nilearn._utils.helpers import is_windows_platform
 from nilearn.datasets.struct import (
+    _apply_mesh_mapping,
     _get_mesh_mapping,
     _is_vertex_order_equal,
     fetch_icbm152_2009,
@@ -303,4 +304,45 @@ def test_get_mesh_mapping():
 
     assert np.array_equal(
         mapping, np.array([0, 5, 1, 2, 3, 4, 10, 6, 7, 8, 9])
+    )
+
+
+def test_apply_mesh_mapping():
+    """Test nilearn.datasets.struct._apply_mesh_mapping."""
+    mapping = [0, 5, 1, 2, 3, 4, 10, 6, 7, 8, 9]
+
+    arr = np.array(
+        [
+            [-38.7, -19.3, 67.2],
+            [-9.7, -9.2, 46.6],
+            [-24.0, 43.1, 23.9],
+            [-59.9, 0.0, 9.0],
+            [-50.6, -49.4, 47.8],
+            [-16.7, -69.1, 61.3],
+            [-20.2, -62.7, 6.2],
+            [-2.5, 9.4, -4.6],
+            [-29.0, 23.4, -6.7],
+            [-54.5, -22.9, -6.7],
+            [-36.6, -87.1, -1.8],
+        ]
+    )
+
+    reordered, _ = _apply_mesh_mapping(mapping, arr, None)
+
+    assert np.array_equal(
+        reordered, np.array(
+            [
+                [-38.7, -19.3, 67.2],
+                [-16.7, -69.1, 61.3],
+                [-9.7, -9.2, 46.6],
+                [-24.0, 43.1, 23.9],
+                [-59.9, 0.0, 9.0],
+                [-50.6, -49.4, 47.8],
+                [-36.6, -87.1, -1.8],
+                [-20.2, -62.7, 6.2],
+                [-2.5, 9.4, -4.6],
+                [-29.0, 23.4, -6.7],
+                [-54.5, -22.9, -6.7],
+            ]
+        )
     )
