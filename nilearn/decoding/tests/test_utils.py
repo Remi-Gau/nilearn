@@ -13,11 +13,12 @@ from nilearn.conftest import _img_3d_rand, _surf_img_1d
 from nilearn.datasets import load_mni152_brain_mask
 from nilearn.decoding._utils import (
     MNI152_BRAIN_VOLUME,
+    SUPPORTED_ESTIMATORS,
     _get_mask_extent,
     check_feature_screening,
     validate_estimator,
 )
-from nilearn.decoding.decoder import SUPPORTED_ESTIMATORS, _BaseDecoder
+from nilearn.decoding.decoder import _BaseDecoder
 
 
 @pytest.mark.thread_unsafe

@@ -10,7 +10,6 @@ from copy import deepcopy
 
 import numpy as np
 from joblib import Parallel, cpu_count, delayed
-from sklearn import svm
 from sklearn.base import TransformerMixin
 from sklearn.exceptions import ConvergenceWarning
 from sklearn.model_selection import KFold, cross_val_score
@@ -24,29 +23,13 @@ from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._utils import (
-    MAX_ITER,
-    EstimatorConfig,
+    SUPPORTED_ESTIMATORS,
     validate_estimator,
 )
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
 from nilearn.masking import load_mask_img
-
-SUPPORTED_ESTIMATORS: dict[str, EstimatorConfig] = {
-    # "params" cannot be overridden
-    # "extra_params" can be overridden by parameters passed by user
-    "svc": {
-        "estimator": svm.LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svr": {
-        "estimator": svm.SVR,
-        "params": {"kernel": "linear"},
-        "extra_params": {"max_iter": MAX_ITER},
-    },
-}
 
 
 @fill_doc

@@ -68,16 +68,16 @@ from nilearn.decoding import (
     FREMRegressor,
 )
 from nilearn.decoding._utils import (
+    SUPPORTED_ESTIMATORS,
     _get_mask_extent,
     check_feature_screening,
+    kwarg_logistic_regression_cv,
     validate_estimator,
 )
 from nilearn.decoding.decoder import (
-    SUPPORTED_ESTIMATORS,
     _check_param_grid,
     _parallel_fit,
     _wrap_param_grid,
-    kwarg_logistic_regression_cv,
 )
 from nilearn.decoding.tests.test_same_api import to_niimgs
 from nilearn.maskers import NiftiMasker, SurfaceMasker

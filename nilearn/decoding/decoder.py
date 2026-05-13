@@ -49,11 +49,10 @@ from nilearn._utils.masker_validation import (
     check_compatibility_mask_and_images,
 )
 from nilearn._utils.param_validation import check_params
-from nilearn._utils.versions import SKLEARN_GTE_1_8, SKLEARN_LT_1_6
+from nilearn._utils.versions import SKLEARN_LT_1_6
 from nilearn.decoding._mixin import _ClassifierMixin, _RegressorMixin
 from nilearn.decoding._utils import (
-    MAX_ITER,
-    EstimatorConfig,
+    SUPPORTED_ESTIMATORS,
     check_feature_screening,
     validate_estimator,
 )
@@ -64,94 +63,6 @@ from nilearn.regions.rena_clustering import ReNA
 from nilearn.surface import SurfaceImage
 
 _MIN_N_FEATURES_FOR_SCREENING = 100
-
-kwarg_logistic_regression_cv = {}
-if SKLEARN_GTE_1_8:
-    # TODO (sklearn 1.8) remove if
-    # TODO (sklearn 1.10) remove 'use_legacy_attributes'
-    kwarg_logistic_regression_cv = {"use_legacy_attributes": False}
-
-
-SUPPORTED_ESTIMATORS: dict[str, EstimatorConfig] = {
-    # "params" cannot be overridden
-    # "extra_params" can be overridden by parameters passed by user
-    "svc_l1": {
-        "estimator": LinearSVC,
-        "params": {
-            "penalty": "l1",
-        },
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc_l2": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "svc": {
-        "estimator": LinearSVC,
-        "params": {"penalty": "l2"},
-        "extra_params": {"max_iter": MAX_ITER, "random_state": 0},
-    },
-    "logistic_l1": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (1,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "logistic_l2": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "logistic": {
-        "estimator": LogisticRegressionCV,
-        "params": {
-            "l1_ratios": (0,),
-            "solver": "liblinear",
-            **kwarg_logistic_regression_cv,
-        },
-        "extra_params": {},
-    },
-    "ridge_classifier": {
-        "estimator": RidgeClassifierCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge_regressor": {
-        "estimator": RidgeCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "ridge": {"estimator": RidgeCV, "params": {}, "extra_params": {}},
-    "lasso": {"estimator": LassoCV, "params": {}, "extra_params": {}},
-    "lasso_regressor": {
-        "estimator": LassoCV,
-        "params": {},
-        "extra_params": {},
-    },
-    "svr": {
-        "estimator": SVR,
-        "params": {"kernel": "linear"},
-        "extra_params": {"max_iter": MAX_ITER},
-    },
-    "dummy_classifier": {
-        "estimator": DummyClassifier,
-        "params": {"strategy": "stratified"},
-        "extra_params": {"random_state": 0},
-    },
-    "dummy_regressor": {
-        "estimator": DummyRegressor,
-        "params": {"strategy": "mean"},
-        "extra_params": {},
-    },
-}
 
 
 @fill_doc
