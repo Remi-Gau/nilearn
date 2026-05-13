@@ -330,7 +330,8 @@ def test_apply_mesh_mapping():
     reordered, _ = _apply_mesh_mapping(mapping, arr, None)
 
     assert np.array_equal(
-        reordered, np.array(
+        reordered,
+        np.array(
             [
                 [-38.7, -19.3, 67.2],
                 [-16.7, -69.1, 61.3],
@@ -344,5 +345,5 @@ def test_apply_mesh_mapping():
                 [-29.0, 23.4, -6.7],
                 [-54.5, -22.9, -6.7],
             ]
-        )
+        ),
     )
