@@ -161,9 +161,6 @@ def plot_brain_schematics(ax, direction, **kwargs):
     direction : {'x', 'y', 'z', 'l', 'r'}
         The directions of the view.
 
-    glass_brain_dir: pathlib.Path or None, default=None
-        Path to the directory containing glass brain json files
-
     **kwargs :
         Passed to the matplotlib patches constructor.
 
