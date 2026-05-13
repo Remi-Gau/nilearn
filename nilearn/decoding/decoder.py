@@ -18,10 +18,7 @@ import numpy as np
 from joblib import Parallel, delayed
 from nibabel import Nifti1Image
 from sklearn import clone
-from sklearn.base import (
-    MultiOutputMixin,
-    is_classifier,
-)
+from sklearn.base import MultiOutputMixin, is_classifier
 from sklearn.dummy import DummyClassifier, DummyRegressor
 from sklearn.linear_model import (
     LassoCV,
@@ -1120,6 +1117,8 @@ class Decoder(_ClassifierMixin, _BaseDecoder):
         The estimator to choose among:
         %(classifier_options)s
 
+        %(sk_compatible_admonition)s
+
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
            :obj:`~nilearn.surface.SurfaceImage` \
            or :obj:`~nilearn.maskers.SurfaceMasker`, default=None
@@ -1308,6 +1307,8 @@ class DecoderRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         The estimator to choose among:
         %(regressor_options)s
 
+        %(sk_compatible_admonition)s
+
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker, \
             or None, default=None
         Mask to be used on data. If an instance of masker is passed,
@@ -1481,6 +1482,8 @@ class FREMRegressor(MultiOutputMixin, _RegressorMixin, _BaseDecoder):
         default="svr"
         The estimator to choose among:
         %(regressor_options)s
+
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, or MultiNiftiMasker, \
         default=None
@@ -1657,6 +1660,8 @@ class FREMClassifier(_ClassifierMixin, _BaseDecoder):
         default='svc'
         The estimator to choose among:
         %(classifier_options)s
+
+        %(sk_compatible_admonition)s
 
     mask : filename, Nifti1Image, NiftiMasker, MultiNiftiMasker or None,\
         default=None

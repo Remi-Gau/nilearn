@@ -165,18 +165,6 @@ logistic = "Logistic regression"
 rc = "Ridge classifier"
 dc = "Dummy classifier with stratified strategy"
 
-sk_compatible_admonition = """
-
-    .. admonition:: Important
-
-        Besides the strings,
-        it is also possible to pass
-        a scikit-learn compatible estimator object.
-        See `scikit-learn's guide on developing your own estimator
-        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
-        for more details.
-
-"""
 
 docdict["classifier_options"] = f"""
 
@@ -234,8 +222,6 @@ docdict["classifier_options"] = f"""
     .. code-block:: python
 
         dummy = DummyClassifier(strategy="stratified", random_state=0)
-
-    {sk_compatible_admonition}
 
 """
 
@@ -937,7 +923,7 @@ random_state : :obj:`int` or np.random.RandomState, optional
 """
 
 # regressor_options
-docdict["regressor_options"] = f"""
+docdict["regressor_options"] = """
 
     - ``ridge``: \
         :class:`Ridge regression <sklearn.linear_model.RidgeCV>`.
@@ -980,7 +966,6 @@ docdict["regressor_options"] = f"""
 
         dummy = DummyRegressor(strategy="mean")
 
-    {sk_compatible_admonition}
 """
 
 # resampling_interpolation
@@ -1190,6 +1175,19 @@ signals : 1D/2D :obj:`numpy.ndarray`
 """
 docdict["region_signals_inv_transform"] = docdict["signals_inv_transform"]
 docdict["x_inv_transform"] = docdict["signals_inv_transform"]
+
+sk_compatible_admonition = """
+
+    .. admonition:: Important
+
+        Besides the strings,
+        it is also possible to pass
+        a scikit-learn compatible estimator object.
+        See `scikit-learn's guide on developing your own estimator
+        <https://scikit-learn.org/stable/developers/develop.html#rolling-your-own-estimator>`_
+        for more details.
+
+"""
 
 docdict["sk_compatible_admonition"] = sk_compatible_admonition
 

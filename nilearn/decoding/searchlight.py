@@ -22,10 +22,7 @@ from nilearn._utils.docs import fill_doc
 from nilearn._utils.logger import readable_time
 from nilearn._utils.param_validation import check_params
 from nilearn._utils.versions import SKLEARN_LT_1_6
-from nilearn.decoding._utils import (
-    SUPPORTED_ESTIMATORS,
-    validate_estimator,
-)
+from nilearn.decoding._utils import SUPPORTED_ESTIMATORS, validate_estimator
 from nilearn.image import check_niimg_3d, check_niimg_4d, new_img_like
 from nilearn.image.resampling import coord_transform
 from nilearn.maskers.nifti_spheres_masker import apply_mask_and_get_affinity
@@ -255,8 +252,12 @@ class SearchLight(TransformerMixin, NilearnBaseEstimator):
     radius : :obj:`float`, default=2.
         radius of the searchlight ball, in millimeters.
 
-    estimator : ``'svc'``, ``'svr'`` or estimator object, default='svc'
-        The object to use to fit the data.
+    estimator : :obj:`str` or a scikit-learn compatible estimator object,
+        default='svc'
+        The estimator to choose among:
+        %(classifier_options)s
+
+        %(regressor_options)s
 
         %(sk_compatible_admonition)s
 
