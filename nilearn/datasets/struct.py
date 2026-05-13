@@ -949,7 +949,7 @@ def fetch_surf_fsaverage(
 
 
 def _is_vertex_order_equal(mesh1_coords, mesh2_coords, check_len=None):
-    """Check is the vertex order of two meshes comply for common number of
+    """Check if the vertex order of two meshes comply for common number of
     vertices.
     """
     len_common = min(len(mesh1_coords), len(mesh2_coords))
