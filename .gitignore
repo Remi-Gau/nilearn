@@ -57,6 +57,9 @@ venv*/
 report*.html
 tests_to_run.txt
 tests/js/*.html
+tests/js/*fitted.png
+tests/js/view_img.png
+tests/js/view_surf.png
 
 # CI benchmark
 maint_tools/*_runs_timing.*
