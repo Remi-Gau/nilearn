@@ -1003,7 +1003,7 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
 
     # it is sufficient to get mapping for only one mesh to align with
     # fsaverage5 and use the same mapping for all meshes
-    order = _get_mesh_mapping(coords, fs5_coordinates)
+    mesh_mapping = _get_mesh_mapping(coords, fs5_coordinates)
 
     for mesh in [
         "flat_left",
@@ -1020,7 +1020,7 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
         coords, faces = load_surf_data(bunch[mesh])
 
         coords_updated, faces_updated = _apply_mesh_mapping(
-            order, coords, faces
+            mesh_mapping, coords, faces
         )
         mesh_to_gifti(
             coords_updated, faces_updated, f"{data_dir / mesh}.gii.gz"
@@ -1037,7 +1037,7 @@ def _resort_vertices(bunch, bunch_fsaverage5, data_dir):
         "thick_right",
     ]:
         data = load_surf_data(bunch[data_view])
-        data_updated = _apply_mesh_mapping(order, data, None)
+        data_updated = _apply_mesh_mapping(mesh_mapping, data, None)
         data_to_gifti(data_updated[0], f"{data_dir / data_view}.gii.gz")
 
 
