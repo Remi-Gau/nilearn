@@ -983,15 +983,10 @@ def _sanitize_vertices_order(
     if not _is_vertex_order_equal(fs_coordinates, fs5_coordinates, 5):
         warnings.warn(
             (
-                "\nUnsorted vertex coordinates detected.\n"
-                "You probably want "
-                "to clear the following data directory "
-                "and re-download the dataset:\n"
-                f"{get_dataset_dir(mesh, data_dir=data_dir)}\n"
-                "This warning will turn into an error "
-                "in Nilearn version >= 0.16."
+                "\nUnsorted vertex coordinates detected for {mesh}.\n"
+                "The vertices and data will be reordered and saved."
             ),
-            category=FutureWarning,
+            category=UserWarning,
             stacklevel=find_stack_level(),
         )
 
