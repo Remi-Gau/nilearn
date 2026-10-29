@@ -803,7 +803,8 @@ def test_intersect_masks_errors(affine_eye, surf_img_1d):
     ):
         intersect_masks([shape_a_affine_a, shape_a_affine_a], threshold=2)
     with pytest.raises(
-        TypeError, match=r"All masks must be a 3D Niimg-like object."
+        TypeError,
+        match=r"All masks must be either 3D Niimg-like objects",
     ):
         intersect_masks([shape_a_affine_a, surf_img_1d])
     with pytest.raises(
@@ -817,6 +818,104 @@ def test_intersect_masks_errors(affine_eye, surf_img_1d):
                 shape_b_affine_b,
             ]
         )
+
+
+def _surf_mask_from_left_right(surf_mesh, left, right):
+    return SurfaceImage(
+        mesh=surf_mesh,
+        data={"left": np.asarray(left), "right": np.asarray(right)},
+    )
+
+
+@pytest.mark.parametrize(
+    "threshold, connected, expected_left, expected_right",
+    [
+        (0.0, False, [1, 1, 1, 0], [1, 1, 1, 0, 1]),
+        (1.0, False, [0, 1, 0, 0], [0, 1, 0, 0, 0]),
+        (0.5, False, [0, 1, 0, 0], [0, 1, 1, 0, 0]),
+    ],
+)
+def test_intersect_masks_surface(
+    surf_mesh, threshold, connected, expected_left, expected_right
+):
+    """Test intersect_masks on surface images."""
+    mask_a = _surf_mask_from_left_right(
+        surf_mesh, [1, 1, 0, 0], [1, 1, 1, 0, 0]
+    )
+    mask_b = _surf_mask_from_left_right(
+        surf_mesh, [0, 1, 1, 0], [0, 1, 0, 0, 1]
+    )
+    mask_c = _surf_mask_from_left_right(
+        surf_mesh, [0, 1, 0, 0], [0, 1, 1, 0, 0]
+    )
+
+    result = intersect_masks(
+        [mask_a, mask_b, mask_c], threshold=threshold, connected=connected
+    )
+
+    assert isinstance(result, SurfaceImage)
+    assert_array_equal(result.data.parts["left"], expected_left)
+    assert_array_equal(result.data.parts["right"], expected_right)
+
+
+def test_intersect_masks_surface_connected(surf_mesh):
+    """Keep only the largest connected component of each hemisphere."""
+    # right mesh is a pyramid: vertices 0-1-2-3 form the base,
+    # vertex 4 is the apex connected to all of them.
+    # vertices 0 and 2 are not adjacent.
+    left = [1, 1, 0, 0]
+    right = [1, 0, 1, 0, 0]
+    mask = _surf_mask_from_left_right(surf_mesh, left, right)
+
+    result = intersect_masks([mask, mask], threshold=1.0, connected=False)
+    assert_array_equal(result.data.parts["right"], right)
+
+    result = intersect_masks([mask, mask], threshold=1.0, connected=True)
+    assert_array_equal(result.data.parts["left"], left)
+    assert result.data.parts["right"].sum() == 1
+
+
+def test_intersect_masks_surface_empty(surf_mesh):
+    """Empty intersection on surface returns an empty mask."""
+    mask_a = _surf_mask_from_left_right(
+        surf_mesh, [1, 0, 0, 0], [1, 0, 0, 0, 0]
+    )
+    mask_b = _surf_mask_from_left_right(
+        surf_mesh, [0, 0, 0, 1], [0, 0, 0, 0, 1]
+    )
+
+    result = intersect_masks([mask_a, mask_b], threshold=1.0)
+
+    assert not result.data.parts["left"].any()
+    assert not result.data.parts["right"].any()
+
+
+def test_intersect_masks_surface_does_not_modify_input(surf_mesh):
+    """Input surface masks must not be modified in place."""
+    mask = _surf_mask_from_left_right(
+        surf_mesh, np.array([0, 2, 2, 0]), np.array([2, 2, 0, 0, 0])
+    )
+
+    intersect_masks([mask, mask])
+
+    assert mask.data.parts["left"].dtype != bool
+    assert_array_equal(mask.data.parts["left"], [0, 2, 2, 0])
+
+
+def test_intersect_masks_surface_errors(surf_mask_1d, surf_img_1d):
+    """Check errors of intersect_masks with surface images."""
+    # non binary mask
+    with pytest.raises(ValueError, match="not made of 2 values"):
+        intersect_masks([surf_mask_1d, surf_img_1d])
+
+    # incompatible meshes
+    mesh = surf_mask_1d.mesh
+    other_mask = SurfaceImage(
+        mesh={"left": mesh.parts["left"]},
+        data={"left": np.ones(mesh.parts["left"].n_vertices)},
+    )
+    with pytest.raises(Exception, match="same keys"):
+        intersect_masks([surf_mask_1d, other_mask])
 
 
 def test_compute_multi_epi_mask(affine_eye):

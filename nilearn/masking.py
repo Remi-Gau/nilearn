@@ -2,6 +2,7 @@
 
 import numbers
 import warnings
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Literal, get_args, overload
 
 import numpy as np
@@ -34,7 +35,7 @@ from nilearn.image.image import (
 )
 from nilearn.image.resampling import resample_to_img
 from nilearn.nilearn_typing import NiimgLike
-from nilearn.surface.surface import SurfaceImage
+from nilearn.surface.surface import SurfaceImage, find_surface_clusters
 from nilearn.surface.surface import get_data as get_surface_data
 from nilearn.surface.utils import check_polymesh_equal
 
@@ -191,10 +192,28 @@ def extrapolate_out_mask(data, mask, iterations=1):
 #
 # Utilities to compute masks
 #
+@overload
+def intersect_masks(
+    mask_imgs: Sequence[NiimgLike],
+    threshold: float = ...,
+    connected: bool = ...,
+) -> Nifti1Image: ...
+
+
+@overload
+def intersect_masks(
+    mask_imgs: Sequence[SurfaceImage],
+    threshold: float = ...,
+    connected: bool = ...,
+) -> SurfaceImage: ...
+
+
 @fill_doc
 def intersect_masks(
-    mask_imgs: list[NiimgLike], threshold: float = 0.5, connected: bool = True
-) -> Nifti1Image:
+    mask_imgs: Sequence[NiimgLike] | Sequence[SurfaceImage],
+    threshold: float = 0.5,
+    connected: bool = True,
+) -> Nifti1Image | SurfaceImage:
     """Compute intersection of several masks.
 
     Given a list of input mask images, generate the output image which
@@ -202,9 +221,16 @@ def intersect_masks(
 
     Parameters
     ----------
-    mask_imgs : :obj:`list` of Niimg-like objects
+    mask_imgs : :obj:`list` of Niimg-like objects \
+                or :obj:`list` of :obj:`~nilearn.surface.SurfaceImage`
         See :ref:`extracting_data`.
-        3D individual masks with same shape and affine.
+        3D individual masks with same shape and affine,
+        or 1D surface masks with the same mesh.
+        Volume and surface masks cannot be mixed.
+
+        .. nilearn_versionchanged:: 0.15.0
+
+            Added support for :obj:`~nilearn.surface.SurfaceImage`.
 
     threshold : :obj:`float`, default=0.5
         Gives the level of the intersection, must be within [0, 1].
@@ -213,10 +239,13 @@ def intersect_masks(
 
     %(connected)s
         default=True.
+        For surface masks, the largest connected component
+        is kept for each part (hemisphere) of the mesh.
 
     Returns
     -------
-    grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image`
+    grp_mask : 3D :class:`nibabel.nifti1.Nifti1Image` \
+               or :obj:`~nilearn.surface.SurfaceImage`
         Intersection of all masks.
 
     Examples
@@ -262,6 +291,14 @@ def intersect_masks(
     if len(mask_imgs) == 0:
         raise ValueError("No mask provided for intersection")
 
+    surf_masks = [x for x in mask_imgs if isinstance(x, SurfaceImage)]
+    if len(surf_masks) == len(mask_imgs):
+        return _intersect_surface_masks(
+            surf_masks,
+            threshold=threshold,
+            connected=connected,
+        )
+
     mask_types = [
         f"mask_imgs[{i}] = {x.__class__.__name__}"
         for i, x in enumerate(mask_imgs)
@@ -269,7 +306,8 @@ def intersect_masks(
     ]
     if mask_types:
         raise TypeError(
-            "All masks must be a 3D Niimg-like object. "
+            "All masks must be either 3D Niimg-like objects "
+            "or SurfaceImage objects. "
             f"Got: {', '.join(mask_types)}."
         )
 
@@ -304,6 +342,49 @@ def intersect_masks(
         grp_mask = largest_connected_component(grp_mask)
     grp_mask = as_ndarray(grp_mask, dtype=np.int8)
     return new_img_like(check_niimg_3d(mask_imgs[0]), grp_mask, ref_affine)
+
+
+def _intersect_surface_masks(
+    mask_imgs: Sequence[SurfaceImage], threshold: float, connected: bool
+) -> SurfaceImage:
+    """Compute intersection of several surface masks.
+
+    See intersect_masks for details.
+    """
+    ref_mesh = mask_imgs[0].mesh
+    for this_mask in mask_imgs[1:]:
+        check_polymesh_equal(ref_mesh, this_mask.mesh)
+
+    grp_mask = {
+        hemi: np.zeros(mesh.n_vertices, dtype=int)
+        for hemi, mesh in ref_mesh.parts.items()
+    }
+    for this_mask in mask_imgs:
+        # work on a copy as load_mask_img modifies surface images in place
+        this_mask = SurfaceImage(
+            mesh=ref_mesh,
+            data={
+                hemi: np.array(data, copy=True)
+                for hemi, data in this_mask.data.parts.items()
+            },
+        )
+        mask, _ = load_mask_img(this_mask, allow_empty=True)
+        for hemi, data in mask.data.parts.items():
+            grp_mask[hemi] += data
+
+    for hemi, data in grp_mask.items():
+        hemi_mask = data > (threshold * len(mask_imgs))
+        if np.any(hemi_mask) and connected:
+            clusters, labels = find_surface_clusters(
+                ref_mesh.parts[hemi], hemi_mask
+            )
+            largest = clusters["index"].to_numpy()[
+                clusters["size"].to_numpy().argmax()
+            ]
+            hemi_mask = labels == largest
+        grp_mask[hemi] = as_ndarray(hemi_mask, dtype=np.int8)
+
+    return SurfaceImage(mesh=ref_mesh, data=grp_mask)
 
 
 def _post_process_mask(

@@ -60,6 +60,8 @@ Fixes
 Enhancements
 ------------
 
+- :bdg-dark:`Code` :func:`~nilearn.masking.intersect_masks` now accepts a list of :obj:`~nilearn.surface.SurfaceImage` masks (:gh:`XXXX` by `Rémi Gau`_).
+
 - :bdg-primary:`Doc` Add privacy-friendly page view analytics with `GoatCounter <https://www.goatcounter.com/>`_ to the documentation website (:gh:`6393` by `Rémi Gau`_).
 
 - :bdg-dark:`Code` Use a `rich <https://github.com/Textualize/rich>`_ progress bar to report dataset download progress when it is installed (:gh:`6434` by `Rémi Gau`_).
