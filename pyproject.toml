@@ -202,6 +202,7 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
+    "nilearn.plotting.tests.test_baseline_comparisons -> nilearn.reporting.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     "nilearn.** -> nilearn.utils.tags"  # estimator tags are used by all layers
 ]
@@ -236,6 +237,7 @@ ignore_imports = [
     "nilearn.plotting.matrix.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn.glm.**",  # allowed in tests
     "nilearn.plotting.tests.* -> nilearn._utils.data_gen",  # allowed in tests
+    "nilearn.plotting.tests.test_baseline_comparisons -> nilearn.reporting.**",  # allowed in tests
     "nilearn.plotting.matrix.* -> nilearn.glm.**",
     # additional on top of those of "main architecture"
     "nilearn.plotting.tests.test_img_comparisons -> nilearn._utils.data_gen",  # allowed in tests

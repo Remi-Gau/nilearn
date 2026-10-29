@@ -17,7 +17,11 @@ import pandas as pd
 import scipy
 from matplotlib import get_backend
 from matplotlib.axes import Axes
-from matplotlib.colors import Colormap, LinearSegmentedColormap, Normalize
+from matplotlib.colors import (
+    Colormap,
+    LinearSegmentedColormap,
+    Normalize,
+)
 from matplotlib.figure import Figure
 from matplotlib.gridspec import GridSpecFromSubplotSpec
 from matplotlib.ticker import MaxNLocator
@@ -62,6 +66,7 @@ from nilearn.nilearn_typing import (
 from nilearn.plotting import cm
 from nilearn.plotting._engine_utils import (
     create_colormap_from_lut,
+    discretize_cmap,
     save_figure_if_needed,
 )
 from nilearn.plotting._utils import (
@@ -734,7 +739,9 @@ def plot_epi(
 
 
 @fill_doc
-def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
+def _plot_roi_contours(
+    display, roi_img, cmap, alpha, linewidths, vmin=None, vmax=None
+):
     """Help for plotting regions of interest ROIs in contours.
 
     Parameters
@@ -757,6 +764,11 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
         This option can be used to set the boundary thickness of the
         contours.
 
+    vmin, vmax : :obj:`float` or None, default=None
+        If both are not None, the color of each label
+        is its value in the colormap normalized between vmin and vmax.
+        Otherwise colors are evenly sampled from the colormap.
+
     Returns
     -------
     display : :class:`~nilearn.plotting.displays.BaseSlicer`, object
@@ -766,7 +778,10 @@ def _plot_roi_contours(display, roi_img, cmap, alpha, linewidths):
     roi_data = get_data(roi_img)
     labels = np.unique(roi_data)
     cmap = plt.get_cmap(cmap)
-    color_list = cmap(np.linspace(0, 1, len(labels) - 1))
+    if vmin is not None and vmax is not None:
+        color_list = cmap(Normalize(vmin, vmax)(labels[labels != 0]))
+    else:
+        color_list = cmap(np.linspace(0, 1, len(labels) - 1))
     for idx, label in enumerate(labels):
         if label == 0:
             continue
@@ -856,6 +871,11 @@ def plot_roi(
     %(cmap_lut)s
         default=`gist_ncar`.
 
+        .. nilearn_versionchanged:: 0.15.0
+
+            For label images, colormaps are resampled
+            to have one color per label.
+
     %(dim)s
         default='auto'.
 
@@ -933,16 +953,23 @@ def plot_roi(
     valid_view_types = ["continuous", "contours"]
     check_parameter_in_allowed(view_type, valid_view_types, "view_type")
 
-    img = roi_img
-    if view_type == "contours":
-        roi_img = None
+    img = check_niimg_3d(roi_img)
+    roi_img = None if view_type == "contours" else img
 
     bg_img, black_bg, bg_vmin, bg_vmax = load_anat(
         bg_img, dim=dim, black_bg=black_bg
     )
 
+    label_vmin, label_vmax = None, None
     if isinstance(cmap, pd.DataFrame):
-        cmap = create_colormap_from_lut(cmap)
+        cmap, label_vmin, label_vmax = create_colormap_from_lut(cmap)
+    if label_vmin is None:
+        labels = np.unique(get_data(img))
+        cmap, label_vmin, label_vmax = discretize_cmap(
+            cmap, labels[labels != 0]
+        )
+    vmin = label_vmin if vmin is None else vmin
+    vmax = label_vmax if vmax is None else vmax
 
     transparency = alpha
 
@@ -973,7 +1000,13 @@ def plot_roi(
 
     if view_type == "contours":
         display = _plot_roi_contours(
-            display, img, cmap=cmap, alpha=alpha, linewidths=linewidths
+            display,
+            img,
+            cmap=cmap,
+            alpha=alpha,
+            linewidths=linewidths,
+            vmin=vmin,
+            vmax=vmax,
         )
 
     save_figure_if_needed(display, output_file)

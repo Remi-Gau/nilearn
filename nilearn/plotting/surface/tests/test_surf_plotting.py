@@ -1351,3 +1351,21 @@ def test_error_nifti_not_supported(
         function(in_memory_mesh, img_3d_mni_as_file)
     with pytest.raises(ValueError, match="The input type is not recognized"):
         function(in_memory_mesh, str(img_3d_mni_as_file))
+
+
+@pytest.mark.parametrize("cmap", ["gist_ncar", "viridis"])
+def test_plot_surf_roi_cmap_discretized(
+    matplotlib_pyplot, in_memory_mesh, parcellation, cmap
+):
+    """Check colormap has one distinct color per label.
+
+    https://github.com/nilearn/nilearn/issues/6708
+    """
+    fig = plot_surf_roi(
+        in_memory_mesh, roi_map=parcellation, cmap=cmap, engine="matplotlib"
+    )
+
+    # parcellation has labels 0, 1 and 2
+    cbar = fig.axes[-1]._colorbar
+    assert cbar.cmap.N == 3
+    assert (cbar.norm.vmin, cbar.norm.vmax) == (0, 3)

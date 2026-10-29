@@ -5,6 +5,8 @@ See the  maintenance page of our documentation for more information
 https://nilearn.github.io/dev/maintenance.html#generating-new-baseline-figures-for-plotting-tests
 """
 
+import functools
+
 import matplotlib as mpl
 import numpy as np
 import pandas as pd
@@ -12,7 +14,6 @@ import pytest
 from matplotlib import pyplot as plt
 from nibabel import Nifti1Image
 
-from nilearn._utils.data_gen import generate_labeled_regions
 from nilearn._utils.helpers import is_kaleido_installed, is_plotly_installed
 from nilearn.datasets import (
     fetch_surf_fsaverage,
@@ -49,6 +50,7 @@ from nilearn.plotting import (
 )
 from nilearn.plotting.displays import OrthoSlicer
 from nilearn.plotting.image.utils import MNI152TEMPLATE
+from nilearn.reporting import get_clusters_table
 from nilearn.surface import load_surf_data
 
 PLOTTING_FUNCS_3D = (
@@ -67,6 +69,23 @@ SURFACE_FUNCS = (
 )
 
 
+@functools.cache
+def _clusters_label_img():
+    """Return the clusters of the sample motor activation map as labels."""
+    _, label_maps = get_clusters_table(
+        load_sample_motor_activation_image(),
+        stat_threshold=5,
+        cluster_threshold=10,
+        return_label_maps=True,
+    )
+    return label_maps[0]
+
+
+def _input_img(plot_func, img):
+    """Use a label image as input for plot_roi."""
+    return _clusters_label_img() if plot_func is plot_roi else img
+
+
 @pytest.mark.mpl_image_compare
 @pytest.mark.parametrize("plot_func", PLOTTING_FUNCS_3D)
 def test_plot_functions_black_bg(plot_func, img_3d_mni):
@@ -74,7 +93,7 @@ def test_plot_functions_black_bg(plot_func, img_3d_mni):
 
     black_bg=False being the default it should be covered by other tests.
     """
-    return plot_func(img_3d_mni, black_bg=True)
+    return plot_func(_input_img(plot_func, img_3d_mni), black_bg=True)
 
 
 @pytest.mark.mpl_image_compare
@@ -84,7 +103,7 @@ def test_plot_functions_title(plot_func, img_3d_mni):
 
     title=None being the default it should be covered by other tests.
     """
-    return plot_func(img_3d_mni, title="foo")
+    return plot_func(_input_img(plot_func, img_3d_mni), title="foo")
 
 
 @pytest.mark.mpl_image_compare
@@ -94,7 +113,7 @@ def test_plot_functions_annotate(plot_func, img_3d_mni):
 
     annotate=True being the default it should be covered by other tests.
     """
-    return plot_func(img_3d_mni, annotate=False)
+    return plot_func(_input_img(plot_func, img_3d_mni), annotate=False)
 
 
 @pytest.mark.mpl_image_compare
@@ -125,22 +144,22 @@ def test_plot_roi_single_value_data(affine_eye):
 
 
 @pytest.mark.mpl_image_compare
-def test_plot_roi_contour_colors(affine_mni):
+def test_plot_roi_contour_colors():
     """Test `nilearn.plotting.image.img_plotting.plot_roi` to see that contour
     colors comply with region colors.
     """
-    img = generate_labeled_regions(
-        (40, 35, 32), n_regions=6, affine=affine_mni
-    )
+    img = _clusters_label_img()
 
     fig, ax = plt.subplots(nrows=1, ncols=2, figsize=(15, 5))
 
-    plot_roi(img, title="ROIs", cut_coords=[-50, -90, -40], axes=ax[0])
+    # cuts going through several clusters
+    cut_coords = [36, -25, 58]
+    plot_roi(img, title="ROIs", cut_coords=cut_coords, axes=ax[0])
     plot_roi(
         img,
         title="contours",
         view_type="contours",
-        cut_coords=[-50, -90, -40],
+        cut_coords=cut_coords,
         axes=ax[1],
     )
     return fig
@@ -154,7 +173,7 @@ def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
     colorbar=True being the default it should be covered by other tests.
     """
     return plot_func(
-        img_3d_mni,
+        _input_img(plot_func, img_3d_mni),
         colorbar=False,
     )
 
@@ -164,7 +183,7 @@ def test_plot_functions_no_colorbar(plot_func, img_3d_mni):
 def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
     """Test parameter for colorbar."""
     return plot_func(
-        img_3d_mni,
+        _input_img(plot_func, img_3d_mni),
         cbar_tick_format="%f",
     )
 
@@ -174,7 +193,8 @@ def test_plot_functions_colorbar_ticks(plot_func, img_3d_mni):
 @pytest.mark.parametrize("vmin", [-1, 1])
 def test_plot_functions_vmin(plot_func, vmin):
     """Test 3D plotting functions with vmin."""
-    return plot_func(load_sample_motor_activation_image(), vmin=vmin)
+    img = _input_img(plot_func, load_sample_motor_activation_image())
+    return plot_func(img, vmin=vmin)
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
@@ -182,7 +202,8 @@ def test_plot_functions_vmin(plot_func, vmin):
 @pytest.mark.parametrize("vmax", [2, 3])
 def test_plot_functions_vmax(plot_func, vmax):
     """Test 3D plotting functions with vmax."""
-    return plot_func(load_sample_motor_activation_image(), vmax=vmax)
+    img = _input_img(plot_func, load_sample_motor_activation_image())
+    return plot_func(img, vmax=vmax)
 
 
 @pytest.mark.mpl_image_compare(tolerance=5)
@@ -193,9 +214,8 @@ def test_plotting_functions_radiological_view(plotting_func):
     radiological=False being the default it should be covered by other tests.
     """
     radiological = True
-    display = plotting_func(
-        load_sample_motor_activation_image(), radiological=radiological
-    )
+    img = _input_img(plotting_func, load_sample_motor_activation_image())
+    display = plotting_func(img, radiological=radiological)
     assert display.axes.get("y").radiological is radiological
     return display
 

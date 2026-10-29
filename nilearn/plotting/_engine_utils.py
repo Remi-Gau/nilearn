@@ -12,6 +12,7 @@ from matplotlib.colors import (
     LinearSegmentedColormap,
     ListedColormap,
     Normalize,
+    to_rgba,
 )
 from matplotlib.figure import Figure
 
@@ -154,7 +155,17 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
 
     Returns
     -------
-    colormap (LinearSegmentedColormap): A Matplotlib colormap
+    colormap : :class:`~matplotlib.colors.ListedColormap` or :obj:`str`
+        A colormap with one color per integer
+        between the minimum and maximum (non background) indices
+        of the look-up table.
+        Indices missing from the look-up table are transparent.
+        ``default_cmap`` if the look-up table has no color.
+
+    vmin, vmax : :obj:`float` or None
+        Minimum and maximum (non background) indices of the look-up table,
+        so that each label can be mapped to its own color.
+        None if ``default_cmap`` is returned.
     """
     if "color" not in cmap.columns:
         warn(
@@ -162,18 +173,59 @@ def create_colormap_from_lut(cmap, default_cmap="gist_ncar"):
             "Will use the default colormap instead.",
             stacklevel=find_stack_level(),
         )
-        return default_cmap
+        return default_cmap, None, None
 
     # Ensure colors are properly extracted from DataFrame
     cmap = cmap.sort_values(by="index")
     cmap = cmap[cmap["name"] != "background"]
     cmap = cmap[cmap["name"] != "Background"]
-    color = cmap["color"].tolist()
 
-    # Create a colormap from the list of colors
-    return LinearSegmentedColormap.from_list(
-        "custom_colormap", color, N=len(color) + 1
-    )
+    index = cmap["index"].to_numpy(dtype=int)
+    vmin, vmax = int(index.min()), int(index.max())
+    color = np.zeros((vmax - vmin + 1, 4))
+    color[index - vmin] = [to_rgba(c) for c in cmap["color"]]
+
+    return ListedColormap(color, name="custom_colormap"), vmin, vmax
+
+
+def discretize_cmap(cmap, labels):
+    """Resample a colormap to have one color per label.
+
+    Parameters
+    ----------
+    cmap : :class:`~matplotlib.colors.Colormap` or :obj:`str`
+        Colormap to resample.
+
+    labels : :class:`numpy.ndarray`
+        Label values that should each be mapped to their own color.
+
+    Returns
+    -------
+    cmap : :class:`~matplotlib.colors.Colormap`
+        A colormap with one color per integer
+        between the minimum and maximum labels,
+        evenly sampled from the original colormap.
+        The original colormap if labels are not integers,
+        if there is a single label
+        or more labels than colors in the colormap.
+
+    vmin, vmax : :obj:`float` or None
+        Minimum and maximum labels,
+        so that each label can be mapped to its own color.
+        None if the colormap was not discretized.
+    """
+    cmap = plt.get_cmap(cmap)
+    labels = np.asarray(labels, dtype=float)
+    if labels.size == 0 or not np.all(np.mod(labels, 1) == 0):
+        return cmap, None, None
+    # one color per integer between the min and max labels
+    # so that non-contiguous labels still get distinct colors
+    n_colors = int(labels.max() - labels.min()) + 1
+    if n_colors < 2 or n_colors > cmap.N:
+        return cmap, None, None
+    colors = cmap(np.linspace(0, 1, n_colors))
+    cmap = ListedColormap(colors, name=f"{cmap.name}_{n_colors}")
+    return cmap, float(labels.min()), float(labels.max())
 
 
 def create_colorbar_for_fig(
@@ -208,7 +260,10 @@ def create_colorbar_for_fig(
         tick_format=tick_format,
     )
     thrs_cmap = threshold_cmap(cmap, norm, threshold, threshold_color)
-    bounds = get_cbar_bounds(cbar_vmin, cbar_vmax, thrs_cmap.N, tick_format)
+    # N colors need N+1 boundaries
+    bounds = get_cbar_bounds(
+        cbar_vmin, cbar_vmax, thrs_cmap.N + 1, tick_format
+    )
 
     mappable = ScalarMappable(norm=norm, cmap=thrs_cmap)
     # if norm is specified, no need to set data

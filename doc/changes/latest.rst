@@ -47,6 +47,8 @@ Fixes
 
 - :bdg-info:`Plotting` Avoid overlapping colorbar tick labels when ``0`` is very close to the minimum or maximum value of the colorbar (:gh:`6609` by `Rémi Gau`_).
 
+- :bdg-info:`Plotting` Resample colormaps to have one color per label in :func:`~nilearn.plotting.plot_roi` (also used in the reports of :class:`~nilearn.maskers.NiftiLabelsMasker`) and :func:`~nilearn.plotting.plot_surf_roi`, make sure each label is plotted with its own color when passing a look-up table as colormap, and make sure that colorbars display all the colors of their colormap (:gh:`6708` by `Rémi Gau`_).
+
 - :bdg-info:`Plotting` Fixes a bug where calling :func:`~nilearn.plotting.plot_anat` with ``black_bg=False`` inadvertently introduced spurious negative values into non-negative structural scans (:gh:`6625` by `Achintya Singh`_).
 
 - :bdg-dark:`Code` Fix :meth:`~nilearn.decoding.Decoder.fit` logging ``The decoding model will be trained on N features`` twice per fit (:gh:`6614` by `Reyyi Shreyas`_).

@@ -6,7 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pytest
+from matplotlib.colors import to_rgba
 from nibabel import Nifti1Image
+from numpy.testing import assert_array_almost_equal
 
 from nilearn._utils.bids import generate_atlas_look_up_table
 from nilearn.conftest import _affine_mni, _img_labels
@@ -122,9 +124,12 @@ def test_cmap_as_lookup_table(img_labels):
 
 
 @pytest.mark.thread_unsafe
+@pytest.mark.parametrize("view_type", ["continuous", "contours"])
 @pytest.mark.parametrize("background_label", [None, 0])
-def test_cmap_as_lookup_table_with_background(background_label):
-    """Ensure that the background color is dropped from lut.
+def test_cmap_as_lookup_table_with_background(
+    matplotlib_pyplot, background_label, view_type
+):
+    """Ensure that each label is plotted with its color from the lut.
 
     regression test for https://github.com/nilearn/nilearn/issues/5934
     """
@@ -147,9 +152,90 @@ def test_cmap_as_lookup_table_with_background(background_label):
     ]
     lut["color"] = color
 
-    fig = plot_roi(label_img, cmap=lut)
+    display = plot_roi(label_img, cmap=lut, view_type=view_type)
 
-    if background_label is None:
-        assert n_regions + 2 == fig._cbar.cmap.N
+    expected = [to_rgba(c) for c in color[1:]]
+    if view_type == "continuous":
+        # when there is no background in the lut
+        # label 0 has a color but is below threshold
+        n_colors = n_regions + 1 if background_label is None else n_regions
+        assert n_colors == display._cbar.cmap.N
+        assert len(display._cbar._boundaries) == n_colors + 1
+        assert_array_almost_equal(_label_colors(display, label_img), expected)
     else:
-        assert n_regions + 1 == fig._cbar.cmap.N
+        # compare RGB only as contours have some transparency
+        contour_colors = {
+            tuple(np.round(c.get_edgecolor()[0][:3], 6))
+            for ax in display.axes.values()
+            for c in ax.ax.collections
+        }
+        assert contour_colors
+        assert contour_colors <= {tuple(np.round(c[:3], 6)) for c in expected}
+
+
+def _label_colors(display, img):
+    """Return the color of each non-zero label in the overlay."""
+    im = next(i for i in display.axes["x"].ax.images if i.cmap.name != "gray")
+    labels = np.unique(img.get_fdata())
+    labels = labels[labels != 0]
+    return im.cmap(im.norm(labels))
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize("n_regions", [2, 7])
+def test_plot_roi_default_cmap_discretized(matplotlib_pyplot, n_regions):
+    """Check default cmap has one distinct color per label.
+
+    https://github.com/nilearn/nilearn/issues/6708
+    """
+    img = _img_labels(n_regions=n_regions)
+
+    display = plot_roi(img)
+
+    assert n_regions == display._cbar.cmap.N
+    # one band per color in the colorbar
+    assert len(display._cbar._boundaries) == n_regions + 1
+    colors = _label_colors(display, img)
+    assert len(np.unique(colors, axis=0)) == n_regions
+
+
+@pytest.mark.thread_unsafe
+def test_plot_roi_default_cmap_non_contiguous_labels(
+    matplotlib_pyplot, shape_3d_default, affine_eye
+):
+    """Check non contiguous labels get distinct colors."""
+    data = np.zeros(shape_3d_default)
+    data[:2, :, :] = 1
+    data[2:4, :, :] = 3
+    data[4:6, :, :] = 10
+    img = Nifti1Image(data, affine_eye)
+
+    display = plot_roi(img)
+
+    colors = _label_colors(display, img)
+    assert len(np.unique(colors, axis=0)) == 3
+
+
+@pytest.mark.thread_unsafe
+@pytest.mark.parametrize("cmap", ["viridis", plt.get_cmap("tab20")])
+def test_plot_roi_non_default_cmap_discretized(matplotlib_pyplot, cmap):
+    """Check that user provided colormaps are also discretized."""
+    n_regions = 3
+    img = _img_labels(n_regions=n_regions)
+
+    display = plot_roi(img, cmap=cmap)
+
+    assert n_regions == display._cbar.cmap.N
+    colors = _label_colors(display, img)
+    assert len(np.unique(colors, axis=0)) == n_regions
+
+
+@pytest.mark.thread_unsafe
+def test_plot_roi_default_cmap_single_label(
+    matplotlib_pyplot, shape_3d_default, affine_eye
+):
+    """Check that images with a single label can be plotted."""
+    data = np.zeros(shape_3d_default)
+    data[:2, :, :] = 1
+
+    plot_roi(Nifti1Image(data, affine_eye))

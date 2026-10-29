@@ -19,7 +19,10 @@ from nilearn.nilearn_typing import (
     Vmax,
     Vmin,
 )
-from nilearn.plotting._engine_utils import create_colormap_from_lut
+from nilearn.plotting._engine_utils import (
+    create_colormap_from_lut,
+    discretize_cmap,
+)
 from nilearn.plotting._utils import (
     DEFAULT_ENGINE,
     check_threshold_not_negative,
@@ -971,6 +974,10 @@ def plot_surf_roi(
     %(cmap_lut)s
         default='gist_ncar'.
 
+        .. nilearn_versionchanged:: 0.15.0
+
+            Colormaps are resampled to have one color per label.
+
     %(colorbar)s
         default=True
 
@@ -1087,6 +1094,7 @@ def plot_surf_roi(
         )
 
     idx_not_na = ~np.isnan(roi)
+    user_vmin, user_vmax = vmin, vmax
     if vmin is None:
         vmin = float(np.nanmin(roi))
     if vmax is None:
@@ -1102,8 +1110,20 @@ def plot_surf_roi(
         sep = "\t" if cmap_path.suffix == ".tsv" else ","
         cmap = pd.read_csv(cmap, sep=sep)
 
+    label_vmin, label_vmax = None, None
     if isinstance(cmap, pd.DataFrame):
-        cmap = create_colormap_from_lut(cmap)
+        cmap, label_vmin, label_vmax = create_colormap_from_lut(cmap)
+    if label_vmin is None:
+        cmap, label_vmin, label_vmax = discretize_cmap(
+            cmap, np.unique(roi[idx_not_na])
+        )
+    # surface backends map [vmin, vmax] on the colormap
+    # so vmax must be one above the last label
+    # to map each label to its own color
+    if user_vmin is None and label_vmin is not None:
+        vmin = label_vmin
+    if user_vmax is None and label_vmax is not None:
+        vmax = label_vmax + 1
 
     backend = get_surface_backend(engine)
 

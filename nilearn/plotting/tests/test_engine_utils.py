@@ -3,12 +3,14 @@ from unittest.mock import Mock
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import pytest
-from matplotlib.colors import Normalize
+from matplotlib.colors import Normalize, to_rgba
 
 from nilearn.plotting._engine_utils import (
     colorscale,
     create_colorbar_for_fig,
+    create_colormap_from_lut,
     save_figure_if_needed,
     threshold_cmap,
     to_color_strings,
@@ -216,3 +218,39 @@ def test_create_colorbar_for_fig(
     assert [
         float(tick.get_text()) for tick in colorbar.ax.get_yticklabels()
     ] == expected_ticks
+
+
+def test_create_colormap_from_lut():
+    """Check each lut index gets its own color, background excluded.
+
+    https://github.com/nilearn/nilearn/issues/6708
+    """
+    lut = pd.DataFrame(
+        {
+            "index": [5, 0, 2, 3],
+            "name": ["c", "Background", "a", "b"],
+            "color": ["#ff0000", "#000000", "#00ff00", "#0000ff"],
+        }
+    )
+
+    cmap, vmin, vmax = create_colormap_from_lut(lut)
+
+    assert (vmin, vmax) == (2, 5)
+    # one color per integer between vmin and vmax
+    assert cmap.N == 4
+    norm = Normalize(vmin, vmax)
+    assert cmap(norm(2)) == to_rgba("#00ff00")
+    assert cmap(norm(3)) == to_rgba("#0000ff")
+    assert cmap(norm(5)) == to_rgba("#ff0000")
+    # index missing from the lut is transparent
+    assert cmap(norm(4))[3] == 0
+
+
+def test_create_colormap_from_lut_no_color():
+    """Check default colormap is returned when lut has no color."""
+    lut = pd.DataFrame({"index": [0, 1], "name": ["foo", "bar"]})
+
+    with pytest.warns(UserWarning, match="No 'color' column"):
+        cmap, vmin, vmax = create_colormap_from_lut(lut, default_cmap="foo")
+
+    assert (cmap, vmin, vmax) == ("foo", None, None)
